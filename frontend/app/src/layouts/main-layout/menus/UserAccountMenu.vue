@@ -36,7 +36,7 @@
 
     <!--begin::Menu item-->
     <div class="menu-item px-5">
-      <router-link to="/pages/profile/overview" class="menu-link px-5">
+      <router-link to="/crafted/pages/profile/overview" class="menu-link px-5">
         My Profile
       </router-link>
     </div>
@@ -282,7 +282,7 @@
 
     <!--begin::Menu item-->
     <div class="menu-item px-5 my-1">
-      <router-link to="/pages/profile/overview" class="menu-link px-5">
+      <router-link to="/crafted/account/Settings" class="menu-link px-5">
         Account Settings
       </router-link>
     </div>

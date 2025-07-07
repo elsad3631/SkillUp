@@ -21,6 +21,19 @@ const MainMenuConfig: Array<MenuItem> = [
     keenthemesIcon: "briefcase",
     bootstrapIcon: "bi-kanban",
   },
+  {
+    sectionTitle: "Quick Actions",
+    pages: [
+      {
+        heading: "Asset Types",
+        route: "/asset-types",
+        keenthemesIcon: "element-11",
+        bootstrapIcon: "bi-list-check",
+      },
+    ],
+    keenthemesIcon: "flash",
+    bootstrapIcon: "bi-lightning",
+  },
 ];
 
 export default MainMenuConfig;

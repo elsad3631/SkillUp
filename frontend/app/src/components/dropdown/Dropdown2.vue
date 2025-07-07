@@ -18,13 +18,7 @@
 
     <!--begin::Menu item-->
     <div class="menu-item px-3">
-      <a href="#" class="menu-link px-3"> New Ticket </a>
-    </div>
-    <!--end::Menu item-->
-
-    <!--begin::Menu item-->
-    <div class="menu-item px-3">
-      <a href="#" class="menu-link px-3"> New Customer </a>
+      <router-link to="/asset-types" class="menu-link px-3"> Assets </router-link>
     </div>
     <!--end::Menu item-->
 
@@ -63,12 +57,6 @@
         <!--end::Menu item-->
       </div>
       <!--end::Menu sub-->
-    </div>
-    <!--end::Menu item-->
-
-    <!--begin::Menu item-->
-    <div class="menu-item px-3">
-      <a href="#" class="menu-link px-3"> New Contact </a>
     </div>
     <!--end::Menu item-->
 

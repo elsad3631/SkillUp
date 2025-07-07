@@ -2255,6 +2255,9 @@ import { defineComponent, ref } from "vue";
 import { ErrorMessage, Field, Form as VForm } from "vee-validate";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import * as Yup from "yup";
+import ApiService from "@/core/services/ApiService";
+import { useAuthStore } from "@/stores/auth";
+import { getEmployee, updateEmployee } from "@/core/services/businessServices/Employee";
 
 interface ProfileDetails {
   avatar: string;
@@ -2338,14 +2341,35 @@ export default defineComponent({
       allowMarketing: false,
     });
 
+    const authStore = useAuthStore();
+
+    // Carica i dati Employee all'avvio
+    if (authStore.user?.employeeId) {
+      getEmployee(authStore.user.employeeId).then((employee) => {
+        if (employee) {
+          profileDetails.value.name = employee.first_name || '';
+          profileDetails.value.surname = employee.last_name || '';
+          profileDetails.value.contactPhone = employee.phone || '';
+          profileDetails.value.company = employee.department || '';
+          profileDetails.value.country = employee.address || '';
+          // puoi aggiungere altri campi se necessario
+        }
+      });
+    }
+
     const saveChanges1 = () => {
       if (submitButton1.value) {
         // Activate indicator
         submitButton1.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          submitButton1.value?.removeAttribute("data-kt-indicator");
-        }, 2000);
+        // Salva avatar tramite API
+        if (authStore.user?.employeeId) {
+          ApiService.put(`users/${authStore.user.employeeId}`, { avatar: profileDetails.value.avatar })
+            .then(() => {
+              setTimeout(() => {
+                submitButton1.value?.removeAttribute("data-kt-indicator");
+              }, 2000);
+            });
+        }
       }
     };
 

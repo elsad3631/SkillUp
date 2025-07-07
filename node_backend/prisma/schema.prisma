@@ -20,7 +20,7 @@ model ApplicationUser {
   passwordHash String
   roles        String[]
   employee     Employee? @relation(fields: [employeeId], references: [id])
-  employeeId   String? @unique
+  employeeId   String?  @unique // chiave esterna opzionale e unica verso Employee
 }
 
 model Employee {
@@ -125,4 +125,11 @@ model SkillTraining {
   skillsDeveloped     String[]
   level               String?
   cost                Float?
+}
+
+model Asset {
+  id     Int     @id @default(autoincrement())
+  name   String
+  type   String
+  enable Boolean @default(true)
 }

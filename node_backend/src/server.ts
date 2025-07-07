@@ -11,6 +11,7 @@ import skillRequirementRoutes from './routes/skill-requirement.routes';
 import cvDataRoutes from './routes/cvdata.routes';
 import skillTrainingRoutes from './routes/skill-training.routes';
 import authRoutes from './routes/auth.routes';
+import assetRoutes from './routes/asset.routes';
 import { authenticateJWT, authorizeRoles } from './middlewares/auth.middleware';
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/api/skill-requirements', skillRequirementRoutes);
 app.use('/api/cvdata', cvDataRoutes);
 app.use('/api/skill-trainings', skillTrainingRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/assets', assetRoutes);
 
 // Esempio di protezione route:
 // app.use('/api/admin', authenticateJWT, authorizeRoles('Admin'), adminRoutes);

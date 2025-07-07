@@ -422,6 +422,15 @@ const routes: Array<RouteRecordRaw> = [
           breadcrumbs: ["Home", "Projects"],
         },
       },
+      {
+        path: '/asset-types',
+        name: 'AssetTypeList',
+        component: () => import('@/views/AssetTypeList.vue'),
+        meta: {
+          pageTitle: 'Asset Types',
+          breadcrumbs: ['Home', 'Asset Types'],
+        },
+      },
       //end new views
     ],
   },

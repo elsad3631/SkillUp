@@ -21,12 +21,10 @@
     <!--begin::Content-->
     <div id="kt_account_profile_details" class="collapse show">
       <!--begin::Form-->
-      <VForm
+      <form
         id="kt_account_profile_details_form"
         class="form"
-        novalidate
-        @submit="saveChanges1()"
-        :validation-schema="profileDetailsValidator"
+        @submit.prevent="saveChanges1()"
       >
         <!--begin::Card body-->
         <div class="card-body border-top p-9">
@@ -99,18 +97,13 @@
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label required fw-semobold fs-6">First Name</label>
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="text"
                 name="firstName"
                 class="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
                 placeholder="First name"
                 v-model="profileDetails.firstName"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="firstName" />
-                </div>
-              </div>
             </div>
           </div>
           <!--end::Input group-->
@@ -118,18 +111,13 @@
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label required fw-semobold fs-6">Last Name</label>
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="text"
                 name="lastName"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Last name"
                 v-model="profileDetails.lastName"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="lastName" />
-                </div>
-              </div>
             </div>
           </div>
           <!--end::Input group-->
@@ -144,18 +132,13 @@
 
             <!--begin::Col-->
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="text"
                 name="department"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Department"
                 v-model="profileDetails.department"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="department" />
-                </div>
-              </div>
             </div>
             <!--end::Col-->
           </div>
@@ -164,18 +147,13 @@
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label fw-semobold fs-6">Contact Phone</label>
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="tel"
                 name="phone"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Phone number"
                 v-model="profileDetails.phone"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="phone" />
-                </div>
-              </div>
             </div>
           </div>
           <!--end::Input group-->
@@ -183,18 +161,13 @@
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label fw-semobold fs-6">Current Role</label>
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="text"
                 name="currentRole"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Current role"
                 v-model="profileDetails.currentRole"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="currentRole" />
-                </div>
-              </div>
             </div>
           </div>
           <!--end::Input group-->
@@ -202,7 +175,7 @@
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label fw-semobold fs-6">Available for assignments</label>
             <div class="col-lg-8 fv-row d-flex align-items-center">
-              <Field
+              <input
                 type="checkbox"
                 name="isAvailable"
                 class="form-check-input me-2"
@@ -282,102 +255,71 @@
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label required fw-semobold fs-6">Email</label>
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="email"
                 name="email"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Email address"
                 v-model="profileDetails.email"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="email" />
-                </div>
-              </div>
             </div>
           </div>
           <!-- Date of Birth & Place of Birth -->
           <div class="row mb-6">
             <div class="col-lg-6">
               <label class="col-form-label fw-semobold fs-6">Date of Birth</label>
-              <Field
+              <input
                 type="date"
                 name="dateOfBirth"
                 class="form-control form-control-lg form-control-solid"
                 v-model="profileDetails.dateOfBirth"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="dateOfBirth" />
-                </div>
-              </div>
             </div>
             <div class="col-lg-6">
               <label class="col-form-label fw-semobold fs-6">Place of Birth</label>
-              <Field
+              <input
                 type="text"
                 name="placeOfBirth"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Place of birth"
                 v-model="profileDetails.placeOfBirth"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="placeOfBirth" />
-                </div>
-              </div>
             </div>
           </div>
           <!-- Address -->
           <div class="row mb-6">
             <label class="col-lg-4 col-form-label fw-semobold fs-6">Address</label>
             <div class="col-lg-8 fv-row">
-              <Field
-                as="textarea"
+              <textarea
                 name="address"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Address"
                 rows="2"
                 v-model="profileDetails.address"
-              />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="address" />
-                </div>
-              </div>
+              ></textarea>
             </div>
           </div>
           <!-- CV Data -->
           <div class="row mb-6">
             <div class="col-lg-6">
               <label class="col-form-label fw-semobold fs-6">CV File Name</label>
-              <Field
+              <input
                 type="text"
                 name="cvData.fileName"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="e.g. john_doe_cv.pdf"
                 v-model="profileDetails.cvData.fileName"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="cvData.fileName" />
-                </div>
-              </div>
             </div>
             <div class="col-lg-6">
               <label class="col-form-label fw-semobold fs-6">CV URL</label>
-              <Field
+              <input
                 type="url"
                 name="cvData.storageUrl"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="https://example.com/cv.pdf"
                 v-model="profileDetails.cvData.storageUrl"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="cvData.storageUrl" />
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -408,1049 +350,15 @@
           </button>
         </div>
         <!--end::Actions-->
-      </VForm>
+      </form>
       <!--end::Form-->
     </div>
     <!--end::Content-->
   </div>
   <!--end::Basic info-->
 
-  <!--begin::Sign-in Method-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_signin_method"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bolder m-0">Sign-in Method</h3>
-      </div>
-    </div>
-    <!--end::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_signin_method" class="collapse show">
-      <!--begin::Card body-->
-      <div class="card-body border-top p-9">
-        <!--begin::Email Address-->
-        <div class="d-flex flex-wrap align-items-center mb-8">
-          <div id="kt_signin_email" :class="{ 'd-none': emailFormDisplay }">
-            <div class="fs-4 fw-bolder mb-1">Email Address</div>
-            <div class="fs-6 fw-semobold text-gray-600">
-              support@keenthemes.com
-            </div>
-          </div>
-
-          <div
-            id="kt_signin_email_edit"
-            :class="{ 'd-none': !emailFormDisplay }"
-            class="flex-row-fluid"
-          >
-            <!--begin::Form-->
-            <VForm
-              id="kt_signin_change_email"
-              class="form"
-              novalidate
-              @submit="updateEmail()"
-              :validation-schema="changeEmail"
-            >
-              <div class="row mb-6">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="emailaddress"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Enter New Email Address</label
-                    >
-                    <Field
-                      type="email"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      id="emailaddress"
-                      placeholder="Email Address"
-                      name="emailaddress"
-                      value="support@keenthemes.com"
-                    />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="emailaddress" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="confirmemailpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Confirm Password</label
-                    >
-                    <Field
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="confirmemailpassword"
-                      id="confirmemailpassword"
-                    />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="confirmemailpassword" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex">
-                <button
-                  id="kt_signin_submit"
-                  type="submit"
-                  ref="updateEmailButton"
-                  class="btn btn-primary me-2 px-6"
-                >
-                  <span class="indicator-label"> Update Email </span>
-                  <span class="indicator-progress">
-                    Please wait...
-                    <span
-                      class="spinner-border spinner-border-sm align-middle ms-2"
-                    ></span>
-                  </span>
-                </button>
-                <button
-                  id="kt_signin_cancel"
-                  type="button"
-                  class="btn btn-color-gray-400 btn-active-light-primary px-6"
-                  @click="emailFormDisplay = !emailFormDisplay"
-                >
-                  Cancel
-                </button>
-              </div>
-            </VForm>
-            <!--end::Form-->
-          </div>
-          <div
-            id="kt_signin_email_button"
-            :class="{ 'd-none': emailFormDisplay }"
-            class="ms-auto"
-          >
-            <button
-              class="btn btn-light fw-bolder px-6"
-              @click="emailFormDisplay = !emailFormDisplay"
-            >
-              Change Email
-            </button>
-          </div>
-        </div>
-        <!--end::Email Address-->
-
-        <!--begin::Password-->
-        <div class="d-flex flex-wrap align-items-center mb-8">
-          <div
-            id="kt_signin_password"
-            :class="{ 'd-none': passwordFormDisplay }"
-          >
-            <div class="fs-4 fw-bolder mb-1">Password</div>
-            <div class="fs-6 fw-semobold text-gray-600">************</div>
-          </div>
-          <div
-            id="kt_signin_password_edit"
-            class="flex-row-fluid"
-            :class="{ 'd-none': !passwordFormDisplay }"
-          >
-            <div class="fs-6 fw-semobold text-gray-600 mb-4">
-              Password must be at least 8 character and contain symbols
-            </div>
-
-            <!--begin::Form-->
-            <VForm
-              id="kt_signin_change_password"
-              class="form"
-              novalidate
-              @submit="updatePassword()"
-              :validation-schema="changePassword"
-            >
-              <div class="row mb-6">
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="currentpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Current Password</label
-                    >
-                    <Field
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="currentpassword"
-                      id="currentpassword"
-                    />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="currentpassword" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="newpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >New Password</label
-                    >
-                    <Field
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="newpassword"
-                      id="newpassword"
-                    />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="newpassword" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="confirmpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Confirm New Password</label
-                    >
-                    <Field
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="confirmpassword"
-                      id="confirmpassword"
-                    />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="confirmpassword" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex">
-                <button
-                  id="kt_password_submit"
-                  type="submit"
-                  ref="updatePasswordButton"
-                  class="btn btn-primary me-2 px-6"
-                >
-                  <span class="indicator-label"> Update Password </span>
-                  <span class="indicator-progress">
-                    Please wait...
-                    <span
-                      class="spinner-border spinner-border-sm align-middle ms-2"
-                    ></span>
-                  </span>
-                </button>
-                <button
-                  id="kt_password_cancel"
-                  type="button"
-                  @click="passwordFormDisplay = !passwordFormDisplay"
-                  class="btn btn-color-gray-400 btn-active-light-primary px-6"
-                >
-                  Cancel
-                </button>
-              </div>
-            </VForm>
-            <!--end::Form-->
-          </div>
-          <div
-            id="kt_signin_password_button"
-            class="ms-auto"
-            :class="{ 'd-none': passwordFormDisplay }"
-          >
-            <button
-              @click="passwordFormDisplay = !passwordFormDisplay"
-              class="btn btn-light fw-bolder"
-            >
-              Reset Password
-            </button>
-          </div>
-        </div>
-        <!--end::Password-->
-      </div>
-      <!--end::Card body-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Sign-in Method-->
-
-  <!--begin::Connected Accounts-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_connected_accounts"
-      aria-expanded="true"
-      aria-controls="kt_account_connected_accounts"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Connected Accounts</h3>
-      </div>
-    </div>
-    <!--end::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_connected_accounts" class="collapse show">
-      <!--begin::Card body-->
-      <div class="card-body border-top p-9">
-        <div
-          class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6"
-        >
-          <KTIcon
-            icon-name="design-frame"
-            icon-class="fs-2tx text-primary me-4"
-          />
-
-          <!--begin::Wrapper-->
-          <div class="d-flex flex-stack flex-grow-1">
-            <!--begin::Content-->
-            <div class="fw-semobold">
-              <div class="fs-6 text-gray-600">
-                Two-factor authentication adds an extra layer of security to
-                your account. To log in, in you'll need to provide a 4 digit
-                amazing code. <a href="#" class="fw-bold">Learn More</a>
-              </div>
-            </div>
-            <!--end::Content-->
-          </div>
-          <!--end::Wrapper-->
-        </div>
-
-        <!--begin::Items-->
-        <div class="py-2">
-          <!--begin::Item-->
-          <div class="d-flex flex-stack">
-            <div class="d-flex">
-              <img
-                :src="getAssetPath('media/svg/brand-logos/google-icon.svg')"
-                class="w-30px me-6"
-                alt=""
-              />
-
-              <div class="d-flex flex-column">
-                <a href="#" class="fs-5 text-dark text-hover-primary fw-bold"
-                  >Google</a
-                >
-                <div class="fs-6 fw-semobold text-gray-400">
-                  Plan properly your workflow
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-end">
-              <div class="form-check form-check-solid form-switch">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="googleswitch"
-                  checked
-                />
-                <label class="form-check-label" for="googleswitch"></label>
-              </div>
-            </div>
-          </div>
-          <!--end::Item-->
-
-          <div class="separator separator-dashed my-5"></div>
-
-          <!--begin::Item-->
-          <div class="d-flex flex-stack">
-            <div class="d-flex">
-              <img
-                :src="getAssetPath('media/svg/brand-logos/github.svg')"
-                class="w-30px me-6"
-                alt=""
-              />
-
-              <div class="d-flex flex-column">
-                <a href="#" class="fs-5 text-dark text-hover-primary fw-bold"
-                  >Github</a
-                >
-                <div class="fs-6 fw-semobold text-gray-400">
-                  Keep eye on on your Repositories
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-end">
-              <div class="form-check form-check-solid form-switch">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="githubswitch"
-                  checked
-                />
-                <label class="form-check-label" for="githubswitch"></label>
-              </div>
-            </div>
-          </div>
-          <!--end::Item-->
-
-          <div class="separator separator-dashed my-5"></div>
-
-          <!--begin::Item-->
-          <div class="d-flex flex-stack">
-            <div class="d-flex">
-              <img
-                :src="getAssetPath('media/svg/brand-logos/slack-icon.svg')"
-                class="w-30px me-6"
-                alt=""
-              />
-
-              <div class="d-flex flex-column">
-                <a href="#" class="fs-5 text-dark text-hover-primary fw-bold"
-                  >Slack</a
-                >
-                <div class="fs-6 fw-semobold text-gray-400">
-                  Integrate Projects Discussions
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-end">
-              <div class="form-check form-check-solid form-switch">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="slackswitch"
-                />
-                <label class="form-check-label" for="slackswitch"></label>
-              </div>
-            </div>
-          </div>
-          <!--end::Item-->
-        </div>
-        <!--end::Items-->
-      </div>
-      <!--end::Card body-->
-
-      <!--begin::Card footer-->
-      <div class="card-footer d-flex justify-content-end py-6 px-9">
-        <button class="btn btn-light btn-active-light-primary me-2">
-          Discard
-        </button>
-        <button
-          ref="submitButton2"
-          class="btn btn-primary"
-          @click="saveChanges2()"
-        >
-          <span class="indicator-label"> Save Changes </span>
-          <span class="indicator-progress">
-            Please wait...
-            <span
-              class="spinner-border spinner-border-sm align-middle ms-2"
-            ></span>
-          </span>
-        </button>
-      </div>
-      <!--end::Card footer-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Connected Accounts-->
-
-  <!--begin::Notifications-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_email_preferences"
-      aria-expanded="true"
-      aria-controls="kt_account_email_preferences"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Email Preferences</h3>
-      </div>
-    </div>
-    <!--begin::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_email_preferences" class="collapse show">
-      <!--begin::Form-->
-      <form class="form" @submit.prevent="saveChanges3()">
-        <!--begin::Card body-->
-        <div class="card-body border-top px-9 py-9">
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Successful Payments</span>
-              <span class="text-muted fs-6"
-                >Receive a notification for every successful payment.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              checked
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Payouts</span>
-              <span class="text-muted fs-6"
-                >Receive a notification for every initiated payout.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Fee Collection</span>
-              <span class="text-muted fs-6"
-                >Receive a notification each time you collect a fee from
-                sales</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              checked
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Customer Payment Dispute</span>
-              <span class="text-muted fs-6"
-                >Receive a notification if a payment is disputed by a customer
-                and for dispute purposes.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Refund Alerts</span>
-              <span class="text-muted fs-6"
-                >Receive a notification if a payment is stated as risk by the
-                Finance Department.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              checked
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Invoice Payments</span>
-              <span class="text-muted fs-6"
-                >Receive a notification if a customer sends an incorrect amount
-                to pay their invoice.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Webhook API Endpoints</span>
-              <span class="text-muted fs-6"
-                >Receive notifications for consistently failing webhook API
-                endpoints.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-        </div>
-        <!--end::Card body-->
-
-        <!--begin::Card footer-->
-        <div class="card-footer d-flex justify-content-end py-6 px-9">
-          <button class="btn btn-light btn-active-light-primary me-2">
-            Discard
-          </button>
-          <button
-            ref="submitButton3"
-            type="submit"
-            class="btn btn-primary px-6"
-          >
-            <span class="indicator-label"> Save Changes </span>
-            <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
-            </span>
-          </button>
-        </div>
-        <!--end::Card footer-->
-      </form>
-      <!--end::Form-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Notifications-->
-
-  <!--begin::Notifications-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_notifications"
-      aria-expanded="true"
-      aria-controls="kt_account_notifications"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Notifications</h3>
-      </div>
-    </div>
-    <!--begin::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_notifications" class="collapse show">
-      <!--begin::Form-->
-      <form class="form" @submit.prevent="saveChanges4()">
-        <!--begin::Card body-->
-        <div class="card-body border-top px-9 pt-3 pb-4">
-          <!--begin::Table-->
-          <div class="table-responsive">
-            <table
-              class="table table-row-dashed border-gray-300 align-middle gy-6"
-            >
-              <tbody class="fs-6 fw-semobold">
-                <!--begin::Table row-->
-                <tr>
-                  <td class="min-w-250px fs-4 fw-bold">Notifications</td>
-                  <td class="w-125px">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="kt_settings_notification_email"
-                        checked
-                        data-kt-check="true"
-                        data-kt-check-target="[data-kt-settings-notification=email]"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="kt_settings_notification_email"
-                      >
-                        Email
-                      </label>
-                    </div>
-                  </td>
-                  <td class="w-125px">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="kt_settings_notification_phone"
-                        checked
-                        data-kt-check="true"
-                        data-kt-check-target="[data-kt-settings-notification=phone]"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="kt_settings_notification_phone"
-                      >
-                        Phone
-                      </label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td>Billing Updates</td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value="1"
-                        id="billing1"
-                        checked
-                        data-kt-settings-notification="email"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="billing1"
-                      ></label>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="billing2"
-                        checked
-                        data-kt-settings-notification="phone"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="billing2"
-                      ></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td>New Team Members</td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="team1"
-                        checked
-                        data-kt-settings-notification="email"
-                      />
-                      <label class="form-check-label ps-2" for="team1"></label>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="team2"
-                        data-kt-settings-notification="phone"
-                      />
-                      <label class="form-check-label ps-2" for="team2"></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td>Completed Projects</td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="project1"
-                        data-kt-settings-notification="email"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="project1"
-                      ></label>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="project2"
-                        checked
-                        data-kt-settings-notification="phone"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="project2"
-                      ></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td class="border-bottom-0">Newsletters</td>
-                  <td class="border-bottom-0">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="newsletter1"
-                        data-kt-settings-notification="email"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="newsletter1"
-                      ></label>
-                    </div>
-                  </td>
-                  <td class="border-bottom-0">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="newsletter2"
-                        data-kt-settings-notification="phone"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="newsletter2"
-                      ></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-              </tbody>
-            </table>
-          </div>
-          <!--end::Table-->
-        </div>
-        <!--end::Card body-->
-
-        <!--begin::Card footer-->
-        <div class="card-footer d-flex justify-content-end py-6 px-9">
-          <button class="btn btn-light btn-active-light-primary me-2">
-            Discard
-          </button>
-          <button
-            ref="submitButton4"
-            type="submit"
-            class="btn btn-primary px-6"
-          >
-            <span class="indicator-label"> Save Changes </span>
-            <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
-            </span>
-          </button>
-        </div>
-        <!--end::Card footer-->
-      </form>
-      <!--end::Form-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Notifications-->
-
-  <!--begin::Deactivate Account-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_deactivate"
-      aria-expanded="true"
-      aria-controls="kt_account_deactivate"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bolder m-0">Deactivate Account</h3>
-      </div>
-    </div>
-    <!--end::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_deactivate" class="collapse show">
-      <!--begin::Form-->
-      <form
-        id="kt_account_deactivate_form"
-        class="form"
-        @submit.prevent="deactivateAccount()"
-      >
-        <!--begin::Card body-->
-        <div class="card-body border-top p-9">
-          <div
-            class="notice d-flex bg-light-warning rounded border-warning border border-dashed mb-9 p-6"
-          >
-            <KTIcon
-              icon-name="information-5"
-              icon-class="fs-2tx text-warning me-4"
-            />
-            <!--begin::Wrapper-->
-            <div class="d-flex flex-stack flex-grow-1">
-              <!--begin::Content-->
-              <div class="fw-semobold">
-                <h4 class="text-gray-800 fw-bold">
-                  You Are Deactivating Your Account
-                </h4>
-
-                <div class="fs-6 text-gray-600">
-                  For extra security, this requires you to confirm your email or
-                  phone number when you reset yousignr password. <br /><a
-                    class="fw-bold"
-                    href="#"
-                    >Learn more</a
-                  >
-                </div>
-              </div>
-              <!--end::Content-->
-            </div>
-            <!--end::Wrapper-->
-          </div>
-
-          <!--begin::Form input row-->
-          <div class="form-check form-check-solid fv-row">
-            <input
-              name="deactivate"
-              class="form-check-input"
-              type="checkbox"
-              value=""
-              id="deactivate"
-            />
-            <label
-              class="form-check-label fw-semobold ps-2 fs-6"
-              for="deactivate"
-              >Confirm Account Deactivation</label
-            >
-          </div>
-          <!--end::Form input row-->
-        </div>
-        <!--end::Card body-->
-
-        <!--begin::Card footer-->
-        <div class="card-footer d-flex justify-content-end py-6 px-9">
-          <button
-            id="kt_account_deactivate_account_submit"
-            ref="submitButton5"
-            type="submit"
-            class="btn btn-danger fw-semobold"
-          >
-            <span class="indicator-label"> Deactivate Account </span>
-            <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
-            </span>
-          </button>
-        </div>
-        <!--end::Card footer-->
-      </form>
-      <!--end::Form-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Deactivate Account-->
-
-  <!-- Sezione Skills -->
-  <div class="card mb-6">
+   <!-- Sezione Skills -->
+   <div class="card mb-6">
     <div class="card-header">
       <h3 class="card-title">Skills</h3>
       <div class="card-toolbar">
@@ -1614,12 +522,353 @@
       </div>
     </div>
   </div>
+
+  <!--begin::Sign-in Method-->
+  <div class="card mb-5 mb-xl-10">
+    <!--begin::Card header-->
+    <div
+      class="card-header border-0 cursor-pointer"
+      role="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#kt_account_signin_method"
+    >
+      <div class="card-title m-0">
+        <h3 class="fw-bolder m-0">Sign-in Method</h3>
+      </div>
+    </div>
+    <!--end::Card header-->
+
+    <!--begin::Content-->
+    <div id="kt_account_signin_method" class="collapse show">
+      <!--begin::Card body-->
+      <div class="card-body border-top p-9">
+        <!--begin::Email Address-->
+        <div class="d-flex flex-wrap align-items-center mb-8">
+          <div id="kt_signin_email" :class="{ 'd-none': emailFormDisplay }">
+            <div class="fs-4 fw-bolder mb-1">Email Address</div>
+            <div class="fs-6 fw-semobold text-gray-600">
+              support@keenthemes.com
+            </div>
+          </div>
+
+          <div
+            id="kt_signin_email_edit"
+            :class="{ 'd-none': !emailFormDisplay }"
+            class="flex-row-fluid"
+          >
+            <!--begin::Form-->
+            <form
+              id="kt_signin_change_email"
+              class="form"
+              novalidate
+              @submit="updateEmail()"
+            >
+              <div class="row mb-6">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                  <div class="fv-row mb-0">
+                    <label
+                      for="emailaddress"
+                      class="form-label fs-6 fw-bold mb-3"
+                      >Enter New Email Address</label
+                    >
+                    <input
+                      type="email"
+                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
+                      id="emailaddress"
+                      placeholder="Email Address"
+                      name="emailaddress"
+                      value="support@keenthemes.com"
+                    />
+                    
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="fv-row mb-0">
+                    <label
+                      for="confirmemailpassword"
+                      class="form-label fs-6 fw-bold mb-3"
+                      >Confirm Password</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
+                      name="confirmemailpassword"
+                      id="confirmemailpassword"
+                    />
+                    
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex">
+                <button
+                  id="kt_signin_submit"
+                  type="submit"
+                  ref="updateEmailButton"
+                  class="btn btn-primary me-2 px-6"
+                >
+                  <span class="indicator-label"> Update Email </span>
+                  <span class="indicator-progress">
+                    Please wait...
+                    <span
+                      class="spinner-border spinner-border-sm align-middle ms-2"
+                    ></span>
+                  </span>
+                </button>
+                <button
+                  id="kt_signin_cancel"
+                  type="button"
+                  class="btn btn-color-gray-400 btn-active-light-primary px-6"
+                  @click="emailFormDisplay = !emailFormDisplay"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+            <!--end::Form-->
+          </div>
+          <div
+            id="kt_signin_email_button"
+            :class="{ 'd-none': emailFormDisplay }"
+            class="ms-auto"
+          >
+            <button
+              class="btn btn-light fw-bolder px-6"
+              @click="emailFormDisplay = !emailFormDisplay"
+            >
+              Change Email
+            </button>
+          </div>
+        </div>
+        <!--end::Email Address-->
+
+        <!--begin::Password-->
+        <div class="d-flex flex-wrap align-items-center mb-8">
+          <div
+            id="kt_signin_password"
+            :class="{ 'd-none': passwordFormDisplay }"
+          >
+            <div class="fs-4 fw-bolder mb-1">Password</div>
+            <div class="fs-6 fw-semobold text-gray-600">************</div>
+          </div>
+          <div
+            id="kt_signin_password_edit"
+            class="flex-row-fluid"
+            :class="{ 'd-none': !passwordFormDisplay }"
+          >
+            <div class="fs-6 fw-semobold text-gray-600 mb-4">
+              Password must be at least 8 character and contain symbols
+            </div>
+
+            <!--begin::Form-->
+            <form
+              id="kt_signin_change_password"
+              class="form"
+              novalidate
+              @submit="updatePassword()"
+            >
+              <div class="row mb-6">
+                <div class="col-lg-4">
+                  <div class="fv-row mb-0">
+                    <label
+                      for="currentpassword"
+                      class="form-label fs-6 fw-bold mb-3"
+                      >Current Password</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
+                      name="currentpassword"
+                      id="currentpassword"
+                    />
+                    
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="fv-row mb-0">
+                    <label
+                      for="newpassword"
+                      class="form-label fs-6 fw-bold mb-3"
+                      >New Password</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
+                      name="newpassword"
+                      id="newpassword"
+                    />
+                    
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="fv-row mb-0">
+                    <label
+                      for="confirmpassword"
+                      class="form-label fs-6 fw-bold mb-3"
+                      >Confirm New Password</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
+                      name="confirmpassword"
+                      id="confirmpassword"
+                    />
+                    
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex">
+                <button
+                  id="kt_password_submit"
+                  type="submit"
+                  ref="updatePasswordButton"
+                  class="btn btn-primary me-2 px-6"
+                >
+                  <span class="indicator-label"> Update Password </span>
+                  <span class="indicator-progress">
+                    Please wait...
+                    <span
+                      class="spinner-border spinner-border-sm align-middle ms-2"
+                    ></span>
+                  </span>
+                </button>
+                <button
+                  id="kt_password_cancel"
+                  type="button"
+                  @click="passwordFormDisplay = !passwordFormDisplay"
+                  class="btn btn-color-gray-400 btn-active-light-primary px-6"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+            <!--end::Form-->
+          </div>
+          <div
+            id="kt_signin_password_button"
+            class="ms-auto"
+            :class="{ 'd-none': passwordFormDisplay }"
+          >
+            <button
+              @click="passwordFormDisplay = !passwordFormDisplay"
+              class="btn btn-light fw-bolder"
+            >
+              Reset Password
+            </button>
+          </div>
+        </div>
+        <!--end::Password-->
+      </div>
+      <!--end::Card body-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Sign-in Method-->
+
+  <!--begin::Deactivate Account-->
+  <div class="card mb-5 mb-xl-10">
+    <!--begin::Card header-->
+    <div
+      class="card-header border-0 cursor-pointer"
+      role="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#kt_account_deactivate"
+      aria-expanded="true"
+      aria-controls="kt_account_deactivate"
+    >
+      <div class="card-title m-0">
+        <h3 class="fw-bolder m-0">Deactivate Account</h3>
+      </div>
+    </div>
+    <!--end::Card header-->
+
+    <!--begin::Content-->
+    <div id="kt_account_deactivate" class="collapse show">
+      <!--begin::Form-->
+      <form
+        id="kt_account_deactivate_form"
+        class="form"
+        @submit.prevent="deactivateAccount()"
+      >
+        <!--begin::Card body-->
+        <div class="card-body border-top p-9">
+          <div
+            class="notice d-flex bg-light-warning rounded border-warning border border-dashed mb-9 p-6"
+          >
+            <KTIcon
+              icon-name="information-5"
+              icon-class="fs-2tx text-warning me-4"
+            />
+            <!--begin::Wrapper-->
+            <div class="d-flex flex-stack flex-grow-1">
+              <!--begin::Content-->
+              <div class="fw-semobold">
+                <h4 class="text-gray-800 fw-bold">
+                  You Are Deactivating Your Account
+                </h4>
+
+                <div class="fs-6 text-gray-600">
+                  For extra security, this requires you to confirm your email or
+                  phone number when you reset yousignr password. <br /><a
+                    class="fw-bold"
+                    href="#"
+                    >Learn more</a
+                  >
+                </div>
+              </div>
+              <!--end::Content-->
+            </div>
+            <!--end::Wrapper-->
+          </div>
+
+          <!--begin::Form input row-->
+          <div class="form-check form-check-solid fv-row">
+            <input
+              name="deactivate"
+              class="form-check-input"
+              type="checkbox"
+              value=""
+              id="deactivate"
+            />
+            <label
+              class="form-check-label fw-semobold ps-2 fs-6"
+              for="deactivate"
+              >Confirm Account Deactivation</label
+            >
+          </div>
+          <!--end::Form input row-->
+        </div>
+        <!--end::Card body-->
+
+        <!--begin::Card footer-->
+        <div class="card-footer d-flex justify-content-end py-6 px-9">
+          <button
+            id="kt_account_deactivate_account_submit"
+            ref="submitButton5"
+            type="submit"
+            class="btn btn-danger fw-semobold"
+          >
+            <span class="indicator-label"> Deactivate Account </span>
+            <span class="indicator-progress">
+              Please wait...
+              <span
+                class="spinner-border spinner-border-sm align-middle ms-2"
+              ></span>
+            </span>
+          </button>
+        </div>
+        <!--end::Card footer-->
+      </form>
+      <!--end::Form-->
+    </div>
+    <!--end::Content-->
+  </div>
+  <!--end::Deactivate Account-->
+
 </template>
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
 import { defineComponent, ref, inject, watch, onMounted } from "vue";
-import { ErrorMessage, Field, Form as VForm } from "vee-validate";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import * as Yup from "yup";
 import ApiService from "@/core/services/ApiService";
@@ -1628,6 +877,7 @@ import { getEmployee, updateEmployee } from "@/core/services/businessServices/Em
 import { useRoute } from "vue-router";
 import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
+import type { Employee } from "@/core/models/Employee";
 
 interface CvData {
   fileName: string;
@@ -1656,9 +906,6 @@ interface ProfileDetails {
 export default defineComponent({
   name: "account-settings",
   components: {
-    ErrorMessage,
-    Field,
-    VForm,
   },
   setup() {
     const route = useRoute();
@@ -1672,33 +919,6 @@ export default defineComponent({
 
     const emailFormDisplay = ref(false);
     const passwordFormDisplay = ref(false);
-
-    const profileDetailsValidator = Yup.object().shape({
-      fname: Yup.string().required().label("First name"),
-      lname: Yup.string().required().label("Last name"),
-      company: Yup.string().required().label("Company"),
-      phone: Yup.string().required().label("Contact phone"),
-      website: Yup.string().label("Webside"),
-      country: Yup.string().required().label("Country"),
-      language: Yup.string().required().label("Language"),
-      timezone: Yup.string().required().label("Timezone"),
-      currency: Yup.string().required().label("Currency"),
-    });
-
-    const changeEmail = Yup.object().shape({
-      emailaddress: Yup.string().required().email().label("Email"),
-      confirmemailpassword: Yup.string().required().label("Password"),
-    });
-
-    const changePassword = Yup.object().shape({
-      currentpassword: Yup.string().required().label("Current password"),
-      newpassword: Yup.string().min(4).required().label("Password"),
-      confirmpassword: Yup.string()
-        .min(4)
-        .required()
-        .oneOf([Yup.ref("newpassword")], "Passwords must match")
-        .label("Password Confirmation"),
-    });
 
     const employee = inject<any>('employee');
     const refreshEmployee = inject<any>('refreshEmployee');
@@ -1724,41 +944,93 @@ export default defineComponent({
       if (val) {
         profileDetails.value = {
           ...profileDetails.value,
-          ...val,
           avatar: val.avatar || '',
-          firstName: val.firstName || '',
-          lastName: val.lastName || '',
+          firstName: val.first_name || val.firstName || '',
+          lastName: val.last_name || val.lastName || '',
           email: val.email || '',
-          dateOfBirth: val.dateOfBirth || '',
-          placeOfBirth: val.placeOfBirth || '',
+          dateOfBirth: val.date_of_birth ? new Date(val.date_of_birth).toISOString().split('T')[0] : (val.dateOfBirth ? new Date(val.dateOfBirth).toISOString().split('T')[0] : ''),
+          placeOfBirth: val.place_of_birth || val.placeOfBirth || '',
           address: val.address || '',
           phone: val.phone || '',
-          currentRole: val.currentRole || '',
+          currentRole: val.current_role || val.currentRole || '',
           department: val.department || '',
-          isAvailable: val.isAvailable ?? false,
-          cvData: val.cvData || {},
-          experiences: val.experiences || [],
-          hardSkills: val.hardSkills || [],
-          softSkills: val.softSkills || [],
+          isAvailable: val.is_available ?? val.isAvailable ?? false,
+          cvData: {
+            fileName: val.cvData?.file_name || val.cvData?.fileName || '',
+            storageUrl: val.cvData?.storage_url || val.cvData?.storageUrl || ''
+          },
+          experiences: val.experiences?.map(exp => ({
+            id: exp.id,
+            jobTitle: exp.job_title || exp.jobTitle || '',
+            companyName: exp.company_name || exp.companyName || '',
+            startDate: exp.start_date || exp.startDate || '',
+            endDate: exp.end_date || exp.endDate || '',
+            description: exp.description || '',
+            technologiesUsed: exp.technologies_used || exp.technologiesUsed || [],
+          })) || [],
+          hardSkills: val.hardSkills?.map(skill => ({
+            id: skill.id,
+            name: skill.name || '',
+            proficiencyLevel: skill.proficiency_level?.toString() || skill.proficiencyLevel?.toString() || '',
+            certification: skill.certification || '',
+          })) || [],
+          softSkills: val.softSkills?.map(skill => ({
+            id: skill.id,
+            name: skill.name || '',
+            proficiencyLevel: skill.proficiency_level?.toString() || skill.proficiencyLevel?.toString() || '',
+            certification: skill.certification || '',
+          })) || [],
         };
       }
     }, { immediate: true });
 
     const authStore = useAuthStore();
 
-    const saveChanges1 = () => {
+    const saveChanges1 = async () => {
       if (submitButton1.value) {
         // Activate indicator
         submitButton1.value.setAttribute("data-kt-indicator", "on");
-        // Salva avatar tramite API
-        if (route.params.id) {
-          ApiService.put(`users/${route.params.id}`, { avatar: profileDetails.value.avatar })
-            .then(async () => {
-              if (refreshEmployee) await refreshEmployee();
-              setTimeout(() => {
-                submitButton1.value?.removeAttribute("data-kt-indicator");
-              }, 2000);
+        
+        try {
+          if (route.params.id) {
+            // Preparo i dati da salvare
+            const employeeData: Partial<Employee> = {
+              first_name: profileDetails.value.firstName,
+              last_name: profileDetails.value.lastName,
+              email: profileDetails.value.email,
+              phone: profileDetails.value.phone,
+              date_of_birth: profileDetails.value.dateOfBirth ? new Date(profileDetails.value.dateOfBirth) : undefined,
+              place_of_birth: profileDetails.value.placeOfBirth,
+              address: profileDetails.value.address,
+              current_role: profileDetails.value.currentRole,
+              department: profileDetails.value.department,
+              is_available: profileDetails.value.isAvailable,
+              cv_data: profileDetails.value.cvData.fileName || profileDetails.value.cvData.storageUrl ? {
+                file_name: profileDetails.value.cvData.fileName,
+                storage_url: profileDetails.value.cvData.storageUrl,
+              } : undefined,
+            };
+
+            await updateEmployee(route.params.id as string, employeeData as Employee);
+            if (refreshEmployee) await refreshEmployee();
+            
+            Swal.fire({
+              icon: 'success',
+              title: 'Profile updated!',
+              text: 'Your profile has been updated successfully.'
             });
+          }
+        } catch (error) {
+          console.error("Error updating profile:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'There was an error updating your profile.'
+          });
+        } finally {
+          setTimeout(() => {
+            submitButton1.value?.removeAttribute("data-kt-indicator");
+          }, 1000);
         }
       }
     };
@@ -1873,53 +1145,113 @@ export default defineComponent({
       editingSoftSkillIndex.value = profileDetails.value.softSkills.length - 1;
     };
     const saveHardSkill = async (skill, index) => {
-      if (!profileDetails.value.hardSkills) profileDetails.value.hardSkills = [];
-      // Preparo solo i campi accettati dal backend
-      const dataToSend = {
-        name: skill.name,
-        proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
-        certification: skill.certification,
-        employeeHard: { connect: { id: route.params.id } },
-      };
-      if (skill.id) {
-        await updateSkill(skill.id, dataToSend);
-      } else {
-        const created = await createSkill(dataToSend);
-        if (created) profileDetails.value.hardSkills[index] = created;
+      try {
+        if (!profileDetails.value.hardSkills) profileDetails.value.hardSkills = [];
+        // Preparo solo i campi accettati dal backend
+        const dataToSend = {
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
+          certification: skill.certification,
+          employeeHard: { connect: { id: route.params.id } },
+        };
+        if (skill.id) {
+          await updateSkill(skill.id, dataToSend);
+        } else {
+          const created = await createSkill(dataToSend);
+          if (created) profileDetails.value.hardSkills[index] = created;
+        }
+        editingHardSkillIndex.value = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Hard skill saved!',
+          text: 'The skill has been saved successfully.'
+        });
+      } catch (error) {
+        console.error("Error saving hard skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error saving the skill.'
+        });
       }
-      editingHardSkillIndex.value = null;
     };
+    
     const editHardSkill = (index) => {
       editingHardSkillIndex.value = index;
     };
     const deleteHardSkill = async (skill, index) => {
-      if (skill.id) await deleteSkill(skill.id);
-      profileDetails.value.hardSkills?.splice(index, 1);
-    };
-    const saveSoftSkill = async (skill, index) => {
-      if (!profileDetails.value.softSkills) profileDetails.value.softSkills = [];
-      // Preparo solo i campi accettati dal backend
-      const dataToSend = {
-        name: skill.name,
-        proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
-        certification: skill.certification,
-        employeeSoft: { connect: { id: route.params.id } },
-      };
-      if (skill.id) {
-        await updateSkill(skill.id, dataToSend);
-      } else {
-        const created = await createSkill(dataToSend);
-        if (created) profileDetails.value.softSkills[index] = created;
+      try {
+        if (skill.id) await deleteSkill(skill.id);
+        profileDetails.value.hardSkills?.splice(index, 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Hard skill deleted!',
+          text: 'The skill has been deleted successfully.'
+        });
+      } catch (error) {
+        console.error("Error deleting hard skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error deleting the skill.'
+        });
       }
-      editingSoftSkillIndex.value = null;
     };
+
+    const saveSoftSkill = async (skill, index) => {
+      try {
+        if (!profileDetails.value.softSkills) profileDetails.value.softSkills = [];
+        // Preparo solo i campi accettati dal backend
+        const dataToSend = {
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
+          certification: skill.certification,
+          employeeSoft: { connect: { id: route.params.id } },
+        };
+        if (skill.id) {
+          await updateSkill(skill.id, dataToSend);
+        } else {
+          const created = await createSkill(dataToSend);
+          if (created) profileDetails.value.softSkills[index] = created;
+        }
+        editingSoftSkillIndex.value = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Soft skill saved!',
+          text: 'The skill has been saved successfully.'
+        });
+      } catch (error) {
+        console.error("Error saving soft skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error saving the skill.'
+        });
+      }
+    };
+    
     const editSoftSkill = (index) => {
       editingSoftSkillIndex.value = index;
     };
     const deleteSoftSkill = async (skill, index) => {
-      if (skill.id) await deleteSkill(skill.id);
-      profileDetails.value.softSkills?.splice(index, 1);
+      try {
+        if (skill.id) await deleteSkill(skill.id);
+        profileDetails.value.softSkills?.splice(index, 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Soft skill deleted!',
+          text: 'The skill has been deleted successfully.'
+        });
+      } catch (error) {
+        console.error("Error deleting soft skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error deleting the skill.'
+        });
+      }
     };
+
     // Experience
     const addExperience = () => {
       if (!profileDetails.value.experiences) profileDetails.value.experiences = [];
@@ -1927,24 +1259,53 @@ export default defineComponent({
       editingExperienceIndex.value = profileDetails.value.experiences.length - 1;
     };
     const saveExperience = async (exp, index) => {
-      if (!profileDetails.value.experiences) profileDetails.value.experiences = [];
-      if (typeof exp.technologiesUsed === 'string') {
-        exp.technologiesUsed = exp.technologiesUsed.split(',').map(s => s.trim()).filter(Boolean);
+      try {
+        if (!profileDetails.value.experiences) profileDetails.value.experiences = [];
+        if (typeof exp.technologiesUsed === 'string') {
+          exp.technologiesUsed = exp.technologiesUsed.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        if (exp.id) {
+          await updateExperience(exp.id, exp);
+        } else {
+          const created = await createExperience({ ...exp, employeeId: route.params.id });
+          if (created) profileDetails.value.experiences[index] = created;
+        }
+        editingExperienceIndex.value = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Experience saved!',
+          text: 'The experience has been saved successfully.'
+        });
+      } catch (error) {
+        console.error("Error saving experience:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error saving the experience.'
+        });
       }
-      if (exp.id) {
-        await updateExperience(exp.id, exp);
-      } else {
-        const created = await createExperience({ ...exp, employeeId: route.params.id });
-        if (created) profileDetails.value.experiences[index] = created;
-      }
-      editingExperienceIndex.value = null;
     };
+
     const editExperience = (index) => {
       editingExperienceIndex.value = index;
     };
     const deleteExperienceFn = async (exp, index) => {
-      if (exp.id) await deleteExperience(exp.id);
-      profileDetails.value.experiences?.splice(index, 1);
+      try {
+        if (exp.id) await deleteExperience(exp.id);
+        profileDetails.value.experiences?.splice(index, 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Experience deleted!',
+          text: 'The experience has been deleted successfully.'
+        });
+      } catch (error) {
+        console.error("Error deleting experience:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error deleting the experience.'
+        });
+      }
     };
 
     const editingHardSkillIndex = ref<number|null>(null);
@@ -1966,11 +1327,6 @@ export default defineComponent({
       emailFormDisplay,
       passwordFormDisplay,
       removeImage,
-      profileDetailsValidator,
-      changeEmail,
-      changePassword,
-      updateEmailButton,
-      updatePasswordButton,
       updateEmail,
       updatePassword,
       getAssetPath,

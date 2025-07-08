@@ -81,9 +81,9 @@
                 </template>
 
                 <template v-slot:actions="{ row: employee }">
-                    <button @click="openEditModal(employee)" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_employee" class="btn btn-sm btn-light-primary me-2">
+                    <router-link :to="`/employees/${employee.id}/overview`" class="btn btn-sm btn-light-primary me-2">
                         Details
-                    </button>
+                    </router-link>
                     <button @click="deleteSingleEmployee(employee.id)" class="btn btn-sm btn-danger">
                         Delete
                     </button>

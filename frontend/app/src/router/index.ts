@@ -414,6 +414,30 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/employees/:id",
+        component: () => import("@/views/employee/Account.vue"),
+        children: [
+          {
+            path: "overview",
+            name: "employee-overview",
+            component: () => import("@/views/employee/Overview.vue"),
+            meta: {
+              pageTitle: "Employee Overview",
+              breadcrumbs: ["Home", "Employees", "Overview"],
+            },
+          },
+          {
+            path: "settings",
+            name: "employee-settings",
+            component: () => import("@/views/employee/Settings.vue"),
+            meta: {
+              pageTitle: "Employee Settings",
+              breadcrumbs: ["Home", "Employees", "Settings"],
+            },
+          },
+        ],
+      },
+      {
         path: "/projects",
         name: "projects",
         component: () => import("@/views/project/List.vue"),

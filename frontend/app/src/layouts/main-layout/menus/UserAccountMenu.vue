@@ -16,13 +16,13 @@
         <!--begin::Username-->
         <div class="d-flex flex-column">
           <div class="fw-bold d-flex align-items-center fs-5">
-            Max Smith
+            {{ userDisplayName }}
             <span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2"
               >Pro</span
             >
           </div>
           <a href="#" class="fw-semobold text-muted text-hover-primary fs-7"
-            >max@kt.com</a
+            >{{ userEmail }}</a
           >
         </div>
         <!--end::Username-->
@@ -44,7 +44,7 @@
 
     <!--begin::Menu item-->
     <div class="menu-item px-5">
-      <router-link to="/pages/profile/overview" class="menu-link px-5">
+      <router-link to="/crafted/pages/profile/projects" class="menu-link px-5">
         <span class="menu-text">My Projects</span>
         <span class="menu-badge">
           <span class="badge badge-light-danger badge-circle fw-bold fs-7"
@@ -62,43 +62,40 @@
       data-kt-menu-placement="left-start"
       data-kt-menu-flip="center, top"
     >
-      <router-link to="/pages/profile/overview" class="menu-link px-5">
+      <a href="#" class="menu-link px-5">
         <span class="menu-title">My Subscription</span>
         <span class="menu-arrow"></span>
-      </router-link>
+      </a>
 
       <!--begin::Menu sub-->
       <div class="menu-sub menu-sub-dropdown w-175px py-4">
         <!--begin::Menu item-->
         <div class="menu-item px-3">
-          <router-link to="/pages/profile/overview" class="menu-link px-5">
-            Referrals
+          <router-link to="/apps/subscriptions/subscription-list" class="menu-link px-5">
+            Subscriptions
           </router-link>
         </div>
         <!--end::Menu item-->
 
         <!--begin::Menu item-->
         <div class="menu-item px-3">
-          <router-link to="/pages/profile/overview" class="menu-link px-5">
+          <a href="#" class="menu-link px-5">
             Billing
-          </router-link>
+          </a>
         </div>
         <!--end::Menu item-->
 
         <!--begin::Menu item-->
         <div class="menu-item px-3">
-          <router-link to="/pages/profile/overview" class="menu-link px-5">
+          <a href="#" class="menu-link px-5">
             Payments
-          </router-link>
+          </a>
         </div>
         <!--end::Menu item-->
 
         <!--begin::Menu item-->
         <div class="menu-item px-3">
-          <router-link
-            to="/pages/profile/overview"
-            class="menu-link d-flex flex-stack px-5"
-          >
+          <a href="#" class="menu-link d-flex flex-stack px-5">
             Statements
 
             <i
@@ -106,7 +103,7 @@
               data-bs-toggle="tooltip"
               title="View your statements"
             ></i>
-          </router-link>
+          </a>
         </div>
         <!--end::Menu item-->
 
@@ -141,8 +138,8 @@
 
     <!--begin::Menu item-->
     <div class="menu-item px-5">
-      <router-link to="/pages/profile/overview" class="menu-link px-5">
-        My Statements
+      <router-link to="/employees" class="menu-link px-5">
+        Employees
       </router-link>
     </div>
     <!--end::Menu item-->
@@ -158,7 +155,7 @@
       data-kt-menu-placement="left-start"
       data-kt-menu-flip="center, top"
     >
-      <router-link to="/pages/profile/overview" class="menu-link px-5">
+      <a href="#" class="menu-link px-5">
         <span class="menu-title position-relative">
           Language
           <span
@@ -172,7 +169,7 @@
             />
           </span>
         </span>
-      </router-link>
+      </a>
 
       <!--begin::Menu sub-->
       <div class="menu-sub menu-sub-dropdown w-175px py-4">
@@ -282,7 +279,7 @@
 
     <!--begin::Menu item-->
     <div class="menu-item px-5 my-1">
-      <router-link to="/crafted/account/Settings" class="menu-link px-5">
+      <router-link to="/crafted/account/settings" class="menu-link px-5">
         Account Settings
       </router-link>
     </div>
@@ -357,6 +354,21 @@ export default defineComponent({
       return countries[i18n.locale.value as keyof typeof countries];
     });
 
+    // Get user data from auth store
+    const userDisplayName = computed(() => {
+      const user = store.user;
+      if (user?.name && user?.surname) {
+        return `${user.name} ${user.surname}`;
+      } else if (user?.name) {
+        return user.name;
+      }
+      return "User";
+    });
+
+    const userEmail = computed(() => {
+      return store.user?.email || "user@example.com";
+    });
+
     return {
       signOut,
       setLang,
@@ -364,6 +376,8 @@ export default defineComponent({
       currentLangugeLocale,
       countries,
       getAssetPath,
+      userDisplayName,
+      userEmail,
     };
   },
 });

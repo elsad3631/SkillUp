@@ -873,7 +873,8 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 import * as Yup from "yup";
 import ApiService from "@/core/services/ApiService";
 import { useAuthStore } from "@/stores/auth";
-import { getEmployee, updateEmployee } from "@/core/services/businessServices/Employee";
+// Updated to use ApplicationUser API calls
+// import { getEmployee, updateEmployee } from "@/core/services/businessServices/Employee";
 import { useRoute } from "vue-router";
 import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
@@ -1011,7 +1012,17 @@ export default defineComponent({
               } : undefined,
             };
 
-            await updateEmployee(route.params.id as string, employeeData as Employee);
+            // Update ApplicationUser via API
+            const response = await fetch(`/api/applicationusers/${route.params.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(employeeData)
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to update user');
+            }
+            
             if (refreshEmployee) await refreshEmployee();
             
             Swal.fire({

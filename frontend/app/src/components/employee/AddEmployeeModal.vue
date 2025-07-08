@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered mw-900px">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Add New Employee</h2>
+          <h2>Add New User</h2>
           <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
             <KTIcon icon-name="cross" icon-class="fs-1" />
           </div>
@@ -11,10 +11,61 @@
 
         <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
           <form @submit.prevent="onSubmit" class="form">
+            <!-- Account Information -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h3 class="card-title">Account Information</h3>
+              </div>
+              <div class="card-body">
+                <div class="row mb-6">
+                  <div class="col-md-6">
+                    <label class="form-label required">Username</label>
+                    <input
+                      v-model="form.username"
+                      type="text"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label required">Email</label>
+                    <input
+                      v-model="form.email"
+                      type="email"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="row mb-6">
+                  <div class="col-md-6">
+                    <label class="form-label required">Password</label>
+                    <input
+                      v-model="form.password"
+                      type="password"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label required">Role</label>
+                    <select v-model="form.roles" class="form-select" multiple>
+                      <option value="employee">Employee</option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="hr">HR</option>
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple roles</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Basic Information -->
             <div class="card mb-6">
               <div class="card-header">
-                <h3 class="card-title">Basic Information</h3>
+                <h3 class="card-title">Personal Information</h3>
               </div>
               <div class="card-body">
                 <div class="row mb-6">
@@ -39,16 +90,7 @@
                 </div>
 
                 <div class="row mb-6">
-                  <div class="col-md-6">
-                    <label class="form-label required">Email</label>
-                    <input
-                      v-model="form.email"
-                      type="email"
-                      class="form-control"
-                      required
-                    />
-                  </div>
-                  <div class="col-md-6">
+                  <div class="col-md-12">
                     <label class="form-label">Phone</label>
                     <input
                       v-model="form.phone"
@@ -330,9 +372,12 @@ export default defineComponent({
     const loading = ref(false);
 
     const form = reactive({
+      username: "mario.rossi",
+      email: "mario.rossi@example.com",
+      password: "",
+      roles: ["employee"],
       firstName: "Mario",
       lastName: "Rossi",
-      email: "mario.rossi@example.com",
       phone: "+391234567890",
       dateOfBirth: "1990-01-01",
       placeOfBirth: "Roma",
@@ -453,34 +498,56 @@ export default defineComponent({
           storageUrl: form.cvData.storageUrl?.trim(),
         } : undefined;
 
-        // Costruisco l'oggetto employee con nomi camelCase e solo campi valorizzati
-        const employeeData: any = {
+        // Costruisco l'oggetto applicationUser con nomi camelCase e solo campi valorizzati
+        const applicationUserData: any = {
+          username: form.username?.trim(),
+          email: form.email?.trim(),
+          passwordHash: form.password, // In production, this should be hashed on server
+          roles: form.roles || ["employee"],
           firstName: form.firstName?.trim(),
           lastName: form.lastName?.trim(),
-          email: form.email?.trim(),
           isAvailable: form.isAvailable,
         };
-        if (form.phone) employeeData.phone = form.phone.trim();
-        if (form.dateOfBirth) employeeData.dateOfBirth = new Date(form.dateOfBirth);
-        if (form.placeOfBirth) employeeData.placeOfBirth = form.placeOfBirth.trim();
-        if (form.address) employeeData.address = form.address.trim();
-        if (form.currentRole) employeeData.currentRole = form.currentRole.trim();
-        if (form.department) employeeData.department = form.department.trim();
-        if (processedCvData) employeeData.cvData = processedCvData;
+        if (form.phone) applicationUserData.phone = form.phone.trim();
+        if (form.dateOfBirth) applicationUserData.dateOfBirth = new Date(form.dateOfBirth);
+        if (form.placeOfBirth) applicationUserData.placeOfBirth = form.placeOfBirth.trim();
+        if (form.address) applicationUserData.address = form.address.trim();
+        if (form.currentRole) applicationUserData.currentRole = form.currentRole.trim();
+        if (form.department) applicationUserData.department = form.department.trim();
+        if (processedHardSkills.length > 0) applicationUserData.hardSkills = processedHardSkills;
+        if (processedSoftSkills.length > 0) applicationUserData.softSkills = processedSoftSkills;
+        if (processedExperiences.length > 0) applicationUserData.experiences = processedExperiences;
+        if (processedCvData) applicationUserData.cvData = processedCvData;
 
-        const result = await createEmployee(employeeData);
-        emit("employee-created", result);
+        // Call ApplicationUser API
+        const response = await fetch('/api/applicationusers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(applicationUserData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create user');
+        }
+        
+        const result = await response.json();
+        emit("employee-created", result); // Keep same event name for compatibility
         Swal.fire({
           icon: 'success',
-          title: 'Employee created!',
-          text: 'The employee has been added successfully.'
+          title: 'User created!',
+          text: 'The user has been added successfully.'
         });
         if (props.closeModal) props.closeModal();
         // Reset form
         Object.assign(form, {
+          username: "",
+          email: "",
+          password: "",
+          roles: ["employee"],
           firstName: "",
           lastName: "",
-          email: "",
           phone: "",
           dateOfBirth: "",
           placeOfBirth: "",

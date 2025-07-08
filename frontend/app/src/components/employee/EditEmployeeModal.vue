@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered mw-900px">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Edit Employee</h2>
+          <h2>Edit User</h2>
           <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
             <KTIcon icon-name="cross" icon-class="fs-1" />
           </div>
@@ -12,10 +12,61 @@
         <div class="modal-body scroll-y mx-5 mx-xl-15 my-7" style="position:relative;min-height:200px;">
           <Loading v-if="editModalLoading" />
           <form v-else @submit.prevent="onSubmit" class="form" v-if="employee">
+            <!-- Account Information -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h3 class="card-title">Account Information</h3>
+              </div>
+              <div class="card-body">
+                <div class="row mb-6">
+                  <div class="col-md-6">
+                    <label class="form-label required">Username</label>
+                    <input
+                      v-model="form.username"
+                      type="text"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label required">Email</label>
+                    <input
+                      v-model="form.email"
+                      type="email"
+                      class="form-control"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="row mb-6">
+                  <div class="col-md-6">
+                    <label class="form-label">Password</label>
+                    <input
+                      v-model="form.password"
+                      type="password"
+                      class="form-control"
+                      placeholder="Leave empty to keep current password"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label required">Role</label>
+                    <select v-model="form.roles" class="form-select" multiple>
+                      <option value="employee">Employee</option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="hr">HR</option>
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple roles</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Basic Information -->
             <div class="card mb-6">
               <div class="card-header">
-                <h3 class="card-title">Basic Information</h3>
+                <h3 class="card-title">Personal Information</h3>
               </div>
               <div class="card-body">
                 <div class="row mb-6">
@@ -405,9 +456,12 @@ export default defineComponent({
     const loading = ref(false);
 
     const form = reactive({
+      username: "",
+      email: "",
+      password: "",
+      roles: [] as string[],
       firstName: "",
       lastName: "",
-      email: "",
       phone: "",
       dateOfBirth: "",
       placeOfBirth: "",
@@ -434,9 +488,12 @@ export default defineComponent({
     // Watch for changes in employee prop and populate form
     watch(() => props.employee, (newEmployee) => {
       if (newEmployee) {
+        form.username = (newEmployee as any).username || "";
+        form.email = newEmployee.email || "";
+        form.password = ""; // Never populate password field
+        form.roles = (newEmployee as any).roles || ["employee"];
         form.firstName = newEmployee.first_name || newEmployee['firstName'] || "";
         form.lastName = newEmployee.last_name || newEmployee['lastName'] || "";
-        form.email = newEmployee.email || "";
         form.phone = newEmployee.phone || "";
         form.dateOfBirth = newEmployee.date_of_birth
           ? new Date(newEmployee.date_of_birth).toISOString().split('T')[0]
@@ -711,32 +768,52 @@ export default defineComponent({
           technologiesUsed: exp.technologiesUsed,
         }));
 
-        const employeeData: Partial<Employee> = {
-          first_name: form.firstName,
-          last_name: form.lastName,
+        const applicationUserData: any = {
+          username: form.username,
           email: form.email,
+          roles: form.roles,
+          firstName: form.firstName,
+          lastName: form.lastName,
           phone: form.phone,
-          date_of_birth: form.dateOfBirth ? new Date(form.dateOfBirth) : undefined,
-          place_of_birth: form.placeOfBirth,
+          dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth) : undefined,
+          placeOfBirth: form.placeOfBirth,
           address: form.address,
-          current_role: form.currentRole,
+          currentRole: form.currentRole,
           department: form.department,
-          is_available: form.isAvailable,
-          hard_skills: form.hardSkills.filter(skill => skill.name),
-          soft_skills: form.softSkills.filter(skill => skill.name),
+          isAvailable: form.isAvailable,
+          hardSkills: form.hardSkills.filter(skill => skill.name),
+          softSkills: form.softSkills.filter(skill => skill.name),
           experiences: processedExperiences,
-          cv_data: form.cvData.fileName || form.cvData.storageUrl ? {
-            file_name: form.cvData.fileName,
-            storage_url: form.cvData.storageUrl,
+          cvData: form.cvData.fileName || form.cvData.storageUrl ? {
+            fileName: form.cvData.fileName,
+            storageUrl: form.cvData.storageUrl,
           } : undefined,
         };
 
-        const result = await updateEmployee(props.employee.id, employeeData as Employee);
+        // Add password only if provided
+        if (form.password && form.password.trim()) {
+          applicationUserData.passwordHash = form.password;
+        }
+
+        // Call ApplicationUser API
+        const response = await fetch(`/api/applicationusers/${props.employee.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(applicationUserData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update user');
+        }
+        
+        const result = await response.json();
         emit("employee-updated", result);
         Swal.fire({
           icon: 'success',
-          title: 'Employee updated!',
-          text: 'The employee has been updated successfully.'
+          title: 'User updated!',
+          text: 'The user has been updated successfully.'
         });
         if (props.closeModal) props.closeModal();
         // La modale si chiude solo tramite data-bs-dismiss o pulsante Cancel

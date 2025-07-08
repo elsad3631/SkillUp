@@ -111,7 +111,8 @@ import { defineComponent, onMounted, ref } from "vue";
 import Datatable from "@/components/kt-datatable/KTDataTable.vue";
 import { MenuComponent } from "@/assets/ts/components";
 import arraySort from "array-sort";
-import { getEmployees, deleteEmployee, getEmployee } from "@/core/services/businessServices/Employee";
+// Updated to use ApplicationUser services
+// import { getEmployees, deleteEmployee, getEmployee } from "@/core/services/businessServices/Employee";
 import type { Employee } from "@/core/models/Employee";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
@@ -171,10 +172,15 @@ export default defineComponent({
 
         const fetchEmployees = async () => {
             loading.value = true;
-            const result = await getEmployees();
-            if (result) {
-                tableData.value = result;
-                initEmployees.value = [...result];
+            try {
+                const response = await fetch('/api/applicationusers/role/employee');
+                const result = await response.json();
+                if (result) {
+                    tableData.value = result;
+                    initEmployees.value = [...result];
+                }
+            } catch (error) {
+                console.error('Failed to fetch employees:', error);
             }
             loading.value = false;
         };
@@ -204,11 +210,17 @@ export default defineComponent({
 
         const openEditModal = async (employee: Employee) => {
             editModalLoading.value = true;
-            // Recupera i dati aggiornati dal backend
-            const freshEmployee = await getEmployee(employee.id);
-            if (freshEmployee) {
-                selectedEmployee.value = freshEmployee;
-            } else {
+            try {
+                // Recupera i dati aggiornati dal backend
+                const response = await fetch(`/api/applicationusers/${employee.id}`);
+                if (response.ok) {
+                    const freshEmployee = await response.json();
+                    selectedEmployee.value = freshEmployee;
+                } else {
+                    selectedEmployee.value = employee; // fallback
+                }
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
                 selectedEmployee.value = employee; // fallback
             }
             editModalLoading.value = false;
@@ -228,8 +240,13 @@ export default defineComponent({
             if (confirm.isConfirmed) {
                 let allSuccess = true;
                 for (const id of selectedIds.value) {
-                    const success = await deleteEmployee(id);
-                    if (!success) allSuccess = false;
+                    try {
+                        const response = await fetch(`/api/applicationusers/${id}`, { method: 'DELETE' });
+                        if (!response.ok) allSuccess = false;
+                    } catch (error) {
+                        console.error('Failed to delete user:', error);
+                        allSuccess = false;
+                    }
                 }
                 tableData.value = tableData.value.filter(e => !selectedIds.value.includes(e.id));
                 initEmployees.value = initEmployees.value.filter(e => !selectedIds.value.includes(e.id));
@@ -253,13 +270,18 @@ export default defineComponent({
                 confirmButtonText: 'Yes, delete it!'
             });
             if (confirm.isConfirmed) {
-                const success = await deleteEmployee(id);
-                if (success) {
-                    tableData.value = tableData.value.filter(e => e.id !== id);
-                    initEmployees.value = initEmployees.value.filter(e => e.id !== id);
-                    Swal.fire('Deleted!', 'Employee has been deleted.', 'success');
-                } else {
-                    Swal.fire('Error', 'Failed to delete employee.', 'error');
+                try {
+                    const response = await fetch(`/api/applicationusers/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        tableData.value = tableData.value.filter(e => e.id !== id);
+                        initEmployees.value = initEmployees.value.filter(e => e.id !== id);
+                        Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                    } else {
+                        Swal.fire('Error', 'Failed to delete user.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Failed to delete user:', error);
+                    Swal.fire('Error', 'Failed to delete user.', 'error');
                 }
             }
         };

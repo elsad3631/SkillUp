@@ -254,7 +254,8 @@ import { getAssetPath } from "@/core/helpers/assets";
 import { defineComponent, ref, onMounted, provide } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
-import { getEmployee } from "@/core/services/businessServices/Employee";
+// Updated to use ApplicationUser API
+// import { getEmployee } from "@/core/services/businessServices/Employee";
 
 export default defineComponent({
   name: "kt-account",
@@ -270,7 +271,14 @@ export default defineComponent({
       const id = route.params.id;
       if (id) {
         loading.value = true;
-        employee.value = await getEmployee(id as string);
+        try {
+          const response = await fetch(`/api/applicationusers/${id}`);
+          if (response.ok) {
+            employee.value = await response.json();
+          }
+        } catch (error) {
+          console.error('Failed to fetch user:', error);
+        }
         loading.value = false;
       }
     });
@@ -279,7 +287,14 @@ export default defineComponent({
     provide('refreshEmployee', async () => {
       const id = route.params.id;
       if (id) {
-        employee.value = await getEmployee(id as string);
+        try {
+          const response = await fetch(`/api/applicationusers/${id}`);
+          if (response.ok) {
+            employee.value = await response.json();
+          }
+        } catch (error) {
+          console.error('Failed to refresh user:', error);
+        }
       }
     });
 

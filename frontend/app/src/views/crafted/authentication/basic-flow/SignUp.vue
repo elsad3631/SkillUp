@@ -273,11 +273,14 @@ export default defineComponent({
       // Send login request
       await store.register(values);
 
-      const error = Object.values(store.errors);
+      // Check if there are errors
+      const hasErrors = store.errors && 
+        (typeof store.errors === 'string' || 
+         (typeof store.errors === 'object' && Object.keys(store.errors).length > 0));
 
-      if (!error) {
+      if (!hasErrors) {
         Swal.fire({
-          text: "You have successfully logged in!",
+          text: "You have successfully registered and logged in!",
           icon: "success",
           buttonsStyling: false,
           confirmButtonText: "Ok, got it!",
@@ -286,12 +289,16 @@ export default defineComponent({
             confirmButton: "btn fw-semobold btn-light-primary",
           },
         }).then(function () {
-          // Go to page after successfully login
+          // Go to page after successfully registration
           router.push({ name: "dashboard" });
         });
       } else {
+        const errorMessage = typeof store.errors === 'string' ? 
+          store.errors : 
+          Object.values(store.errors)[0] as string;
+          
         Swal.fire({
-          text: error[0] as string,
+          text: errorMessage || "Si è verificato un errore durante la registrazione",
           icon: "error",
           buttonsStyling: false,
           confirmButtonText: "Try again!",

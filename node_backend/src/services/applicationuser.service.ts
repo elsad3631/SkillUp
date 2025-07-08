@@ -1,13 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-export const employeeService = {
+export const applicationUserService = {
   async getAll() {
-    return prisma.employee.findMany();
-  },
-  async getById(id: string) {
-    return prisma.employee.findUnique({
-      where: { id },
+    return prisma.applicationUser.findMany({
       include: {
         hardSkills: true,
         softSkills: true,
@@ -16,9 +12,51 @@ export const employeeService = {
       },
     });
   },
+
+  async getById(id: string) {
+    return prisma.applicationUser.findUnique({
+      where: { id },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        experiences: true,
+        cvData: true,
+        projectAssignments: {
+          include: {
+            project: true,
+          },
+        },
+      },
+    });
+  },
+
+  async getByRole(role: string) {
+    return prisma.applicationUser.findMany({
+      where: {
+        roles: {
+          has: role,
+        },
+      },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        experiences: true,
+        cvData: true,
+      },
+    });
+  },
+
   async create(data: any) {
     // Adatta skills, experiences e cvData per il nested create Prisma
     const prismaData: any = { ...data };
+    
+    // Ensure roles is an array
+    if (typeof data.roles === 'string') {
+      prismaData.roles = [data.roles];
+    } else if (!Array.isArray(data.roles)) {
+      prismaData.roles = ['employee']; // Default role
+    }
+
     if (Array.isArray(data.hardSkills) && data.hardSkills.length > 0) {
       prismaData.hardSkills = { create: data.hardSkills };
     }
@@ -31,14 +69,17 @@ export const employeeService = {
     if (data.cvData && (data.cvData.fileName || data.cvData.storageUrl)) {
       prismaData.cvData = { create: { ...data.cvData, uploadDate: new Date() } };
     }
-    return prisma.employee.create({ data: prismaData });
+    
+    return prisma.applicationUser.create({ data: prismaData });
   },
+
   async update(id: string, data: any) {
     // Mappa i dati da snake_case a camelCase
     const prismaData: any = {
+      username: data.username,
+      email: data.email,
       firstName: data.firstName || data.first_name,
       lastName: data.lastName || data.last_name,
-      email: data.email,
       phone: data.phone,
       dateOfBirth: data.dateOfBirth || data.date_of_birth,
       placeOfBirth: data.placeOfBirth || data.place_of_birth,
@@ -48,10 +89,24 @@ export const employeeService = {
       isAvailable: data.isAvailable ?? data.is_available,
     };
 
+    // Handle roles update
+    if (data.roles) {
+      if (typeof data.roles === 'string') {
+        prismaData.roles = [data.roles];
+      } else if (Array.isArray(data.roles)) {
+        prismaData.roles = data.roles;
+      }
+    }
+
+    // Password hash update (if provided)
+    if (data.passwordHash) {
+      prismaData.passwordHash = data.passwordHash;
+    }
+
     // --- LOGICA INTELLIGENTE SOLO PER hardSkills ---
     if (Array.isArray(data.hardSkills)) {
       // 1. Recupera le hardSkills attuali
-      const current = await prisma.employee.findUnique({
+      const current = await prisma.applicationUser.findUnique({
         where: { id },
         select: { hardSkills: true }
       });
@@ -87,7 +142,7 @@ export const employeeService = {
             return {
               ...rest,
               proficiencyLevel: skill.proficiencyLevel ? Number(skill.proficiencyLevel) : undefined,
-              employeeHardId: id,
+              applicationUserHardId: id,
             };
           })
         });
@@ -117,18 +172,66 @@ export const employeeService = {
         },
       };
     }
-    return prisma.employee.update({ where: { id }, data: prismaData });
+    
+    return prisma.applicationUser.update({ where: { id }, data: prismaData });
   },
+
   async remove(id: string) {
     // Delete related experiences
-    await prisma.experience.deleteMany({ where: { employeeId: id } });
+    await prisma.experience.deleteMany({ where: { applicationUserId: id } });
     // Delete related hard skills
-    await prisma.employeeSkill.deleteMany({ where: { employeeHardId: id } });
-    // Delete related soft skills
-    await prisma.employeeSkill.deleteMany({ where: { employeeSoftId: id } });
+    await prisma.employeeSkill.deleteMany({ where: { applicationUserHardId: id } });
+    // Delete related soft skills  
+    await prisma.employeeSkill.deleteMany({ where: { applicationUserSoftId: id } });
     // Delete related CVData
-    await prisma.cVData.deleteMany({ where: { employeeId: id } });
-    // Now delete the employee
-    return prisma.employee.delete({ where: { id } });
+    await prisma.cVData.deleteMany({ where: { applicationUserId: id } });
+    // Delete related ProjectAssignments
+    await prisma.projectAssignment.deleteMany({ where: { applicationUserId: id } });
+    // Now delete the application user
+    return prisma.applicationUser.delete({ where: { id } });
+  },
+
+  // Additional methods specific to ApplicationUser
+  async getByUsername(username: string) {
+    return prisma.applicationUser.findUnique({
+      where: { username },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        experiences: true,
+        cvData: true,
+      },
+    });
+  },
+
+  async getByEmail(email: string) {
+    return prisma.applicationUser.findUnique({
+      where: { email },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        experiences: true,
+        cvData: true,
+      },
+    });
+  },
+
+  async updateRoles(id: string, roles: string[]) {
+    return prisma.applicationUser.update({
+      where: { id },
+      data: { roles },
+    });
+  },
+
+  async getAvailableUsers() {
+    return prisma.applicationUser.findMany({
+      where: { isAvailable: true },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        experiences: true,
+        cvData: true,
+      },
+    });
   },
 }; 

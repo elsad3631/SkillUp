@@ -2,7 +2,8 @@ require('dotenv').config();
 import express from 'express';
 import { json } from 'body-parser';
 import cors from 'cors';
-import employeeRoutes from './routes/employee.routes';
+// import employeeRoutes from './routes/employee.routes'; // Removed - replaced by ApplicationUser
+import applicationUserRoutes from './routes/applicationuser.routes';
 import projectRoutes from './routes/project.routes';
 import appointmentRoutes from './routes/appointment.routes';
 import userRoutes from './routes/user.routes';
@@ -21,7 +22,8 @@ app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 // Qui verranno importate e usate le route dei microservizi
 // esempio: app.use('/api/employees', employeeRoutes);
-app.use('/api/employees', employeeRoutes);
+// app.use('/api/employees', employeeRoutes); // Removed - replaced by ApplicationUser
+app.use('/api/applicationusers', applicationUserRoutes); // New unified route
 app.use('/api/projects', projectRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/users', userRoutes);

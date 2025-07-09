@@ -220,7 +220,6 @@ export default defineComponent({
                     selectedEmployee.value = employee; // fallback
                 }
             } catch (error) {
-                console.error('Failed to fetch user:', error);
                 selectedEmployee.value = employee; // fallback
             }
             editModalLoading.value = false;
@@ -244,7 +243,6 @@ export default defineComponent({
                         const response = await fetch(`/api/applicationusers/${id}`, { method: 'DELETE' });
                         if (!response.ok) allSuccess = false;
                     } catch (error) {
-                        console.error('Failed to delete user:', error);
                         allSuccess = false;
                     }
                 }

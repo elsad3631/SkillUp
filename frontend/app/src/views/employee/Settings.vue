@@ -1,6 +1,21 @@
 <template>
-  <!--begin::Basic info-->
-  <div class="card mb-5 mb-xl-10">
+  <!--begin::Loading State for Settings-->
+  <div v-if="!employee" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="mt-3">
+        <span class="fw-semobold text-gray-600">Loading settings...</span>
+      </div>
+    </div>
+  </div>
+  <!--end::Loading State for Settings-->
+
+  <!--begin::Settings Content-->
+  <div v-else>
+    <!--begin::Basic info-->
+    <div class="card mb-5 mb-xl-10">
     <!--begin::Card header-->
     <div
       class="card-header border-0 cursor-pointer"
@@ -31,71 +46,10 @@
           <!--begin::Input group-->
           <div class="row mb-6">
             <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Avatar</label
-            >
+            <label class="col-lg-4 col-form-label required fw-semobold fs-6">First Name</label>
             <!--end::Label-->
 
             <!--begin::Col-->
-            <div class="col-lg-8">
-              <!--begin::Image input-->
-              <div
-                class="image-input image-input-outline"
-                data-kt-image-input="true"
-                :style="{
-                  backgroundImage: `url(${getAssetPath(
-                    '/media/avatars/blank.png'
-                  )})`,
-                }"
-              >
-                <!--begin::Preview existing avatar-->
-                <div
-                  class="image-input-wrapper w-125px h-125px"
-                  :style="`background-image: url(${profileDetails.avatar})`"
-                ></div>
-                <!--end::Preview existing avatar-->
-
-                <!--begin::Label-->
-                <label
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                  data-kt-image-input-action="change"
-                  data-bs-toggle="tooltip"
-                  title="Change avatar"
-                >
-                  <i class="bi bi-pencil-fill fs-7"></i>
-
-                  <!--begin::Inputs-->
-                  <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                  <input type="hidden" name="avatar_remove" />
-                  <!--end::Inputs-->
-                </label>
-                <!--end::Label-->
-
-                <!--begin::Remove-->
-                <span
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                  data-kt-image-input-action="remove"
-                  data-bs-toggle="tooltip"
-                  @click="removeImage()"
-                  title="Remove avatar"
-                >
-                  <i class="bi bi-x fs-2"></i>
-                </span>
-                <!--end::Remove-->
-              </div>
-              <!--end::Image input-->
-
-              <!--begin::Hint-->
-              <div class="form-text">Allowed file types: png, jpg, jpeg.</div>
-              <!--end::Hint-->
-            </div>
-            <!--end::Col-->
-          </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-6">
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6">First Name</label>
             <div class="col-lg-8 fv-row">
               <input
                 type="text"
@@ -183,71 +137,6 @@
               />
               <span class="form-check-label">Available</span>
             </div>
-          </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Communication</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
-            <div class="col-lg-8 fv-row">
-              <!--begin::Options-->
-              <div class="d-flex align-items-center mt-3">
-                <!--begin::Option-->
-                <label
-                  class="form-check form-check-inline form-check-solid me-5"
-                >
-                  <input
-                    class="form-check-input"
-                    name="communication[]"
-                    type="checkbox"
-                  />
-                  <span class="fw-semobold ps-2 fs-6"> Email </span>
-                </label>
-                <!--end::Option-->
-
-                <!--begin::Option-->
-                <label class="form-check form-check-inline form-check-solid">
-                  <input
-                    class="form-check-input"
-                    name="communication[]"
-                    type="checkbox"
-                  />
-                  <span class="fw-semobold ps-2 fs-6"> Phone </span>
-                </label>
-                <!--end::Option-->
-              </div>
-              <!--end::Options-->
-            </div>
-            <!--end::Col-->
-          </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-0">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Allow Marketing</label
-            >
-            <!--begin::Label-->
-
-            <!--begin::Label-->
-            <div class="col-lg-8 d-flex align-items-center">
-              <div class="form-check form-check-solid form-switch fv-row">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="allowmarketing"
-                />
-                <label class="form-check-label" for="allowmarketing"></label>
-              </div>
-            </div>
-            <!--begin::Label-->
           </div>
           <!--end::Input group-->
 
@@ -864,11 +753,13 @@
   </div>
   <!--end::Deactivate Account-->
 
+  </div>
+  <!--end::Settings Content-->
 </template>
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref, inject, watch, onMounted } from "vue";
+import { defineComponent, ref, inject, watch, onMounted, onUnmounted, computed, nextTick } from "vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import * as Yup from "yup";
 import ApiService from "@/core/services/ApiService";
@@ -886,22 +777,20 @@ interface CvData {
 }
 
 interface ProfileDetails {
-  avatar: string;
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
   dateOfBirth: string;
   placeOfBirth: string;
   address: string;
-  phone: string;
   currentRole: string;
   department: string;
   isAvailable: boolean;
+  hardSkills: Array<any>;
+  softSkills: Array<any>;
+  experiences: Array<any>;
   cvData: CvData;
-  experiences: any[];
-  hardSkills: any[];
-  softSkills: any[];
-  // altri campi se servono
 }
 
 export default defineComponent({
@@ -918,69 +807,58 @@ export default defineComponent({
     const updateEmailButton = ref<HTMLElement | null>(null);
     const updatePasswordButton = ref<HTMLElement | null>(null);
 
+    // Reactive states
     const emailFormDisplay = ref(false);
     const passwordFormDisplay = ref(false);
+    const editingHardSkillIndex = ref<number | null>(null);
+    const editingSoftSkillIndex = ref<number | null>(null);
+    const editingExperienceIndex = ref<number | null>(null);
 
     const employee = inject<any>('employee');
     const refreshEmployee = inject<any>('refreshEmployee');
-    const profileDetails = ref<ProfileDetails>({
-      avatar: '',
+
+    // Profile details reactive object
+    const profileDetails = ref({
       firstName: '',
       lastName: '',
       email: '',
+      phone: '',
       dateOfBirth: '',
       placeOfBirth: '',
       address: '',
-      phone: '',
       currentRole: '',
       department: '',
       isAvailable: false,
-      cvData: { fileName: '', storageUrl: '' },
-      experiences: [],
-      hardSkills: [],
-      softSkills: [],
+      hardSkills: [] as Array<any>,
+      softSkills: [] as Array<any>,
+      experiences: [] as Array<any>,
+      cvData: {
+        fileName: '',
+        storageUrl: ''
+      }
     });
-    // Popola profileDetails quando employee cambia
+
+    // Watch for employee changes and update profile details
     watch(employee, (val) => {
       if (val) {
         profileDetails.value = {
-          ...profileDetails.value,
-          avatar: val.avatar || '',
-          firstName: val.first_name || val.firstName || '',
-          lastName: val.last_name || val.lastName || '',
+          firstName: val.firstName || val.first_name || '',
+          lastName: val.lastName || val.last_name || '',
           email: val.email || '',
-          dateOfBirth: val.date_of_birth ? new Date(val.date_of_birth).toISOString().split('T')[0] : (val.dateOfBirth ? new Date(val.dateOfBirth).toISOString().split('T')[0] : ''),
-          placeOfBirth: val.place_of_birth || val.placeOfBirth || '',
-          address: val.address || '',
           phone: val.phone || '',
-          currentRole: val.current_role || val.currentRole || '',
+          dateOfBirth: val.dateOfBirth || val.date_of_birth || '',
+          placeOfBirth: val.placeOfBirth || val.place_of_birth || '',
+          address: val.address || '',
+          currentRole: val.currentRole || val.current_role || '',
           department: val.department || '',
-          isAvailable: val.is_available ?? val.isAvailable ?? false,
+          isAvailable: val.isAvailable ?? val.is_available ?? false,
+          hardSkills: val.hardSkills || [],
+          softSkills: val.softSkills || [],
+          experiences: val.experiences || [],
           cvData: {
-            fileName: val.cvData?.file_name || val.cvData?.fileName || '',
-            storageUrl: val.cvData?.storage_url || val.cvData?.storageUrl || ''
-          },
-          experiences: val.experiences?.map(exp => ({
-            id: exp.id,
-            jobTitle: exp.job_title || exp.jobTitle || '',
-            companyName: exp.company_name || exp.companyName || '',
-            startDate: exp.start_date || exp.startDate || '',
-            endDate: exp.end_date || exp.endDate || '',
-            description: exp.description || '',
-            technologiesUsed: exp.technologies_used || exp.technologiesUsed || [],
-          })) || [],
-          hardSkills: val.hardSkills?.map(skill => ({
-            id: skill.id,
-            name: skill.name || '',
-            proficiencyLevel: skill.proficiency_level?.toString() || skill.proficiencyLevel?.toString() || '',
-            certification: skill.certification || '',
-          })) || [],
-          softSkills: val.softSkills?.map(skill => ({
-            id: skill.id,
-            name: skill.name || '',
-            proficiencyLevel: skill.proficiency_level?.toString() || skill.proficiencyLevel?.toString() || '',
-            certification: skill.certification || '',
-          })) || [],
+            fileName: val.cvData?.fileName || val.cv_data?.file_name || '',
+            storageUrl: val.cvData?.storageUrl || val.cv_data?.storage_url || ''
+          }
         };
       }
     }, { immediate: true });
@@ -1012,8 +890,8 @@ export default defineComponent({
               } : undefined,
             };
 
-            // Update ApplicationUser via API
-            const response = await fetch(`/api/applicationusers/${route.params.id}`, {
+            const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${API_URL}/applicationusers/${route.params.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(employeeData)
@@ -1023,8 +901,23 @@ export default defineComponent({
               throw new Error('Failed to update user');
             }
             
-            if (refreshEmployee) await refreshEmployee();
+            // Get the updated employee data from the response
+            const updatedEmployee = await response.json();
             
+            // Emit custom event for employee data update
+            window.dispatchEvent(new CustomEvent('employeeUpdated', {
+              detail: { 
+                employeeId: route.params.id, 
+                updatedData: updatedEmployee 
+              }
+            }));
+            
+            // Refresh employee data
+            if (refreshEmployee) {
+              await refreshEmployee();
+            }
+            
+            // Show success message
             Swal.fire({
               icon: 'success',
               title: 'Profile updated!',
@@ -1138,10 +1031,6 @@ export default defineComponent({
           });
         }, 2000);
       }
-    };
-
-    const removeImage = () => {
-      profileDetails.value.avatar = "/media/avatars/blank.png";
     };
 
     // Skills
@@ -1319,9 +1208,16 @@ export default defineComponent({
       }
     };
 
-    const editingHardSkillIndex = ref<number|null>(null);
-    const editingSoftSkillIndex = ref<number|null>(null);
-    const editingExperienceIndex = ref<number|null>(null);
+    // Clean up temporary files on component unmount
+    onMounted(() => {
+      window.addEventListener('beforeunload', () => {
+        // This cleanup is now handled by onUnmounted
+      });
+    });
+
+    onUnmounted(async () => {
+      // Cleanup is no longer needed since avatar management moved to Account.vue
+    });
 
     return {
       submitButton1,
@@ -1335,28 +1231,34 @@ export default defineComponent({
       saveChanges4,
       deactivateAccount,
       profileDetails,
+      employee,
       emailFormDisplay,
       passwordFormDisplay,
-      removeImage,
       updateEmail,
       updatePassword,
       getAssetPath,
+      // Skills management
       addHardSkill,
       addSoftSkill,
       saveHardSkill,
       deleteHardSkill,
       saveSoftSkill,
       deleteSoftSkill,
+      editingHardSkillIndex,
+      editingSoftSkillIndex,
+      editHardSkill,
+      editSoftSkill,
+      // Experience management
       addExperience,
       saveExperience,
       deleteExperience: deleteExperienceFn,
-      editingHardSkillIndex,
-      editingSoftSkillIndex,
       editingExperienceIndex,
-      editHardSkill,
-      editSoftSkill,
       editExperience,
     };
   },
 });
 </script>
+
+<style scoped>
+/* Avatar management has been moved to Account.vue */
+</style>

@@ -87,6 +87,7 @@ export const applicationUserService = {
       currentRole: data.currentRole || data.current_role,
       department: data.department,
       isAvailable: data.isAvailable ?? data.is_available,
+      avatar: data.avatar, // Add avatar field mapping
     };
 
     // Handle roles update
@@ -150,12 +151,103 @@ export const applicationUserService = {
     }
     // --- FINE LOGICA INTELLIGENTE ---
 
-    // Le altre relazioni restano come prima
-    if (Array.isArray(data.softSkills) && data.softSkills.length > 0) {
-      prismaData.softSkills = { create: data.softSkills };
+    // --- LOGICA INTELLIGENTE ANCHE PER softSkills ---
+    if (Array.isArray(data.softSkills)) {
+      // 1. Recupera le softSkills attuali
+      const current = await prisma.applicationUser.findUnique({
+        where: { id },
+        select: { softSkills: true }
+      });
+      const currentSkills = current?.softSkills || [];
+      const currentIds = currentSkills.map((s: any) => s.id);
+      const incoming = data.softSkills;
+      const incomingIds = incoming.filter((s: any) => s.id).map((s: any) => s.id);
+
+      // 2. Elimina quelle rimosse
+      const toDelete = currentIds.filter(idVal => !incomingIds.includes(idVal));
+      if (toDelete.length > 0) {
+        await prisma.employeeSkill.deleteMany({ where: { id: { in: toDelete } } });
+      }
+      // 3. Aggiorna quelle esistenti
+      for (const skill of incoming as any[]) {
+        if (skill.id && currentIds.includes(skill.id)) {
+          await prisma.employeeSkill.update({
+            where: { id: skill.id },
+            data: {
+              name: skill.name,
+              proficiencyLevel: skill.proficiencyLevel ? Number(skill.proficiencyLevel) : undefined,
+              certification: skill.certification,
+            }
+          });
+        }
+      }
+      // 4. Crea quelle nuove
+      const toCreate = (incoming as any[]).filter((s: any) => !s.id);
+      if (toCreate.length > 0) {
+        await prisma.employeeSkill.createMany({
+          data: toCreate.map((skill: any) => {
+            const { id: _id, ...rest } = skill;
+            return {
+              ...rest,
+              proficiencyLevel: skill.proficiencyLevel ? Number(skill.proficiencyLevel) : undefined,
+              applicationUserSoftId: id,
+            };
+          })
+        });
+      }
     }
-    if (Array.isArray(data.experiences) && data.experiences.length > 0) {
-      prismaData.experiences = { create: data.experiences };
+
+    // --- LOGICA INTELLIGENTE ANCHE PER experiences ---
+    if (Array.isArray(data.experiences)) {
+      // 1. Recupera le experiences attuali
+      const current = await prisma.applicationUser.findUnique({
+        where: { id },
+        select: { experiences: true }
+      });
+      const currentExperiences = current?.experiences || [];
+      const currentIds = currentExperiences.map((e: any) => e.id);
+      const incoming = data.experiences;
+      const incomingIds = incoming.filter((e: any) => e.id).map((e: any) => e.id);
+
+      // 2. Elimina quelle rimosse
+      const toDelete = currentIds.filter(idVal => !incomingIds.includes(idVal));
+      if (toDelete.length > 0) {
+        await prisma.experience.deleteMany({ where: { id: { in: toDelete } } });
+      }
+      // 3. Aggiorna quelle esistenti
+      for (const exp of incoming as any[]) {
+        if (exp.id && currentIds.includes(exp.id)) {
+          await prisma.experience.update({
+            where: { id: exp.id },
+            data: {
+              jobTitle: exp.jobTitle,
+              companyName: exp.companyName,
+              startDate: exp.startDate ? new Date(exp.startDate) : undefined,
+              endDate: exp.endDate ? new Date(exp.endDate) : undefined,
+              description: exp.description,
+              technologiesUsed: Array.isArray(exp.technologiesUsed) ? exp.technologiesUsed : 
+                               typeof exp.technologiesUsed === 'string' ? exp.technologiesUsed.split(',').map((s: string) => s.trim()) : [],
+            }
+          });
+        }
+      }
+      // 4. Crea quelle nuove
+      const toCreate = (incoming as any[]).filter((e: any) => !e.id);
+      if (toCreate.length > 0) {
+        await prisma.experience.createMany({
+          data: toCreate.map((exp: any) => {
+            const { id: _id, ...rest } = exp;
+            return {
+              ...rest,
+              startDate: exp.startDate ? new Date(exp.startDate) : new Date(),
+              endDate: exp.endDate ? new Date(exp.endDate) : undefined,
+              technologiesUsed: Array.isArray(exp.technologiesUsed) ? exp.technologiesUsed : 
+                               typeof exp.technologiesUsed === 'string' ? exp.technologiesUsed.split(',').map((s: string) => s.trim()) : [],
+              applicationUserId: id,
+            };
+          })
+        });
+      }
     }
     if (data.cvData && (data.cvData.fileName || data.cvData.storageUrl || data.cvData.file_name || data.cvData.storage_url)) {
       prismaData.cvData = {

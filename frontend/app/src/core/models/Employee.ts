@@ -36,6 +36,7 @@ export class Employee extends CosmosEntityBase {
   address?: string;
   phone?: string;
   email?: string;
+  avatar?: string;
   cv_data?: CVData;
   experiences?: Experience[];
   hard_skills?: EmployeeSkill[];

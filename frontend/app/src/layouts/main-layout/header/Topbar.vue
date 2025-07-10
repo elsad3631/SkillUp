@@ -106,7 +106,13 @@
         data-kt-menu-placement="bottom-end"
         data-kt-menu-flip="bottom"
       >
-        <img :src="getAssetPath('media/avatars/300-1.jpg')" alt="metronic" />
+        <img 
+          :src="currentAvatarUrl" 
+          alt="User Avatar"
+          @error="handleImageError"
+          @load="handleImageLoad"
+          :class="{ 'opacity-50': imageLoading }"
+        />
       </div>
       <KTUserMenu></KTUserMenu>
       <!--end::Menu-->
@@ -132,12 +138,14 @@
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent } from "vue";
+import { defineComponent, ref, watch, onMounted } from "vue";
 import KTSearch from "@/layouts/main-layout/search/Search.vue";
 import KTNotificationsMenu from "@/layouts/main-layout/menus/NotificationsMenu.vue";
 import KTQuickLinksMenu from "@/layouts/main-layout/menus/QuickLinksMenu.vue";
 import KTUserMenu from "@/layouts/main-layout/menus/UserAccountMenu.vue";
 import KTThemeModeSwitcher from "@/layouts/main-layout/theme-mode/ThemeModeSwitcher.vue";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
+import { useAvatar } from "@/core/composables/useAvatar";
 
 export default defineComponent({
   name: "layout-topbar",
@@ -149,8 +157,57 @@ export default defineComponent({
     KTThemeModeSwitcher,
   },
   setup() {
+    const { currentUser, fetchCurrentUser } = useCurrentUser();
+    const { getAvatarDisplayUrl } = useAvatar();
+    
+    // Avatar state management
+    const imageLoading = ref(false);
+    const imageError = ref(false);
+    const currentAvatarUrl = ref(getAssetPath('media/avatars/blank.png'));
+
+    // Avatar functions
+    const handleImageError = () => {
+      imageError.value = true;
+      imageLoading.value = false;
+      currentAvatarUrl.value = getAssetPath('media/avatars/blank.png');
+    };
+
+    const handleImageLoad = () => {
+      imageError.value = false;
+      imageLoading.value = false;
+    };
+
+    // Get avatar URL function
+    const getAvatarUrl = async (avatarUrl: string | undefined) => {
+      if (!avatarUrl || avatarUrl.trim() === '' || imageError.value) {
+        return getAssetPath('media/avatars/blank.png');
+      }
+      
+      const displayUrl = await getAvatarDisplayUrl(avatarUrl);
+      
+      if (!displayUrl) {
+        return getAssetPath('media/avatars/blank.png');
+      }
+      
+      return displayUrl;
+    };
+
+    // Watch for avatar changes
+    watch(() => currentUser.value?.avatar, async (newAvatar) => {
+      currentAvatarUrl.value = await getAvatarUrl(newAvatar);
+    }, { immediate: true });
+
+    // Fetch current user on mount
+    onMounted(() => {
+      fetchCurrentUser();
+    });
+
     return {
       getAssetPath,
+      currentAvatarUrl,
+      imageLoading,
+      handleImageError,
+      handleImageLoad,
     };
   },
 });

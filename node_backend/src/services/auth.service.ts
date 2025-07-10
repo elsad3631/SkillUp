@@ -66,11 +66,86 @@ export const authService = {
     });
   },
   async getUserById(userId: string) {
-    return prisma.applicationUser.findUnique({ where: { id: userId } });
+    return prisma.applicationUser.findUnique({ 
+      where: { id: userId },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        experiences: true,
+        cvData: true,
+      },
+    });
   },
   verifyToken(token: string) {
     const payload = jwt.verify(token, JWT_SECRET);
     if (typeof payload === 'string') throw new Error('Invalid token');
     return payload;
+  },
+  
+  async updateEmail(userId: string, newEmail: string, currentPassword: string) {
+    // Verify current password
+    const user = await prisma.applicationUser.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('User not found');
+    
+    const validPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!validPassword) throw new Error('Current password is incorrect');
+    
+    // Check if email already exists
+    const existingUser = await prisma.applicationUser.findUnique({ where: { email: newEmail } });
+    if (existingUser && existingUser.id !== userId) {
+      throw new Error('Email already in use');
+    }
+    
+    // Update email
+    return prisma.applicationUser.update({
+      where: { id: userId },
+      data: { email: newEmail },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+        roles: true,
+        avatar: true,
+        dateOfBirth: true,
+        placeOfBirth: true,
+        address: true,
+        phone: true,
+        currentRole: true,
+        department: true,
+        isAvailable: true,
+      },
+    });
+  },
+  
+  async updatePassword(userId: string, currentPassword: string, newPassword: string) {
+    // Verify current password
+    const user = await prisma.applicationUser.findUnique({ where: { id: userId } });
+    if (!user) throw new Error('User not found');
+    
+    const validPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!validPassword) throw new Error('Current password is incorrect');
+    
+    // Validate new password (minimum 8 characters)
+    if (newPassword.length < 8) {
+      throw new Error('New password must be at least 8 characters long');
+    }
+    
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    
+    // Update password
+    return prisma.applicationUser.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        username: true,
+      },
+    });
   },
 }; 

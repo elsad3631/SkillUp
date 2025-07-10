@@ -42,4 +42,60 @@ export const authController = {
       res.status(401).json({ error: 'Invalid token' });
     }
   }),
+  
+  updateEmail: asyncHandler(async (req: Request, res: Response) => {
+    const { newEmail, currentPassword } = req.body;
+    const userId = (req as any).user?.userId; // From JWT middleware
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!newEmail || !currentPassword) {
+      return res.status(400).json({ error: 'New email and current password are required' });
+    }
+    
+    try {
+      const updatedUser = await authService.updateEmail(userId, newEmail, currentPassword);
+      res.json({ message: 'Email updated successfully', user: updatedUser });
+    } catch (error: any) {
+      if (error.message === 'Current password is incorrect') {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+      if (error.message === 'Email already in use') {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+      res.status(500).json({ error: 'Failed to update email' });
+    }
+  }),
+  
+  updatePassword: asyncHandler(async (req: Request, res: Response) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = (req as any).user?.userId; // From JWT middleware
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ error: 'All password fields are required' });
+    }
+    
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'New passwords do not match' });
+    }
+    
+    try {
+      await authService.updatePassword(userId, currentPassword, newPassword);
+      res.json({ message: 'Password updated successfully' });
+    } catch (error: any) {
+      if (error.message === 'Current password is incorrect') {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+      if (error.message === 'New password must be at least 8 characters long') {
+        return res.status(400).json({ error: 'New password must be at least 8 characters long' });
+      }
+      res.status(500).json({ error: 'Failed to update password' });
+    }
+  }),
 }; 

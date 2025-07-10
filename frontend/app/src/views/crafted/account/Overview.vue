@@ -1,229 +1,252 @@
 <template>
-  <!--begin::details View-->
-  <div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
-    <!--begin::Card header-->
-    <div class="card-header cursor-pointer">
-      <!--begin::Card title-->
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Profile Details</h3>
+  <!--begin::Loading State for Overview-->
+  <div v-if="!currentUser" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
-      <!--end::Card title-->
-
-      <!--begin::Action-->
-      <router-link
-        to="/account/settings"
-        class="btn btn-primary align-self-center"
-        >Edit Profile</router-link
-      >
-      <!--end::Action-->
+      <div class="mt-3">
+        <span class="fw-semobold text-gray-600">Loading overview...</span>
+      </div>
     </div>
-    <!--begin::Card header-->
+  </div>
+  <!--end::Loading State for Overview-->
 
-    <!--begin::Card body-->
-    <div class="card-body p-9">
-      <!--begin::Row-->
-      <div class="row mb-7">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">Full Name</label>
-        <!--end::Label-->
-
-        <!--begin::Col-->
-        <div class="col-lg-8">
-          <span class="fw-bold fs-6 text-dark">Max Smith</span>
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Row-->
-
-      <!--begin::Input group-->
-      <div class="row mb-7">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">Company</label>
-        <!--end::Label-->
-
-        <!--begin::Col-->
-        <div class="col-lg-8 fv-row">
-          <span class="fw-semobold fs-6">Keenthemes</span>
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="row mb-7">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">
-          Contact Phone
-          <i
-            class="fas fa-exclamation-circle ms-1 fs-7"
-            v-tooltip
-            title="Phone number must be active"
-          ></i>
-        </label>
-        <!--end::Label-->
-
-        <!--begin::Col-->
-        <div class="col-lg-8 d-flex align-items-center">
-          <span class="fw-bold fs-6 me-2">044 3276 454 935</span>
-
-          <span class="badge badge-success">Verified</span>
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="row mb-7">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">Company Site</label>
-        <!--end::Label-->
-
-        <!--begin::Col-->
-        <div class="col-lg-8">
-          <a href="#" class="fw-semobold fs-6 text-dark text-hover-primary"
-            >keenthemes.com</a
-          >
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="row mb-7">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">
-          Country
-          <i
-            class="fas fa-exclamation-circle ms-1 fs-7"
-            v-tooltip
-            title="Country of origination"
-          ></i>
-        </label>
-        <!--end::Label-->
-
-        <!--begin::Col-->
-        <div class="col-lg-8">
-          <span class="fw-bold fs-6 text-dark">Germany</span>
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="row mb-7">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">Communication</label>
-        <!--end::Label-->
-
-        <!--begin::Col-->
-        <div class="col-lg-8">
-          <span class="fw-bold fs-6 text-dark">Email, Phone</span>
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="row mb-10">
-        <!--begin::Label-->
-        <label class="col-lg-4 fw-semobold text-muted">Allow Changes</label>
-        <!--begin::Label-->
-
-        <!--begin::Label-->
-        <div class="col-lg-8">
-          <span class="fw-semobold fs-6">Yes</span>
-        </div>
-        <!--begin::Label-->
-      </div>
-      <!--end::Input group-->
-
-      <div
-        class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6"
-      >
-        <KTIcon
-          icon-name="information-5"
-          icon-class="fs-2tx text-warning me-4"
-        />
-        <!--begin::Wrapper-->
-        <div class="d-flex flex-stack flex-grow-1">
-          <!--begin::Content-->
-          <div class="fw-semobold">
-            <h4 class="text-gray-800 fw-bold">We need your attention!</h4>
-
-            <div class="fs-6 text-gray-600">
-              Your payment was declined. To start using tools, please
-              <a class="fw-bold" href="#">Add Payment Method</a>.
+  <!--begin::Overview Content-->
+  <div v-else>
+    <!--begin::details View-->
+    <div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
+      <!--begin::Card header-->
+      <div class="card-header cursor-pointer">
+        <!--begin::Card title-->
+        <div class="d-flex align-items-center">          
+          <!--begin::Title-->
+          <div>
+            <h3 class="fw-bold m-0">Profile Details</h3>
+            <div class="text-muted fs-7" v-if="currentUser?.firstName || currentUser?.lastName">
+              {{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}
             </div>
           </div>
-          <!--end::Content-->
+          <!--end::Title-->
         </div>
-        <!--end::Wrapper-->
+        <!--end::Card title-->
+
+        <!--begin::Action-->
+        <router-link
+          to="/crafted/account/settings"
+          class="btn btn-primary align-self-center"
+          >Edit Profile</router-link>
+        <!--end::Action-->
       </div>
+      <!--begin::Card header-->
+
+      <!--begin::Card body-->
+      <div class="card-body pt-9 pb-0">
+          <!--begin::Details-->
+          <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
+            <!--begin::Info-->
+            <div class="flex-grow-1">
+              <!--begin::Row-->
+              <div class="row mb-7">
+                <!--begin::Label-->
+                <label class="col-lg-4 fw-semobold text-muted">Full Name</label>
+                <!--end::Label-->
+
+                <!--begin::Col-->
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
+                </div>
+                <!--end::Col-->
+              </div>
+              <!--end::Row-->
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Email</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.email || '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Phone</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.phone || '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Date of Birth</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.dateOfBirth ? (new Date(currentUser.dateOfBirth)).toLocaleDateString() : '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Place of Birth</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.placeOfBirth || '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Address</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.address || '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Current Role</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.currentRole || '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Department</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.department || '' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7">
+                <label class="col-lg-4 fw-semobold text-muted">Available</label>
+                <div class="col-lg-8">
+                  <span class="fw-bold fs-6 text-dark">{{ currentUser?.isAvailable ? 'Yes' : 'No' }}</span>
+                </div>
+              </div>
+
+              <div class="row mb-7" v-if="currentUser?.cvData">
+                <label class="col-lg-4 fw-semobold text-muted">CV File</label>
+                <div class="col-lg-8">
+                  <a v-if="currentUser.cvData.storageUrl" :href="currentUser.cvData.storageUrl" target="_blank">{{ currentUser.cvData.fileName }}</a>
+                  <span v-else>{{ currentUser.cvData.fileName }}</span>
+                </div>
+              </div>
+
+              <!-- Skills & Experience -->
+              <div v-if="currentUser">
+                <div class="card mb-6">
+                  <div class="card-header">
+                    <h3 class="card-title">Skills</h3>
+                  </div>
+                  <div class="card-body">
+                    <div v-if="currentUser.hardSkills && currentUser.hardSkills.length">
+                      <h4>Hard Skills</h4>
+                      <ul>
+                        <li v-for="(skill, i) in currentUser.hardSkills" :key="'hard-' + i">
+                          {{ skill.name }} ({{ skill.proficiencyLevel }}) <span v-if="skill.certification">- {{ skill.certification }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div v-if="currentUser.softSkills && currentUser.softSkills.length">
+                      <h4>Soft Skills</h4>
+                      <ul>
+                        <li v-for="(skill, i) in currentUser.softSkills" :key="'soft-' + i">
+                          {{ skill.name }} ({{ skill.proficiencyLevel }}) <span v-if="skill.certification">- {{ skill.certification }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="card mb-6">
+                  <div class="card-header">
+                    <h3 class="card-title">Work Experience</h3>
+                  </div>
+                  <div class="card-body">
+                    <div v-if="currentUser.experiences && currentUser.experiences.length">
+                      <div v-for="(exp, i) in currentUser.experiences" :key="'exp-' + i" class="mb-4 p-4 border rounded">
+                        <div><strong>{{ exp.jobTitle }}</strong> @ <strong>{{ exp.companyName }}</strong></div>
+                        <div>{{ exp.startDate ? (new Date(exp.startDate)).toLocaleDateString() : '' }} - {{ exp.endDate ? (new Date(exp.endDate)).toLocaleDateString() : '' }}</div>
+                        <div>{{ exp.description }}</div>
+                        <div v-if="exp.technologiesUsed && exp.technologiesUsed.length">Tech: {{ exp.technologiesUsed.join(', ') }}</div>
+                      </div>
+                    </div>
+                    <div v-else>
+                      <em>No experience data.</em>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--end::Info-->
+          </div>
+          <!--end::Details-->
+        </div>
+        <!--end::Card body-->
+      </div>
+      <!--end::details View-->
+
+    <!--begin::Row-->
+    <div class="row gy-10 gx-xl-10">
+      <!--begin::Col-->
+      <div class="col-xl-6">
+        <KTChartWidget1
+          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
+        ></KTChartWidget1>
+      </div>
+      <!--end::Col-->
+
+      <!--begin::Col-->
+      <div class="col-xl-6">
+        <KTListWidget1
+          widget-classes="card-xxl-stretch mb-5 mb-xl-10'"
+        ></KTListWidget1>
+      </div>
+      <!--end::Col-->
     </div>
-    <!--end::Card body-->
+    <!--end::Row-->
+
+    <!--begin::Row-->
+    <div class="row gy-10 gx-xl-10">
+      <!--begin::Col-->
+      <div class="col-xl-6">
+        <KTListWidget5
+          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
+        ></KTListWidget5>
+      </div>
+      <!--end::Col-->
+
+      <!--begin::Col-->
+      <div class="col-xl-6">
+        <KTTableWidget5
+          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
+        ></KTTableWidget5>
+      </div>
+      <!--end::Col-->
+    </div>
+    <!--end::Row-->
   </div>
-  <!--end::details View-->
-
-  <!--begin::Row-->
-  <div class="row gy-10 gx-xl-10">
-    <!--begin::Col-->
-    <div class="col-xl-6">
-      <KTChartWidget1
-        widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-      ></KTChartWidget1>
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-xl-6">
-      <KTListWidget1
-        widget-classes="card-xxl-stretch mb-5 mb-xl-10'"
-      ></KTListWidget1>
-    </div>
-    <!--end::Col-->
-  </div>
-  <!--end::Row-->
-
-  <!--begin::Row-->
-  <div class="row gy-10 gx-xl-10">
-    <!--begin::Col-->
-    <div class="col-xl-6">
-      <KTListWidget5
-        widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-      ></KTListWidget5>
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-xl-6">
-      <KTTableWidget5
-        widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-      ></KTTableWidget5>
-    </div>
-    <!--end::Col-->
-  </div>
-  <!--end::Row-->
+  <!--end::Overview Content-->
 </template>
 
 <script lang="ts">
+import { defineComponent, computed, ref, inject, onMounted, onUnmounted } from "vue";
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent } from "vue";
 import KTChartWidget1 from "@/components/widgets/charts/Widget1.vue";
+import KTListWidget1 from "@/components/widgets/lists/Widget1.vue";
 import KTListWidget5 from "@/components/widgets/lists/Widget5.vue";
 import KTTableWidget5 from "@/components/widgets/tables/Widget5.vue";
-import KTListWidget1 from "@/components/widgets/lists/Widget1.vue";
+import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
+import { useRoute } from "vue-router";
+import type { Employee } from "@/core/models/Employee";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
-  name: "account-overview",
+  name: "employee-overview",
   components: {
+    Dropdown3,
     KTChartWidget1,
+    KTListWidget1,
     KTListWidget5,
     KTTableWidget5,
-    KTListWidget1,
   },
   setup() {
+    const { currentUser } = useCurrentUser();
+
     return {
       getAssetPath,
+      currentUser,
     };
   },
 });

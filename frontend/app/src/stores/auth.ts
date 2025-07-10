@@ -23,6 +23,8 @@ export const useAuthStore = defineStore("auth", () => {
     if (token) {
       JwtService.saveToken(token);
     }
+    // Set the authorization header for future requests
+    ApiService.setHeader();
   }
 
   function setError(error: any, status?: number) {

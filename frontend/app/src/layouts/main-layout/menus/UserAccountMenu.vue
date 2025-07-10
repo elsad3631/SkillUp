@@ -9,7 +9,13 @@
       <div class="menu-content d-flex align-items-center px-3">
         <!--begin::Avatar-->
         <div class="symbol symbol-50px me-5">
-          <img alt="Logo" :src="getAssetPath('media/avatars/300-1.jpg')" />
+          <img 
+            alt="User Avatar" 
+            :src="currentAvatarUrl" 
+            @error="handleImageError"
+            @load="handleImageLoad"
+            :class="{ 'opacity-50': imageLoading }"
+          />
         </div>
         <!--end::Avatar-->
 
@@ -296,10 +302,12 @@
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
+import { useAvatar } from "@/core/composables/useAvatar";
 
 export default defineComponent({
   name: "kt-user-menu",
@@ -308,6 +316,13 @@ export default defineComponent({
     const router = useRouter();
     const i18n = useI18n();
     const store = useAuthStore();
+    const { currentUser, fetchCurrentUser } = useCurrentUser();
+    const { getAvatarDisplayUrl } = useAvatar();
+    
+    // Avatar state management
+    const imageLoading = ref(false);
+    const imageError = ref(false);
+    const currentAvatarUrl = ref(getAssetPath('media/avatars/blank.png'));
 
     i18n.locale.value = localStorage.getItem("lang")
       ? (localStorage.getItem("lang") as string)
@@ -354,8 +369,16 @@ export default defineComponent({
       return countries[i18n.locale.value as keyof typeof countries];
     });
 
-    // Get user data from auth store
+    // Get user data from current user (more reliable than auth store)
     const userDisplayName = computed(() => {
+      if (currentUser.value) {
+        const { firstName, lastName } = currentUser.value;
+        if (firstName && lastName) {
+          return `${firstName} ${lastName}`;
+        }
+        return firstName || lastName || currentUser.value.username || "User";
+      }
+      // Fallback to auth store if currentUser not loaded yet
       const user = store.user;
       if (user?.name && user?.surname) {
         return `${user.name} ${user.surname}`;
@@ -366,7 +389,44 @@ export default defineComponent({
     });
 
     const userEmail = computed(() => {
-      return store.user?.email || "user@example.com";
+      return currentUser.value?.email || store.user?.email || "user@example.com";
+    });
+
+    // Avatar functions
+    const handleImageError = () => {
+      imageError.value = true;
+      imageLoading.value = false;
+      currentAvatarUrl.value = getAssetPath('media/avatars/blank.png');
+    };
+
+    const handleImageLoad = () => {
+      imageError.value = false;
+      imageLoading.value = false;
+    };
+
+    // Get avatar URL function
+    const getAvatarUrl = async (avatarUrl: string | undefined) => {
+      if (!avatarUrl || avatarUrl.trim() === '' || imageError.value) {
+        return getAssetPath('media/avatars/blank.png');
+      }
+      
+      const displayUrl = await getAvatarDisplayUrl(avatarUrl);
+      
+      if (!displayUrl) {
+        return getAssetPath('media/avatars/blank.png');
+      }
+      
+      return displayUrl;
+    };
+
+    // Watch for avatar changes
+    watch(() => currentUser.value?.avatar, async (newAvatar) => {
+      currentAvatarUrl.value = await getAvatarUrl(newAvatar);
+    }, { immediate: true });
+
+    // Fetch current user on mount
+    onMounted(() => {
+      fetchCurrentUser();
     });
 
     return {
@@ -378,6 +438,10 @@ export default defineComponent({
       getAssetPath,
       userDisplayName,
       userEmail,
+      currentAvatarUrl,
+      imageLoading,
+      handleImageError,
+      handleImageLoad,
     };
   },
 });

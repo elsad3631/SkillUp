@@ -1,6 +1,21 @@
 <template>
-  <!--begin::Basic info-->
-  <div class="card mb-5 mb-xl-10">
+  <!--begin::Loading State for Settings-->
+  <div v-if="!currentUser" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="mt-3">
+        <span class="fw-semobold text-gray-600">Loading settings...</span>
+      </div>
+    </div>
+  </div>
+  <!--end::Loading State for Settings-->
+
+  <!--begin::Settings Content-->
+  <div v-else>
+    <!--begin::Basic info-->
+    <div class="card mb-5 mb-xl-10">
     <!--begin::Card header-->
     <div
       class="card-header border-0 cursor-pointer"
@@ -21,1164 +36,181 @@
     <!--begin::Content-->
     <div id="kt_account_profile_details" class="collapse show">
       <!--begin::Form-->
-      <VForm
+      <form
         id="kt_account_profile_details_form"
         class="form"
-        novalidate
-        @submit="saveChanges1()"
-        :validation-schema="profileDetailsValidator"
+        @submit.prevent="saveChanges1()"
       >
         <!--begin::Card body-->
         <div class="card-body border-top p-9">
           <!--begin::Input group-->
           <div class="row mb-6">
             <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Avatar</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
-            <div class="col-lg-8">
-              <!--begin::Image input-->
-              <div
-                class="image-input image-input-outline"
-                data-kt-image-input="true"
-                :style="{
-                  backgroundImage: `url(${getAssetPath(
-                    '/media/avatars/blank.png'
-                  )})`,
-                }"
-              >
-                <!--begin::Preview existing avatar-->
-                <div
-                  class="image-input-wrapper w-125px h-125px"
-                  :style="`background-image: url(${profileDetails.avatar})`"
-                ></div>
-                <!--end::Preview existing avatar-->
-
-                <!--begin::Label-->
-                <label
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                  data-kt-image-input-action="change"
-                  data-bs-toggle="tooltip"
-                  title="Change avatar"
-                >
-                  <i class="bi bi-pencil-fill fs-7"></i>
-
-                  <!--begin::Inputs-->
-                  <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                  <input type="hidden" name="avatar_remove" />
-                  <!--end::Inputs-->
-                </label>
-                <!--end::Label-->
-
-                <!--begin::Remove-->
-                <span
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                  data-kt-image-input-action="remove"
-                  data-bs-toggle="tooltip"
-                  @click="removeImage()"
-                  title="Remove avatar"
-                >
-                  <i class="bi bi-x fs-2"></i>
-                </span>
-                <!--end::Remove-->
-              </div>
-              <!--end::Image input-->
-
-              <!--begin::Hint-->
-              <div class="form-text">Allowed file types: png, jpg, jpeg.</div>
-              <!--end::Hint-->
-            </div>
-            <!--end::Col-->
-          </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6"
-              >Full Name</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
-            <div class="col-lg-8">
-              <!--begin::Row-->
-              <div class="row">
-                <!--begin::Col-->
-                <div class="col-lg-6 fv-row">
-                  <Field
-                    type="text"
-                    name="fname"
-                    class="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                    placeholder="First name"
-                    v-model="profileDetails.name"
-                  />
-                  <div class="fv-plugins-message-container">
-                    <div class="fv-help-block">
-                      <ErrorMessage name="fname" />
-                    </div>
-                  </div>
-                </div>
-                <!--end::Col-->
-
-                <!--begin::Col-->
-                <div class="col-lg-6 fv-row">
-                  <Field
-                    type="text"
-                    name="lname"
-                    class="form-control form-control-lg form-control-solid"
-                    placeholder="Last name"
-                    v-model="profileDetails.surname"
-                  />
-                  <div class="fv-plugins-message-container">
-                    <div class="fv-help-block">
-                      <ErrorMessage name="lname" />
-                    </div>
-                  </div>
-                </div>
-                <!--end::Col-->
-              </div>
-              <!--end::Row-->
-            </div>
-            <!--end::Col-->
-          </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6"
-              >Company</label
-            >
+            <label class="col-lg-4 col-form-label required fw-semobold fs-6">First Name</label>
             <!--end::Label-->
 
             <!--begin::Col-->
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="text"
-                name="company"
-                class="form-control form-control-lg form-control-solid"
-                placeholder="Company name"
-                v-model="profileDetails.company"
+                name="firstName"
+                class="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
+                placeholder="First name"
+                v-model="profileDetails.firstName"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="company" />
-                </div>
-              </div>
             </div>
-            <!--end::Col-->
+          </div>
+          <!--end::Input group-->
+
+          <div class="row mb-6">
+            <label class="col-lg-4 col-form-label required fw-semobold fs-6">Last Name</label>
+            <div class="col-lg-8 fv-row">
+              <input
+                type="text"
+                name="lastName"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Last name"
+                v-model="profileDetails.lastName"
+              />
+            </div>
           </div>
           <!--end::Input group-->
 
           <!--begin::Input group-->
           <div class="row mb-6">
             <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6">
-              <span class="required">Contact Phone</span>
-
-              <i
-                class="fas fa-exclamation-circle ms-1 fs-7"
-                data-bs-toggle="tooltip"
-                title="Phone number must be active"
-              ></i>
-            </label>
+            <label class="col-lg-4 col-form-label fw-semobold fs-6"
+              >Department</label
+            >
             <!--end::Label-->
 
             <!--begin::Col-->
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
+                type="text"
+                name="department"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Department"
+                v-model="profileDetails.department"
+              />
+            </div>
+            <!--end::Col-->
+          </div>
+          <!--end::Input group-->
+
+          <div class="row mb-6">
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">Contact Phone</label>
+            <div class="col-lg-8 fv-row">
+              <input
                 type="tel"
                 name="phone"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="Phone number"
-                v-model="profileDetails.contactPhone"
+                v-model="profileDetails.phone"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="phone" />
-                </div>
-              </div>
             </div>
-            <!--end::Col-->
           </div>
           <!--end::Input group-->
 
-          <!--begin::Input group-->
           <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Company Site</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">Current Role</label>
             <div class="col-lg-8 fv-row">
-              <Field
+              <input
                 type="text"
-                name="website"
+                name="currentRole"
                 class="form-control form-control-lg form-control-solid"
-                placeholder="Company website"
-                v-model="profileDetails.companySite"
+                placeholder="Current role"
+                v-model="profileDetails.currentRole"
               />
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="website" />
-                </div>
-              </div>
             </div>
-            <!--end::Col-->
+          </div>
+          <!--end::Input group-->
+
+          <div class="row mb-6">
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">Available for assignments</label>
+            <div class="col-lg-8 fv-row d-flex align-items-center">
+              <input
+                type="checkbox"
+                name="isAvailable"
+                class="form-check-input me-2"
+                v-model="profileDetails.isAvailable"
+              />
+              <span class="form-check-label">Available</span>
+            </div>
           </div>
           <!--end::Input group-->
 
           <!--begin::Input group-->
           <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6">
-              <span class="required">Country</span>
-
-              <i
-                class="fas fa-exclamation-circle ms-1 fs-7"
-                data-bs-toggle="tooltip"
-                title="Country of origination"
-              ></i>
-            </label>
-            <!--end::Label-->
-
-            <!--begin::Col-->
+            <label class="col-lg-4 col-form-label required fw-semobold fs-6">Email</label>
             <div class="col-lg-8 fv-row">
-              <Field
-                as="select"
-                name="country"
-                class="form-select form-select-solid form-select-lg fw-semobold"
-                v-model="profileDetails.country"
-              >
-                <option value="AF">Afghanistan</option>
-                <option value="AX">Aland Islands</option>
-                <option value="AL">Albania</option>
-                <option value="DZ">Algeria</option>
-                <option value="AS">American Samoa</option>
-                <option value="AD">Andorra</option>
-                <option value="AO">Angola</option>
-                <option value="AI">Anguilla</option>
-                <option value="AQ">Antarctica</option>
-                <option value="AG">Antigua and Barbuda</option>
-                <option value="AR">Argentina</option>
-                <option value="AM">Armenia</option>
-                <option value="AW">Aruba</option>
-                <option value="AU">Australia</option>
-                <option value="AT">Austria</option>
-                <option value="AZ">Azerbaijan</option>
-                <option value="BS">Bahamas</option>
-                <option value="BH">Bahrain</option>
-                <option value="BD">Bangladesh</option>
-                <option value="BB">Barbados</option>
-                <option value="BY">Belarus</option>
-                <option value="BE">Belgium</option>
-                <option value="BZ">Belize</option>
-                <option value="BJ">Benin</option>
-                <option value="BM">Bermuda</option>
-                <option value="BT">Bhutan</option>
-                <option value="BO">Bolivia, Plurinational State of</option>
-                <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
-                <option value="BA">Bosnia and Herzegovina</option>
-                <option value="BW">Botswana</option>
-                <option value="BV">Bouvet Island</option>
-                <option value="BR">Brazil</option>
-                <option value="IO">British Indian Ocean Territory</option>
-                <option value="BN">Brunei Darussalam</option>
-                <option value="BG">Bulgaria</option>
-                <option value="BF">Burkina Faso</option>
-                <option value="BI">Burundi</option>
-                <option value="KH">Cambodia</option>
-                <option value="CM">Cameroon</option>
-                <option value="CA">Canada</option>
-                <option value="CV">Cape Verde</option>
-                <option value="KY">Cayman Islands</option>
-                <option value="CF">Central African Republic</option>
-                <option value="TD">Chad</option>
-                <option value="CL">Chile</option>
-                <option value="CN">China</option>
-                <option value="CX">Christmas Island</option>
-                <option value="CC">Cocos (Keeling) Islands</option>
-                <option value="CO">Colombia</option>
-                <option value="KM">Comoros</option>
-                <option value="CG">Congo</option>
-                <option value="CD">
-                  Congo, the Democratic Republic of the
-                </option>
-                <option value="CK">Cook Islands</option>
-                <option value="CR">Costa Rica</option>
-                <option value="CI">Côte d'Ivoire</option>
-                <option value="HR">Croatia</option>
-                <option value="CU">Cuba</option>
-                <option value="CW">Curaçao</option>
-                <option value="CY">Cyprus</option>
-                <option value="CZ">Czech Republic</option>
-                <option value="DK">Denmark</option>
-                <option value="DJ">Djibouti</option>
-                <option value="DM">Dominica</option>
-                <option value="DO">Dominican Republic</option>
-                <option value="EC">Ecuador</option>
-                <option value="EG">Egypt</option>
-                <option value="SV">El Salvador</option>
-                <option value="GQ">Equatorial Guinea</option>
-                <option value="ER">Eritrea</option>
-                <option value="EE">Estonia</option>
-                <option value="ET">Ethiopia</option>
-                <option value="FK">Falkland Islands (Malvinas)</option>
-                <option value="FO">Faroe Islands</option>
-                <option value="FJ">Fiji</option>
-                <option value="FI">Finland</option>
-                <option value="FR">France</option>
-                <option value="GF">French Guiana</option>
-                <option value="PF">French Polynesia</option>
-                <option value="TF">French Southern Territories</option>
-                <option value="GA">Gabon</option>
-                <option value="GM">Gambia</option>
-                <option value="GE">Georgia</option>
-                <option value="DE">Germany</option>
-                <option value="GH">Ghana</option>
-                <option value="GI">Gibraltar</option>
-                <option value="GR">Greece</option>
-                <option value="GL">Greenland</option>
-                <option value="GD">Grenada</option>
-                <option value="GP">Guadeloupe</option>
-                <option value="GU">Guam</option>
-                <option value="GT">Guatemala</option>
-                <option value="GG">Guernsey</option>
-                <option value="GN">Guinea</option>
-                <option value="GW">Guinea-Bissau</option>
-                <option value="GY">Guyana</option>
-                <option value="HT">Haiti</option>
-                <option value="HM">Heard Island and McDonald Islands</option>
-                <option value="VA">Holy See (Vatican City State)</option>
-                <option value="HN">Honduras</option>
-                <option value="HK">Hong Kong</option>
-                <option value="HU">Hungary</option>
-                <option value="IS">Iceland</option>
-                <option value="IN">India</option>
-                <option value="ID">Indonesia</option>
-                <option value="IR">Iran, Islamic Republic of</option>
-                <option value="IQ">Iraq</option>
-                <option value="IE">Ireland</option>
-                <option value="IM">Isle of Man</option>
-                <option value="IL">Israel</option>
-                <option value="IT">Italy</option>
-                <option value="JM">Jamaica</option>
-                <option value="JP">Japan</option>
-                <option value="JE">Jersey</option>
-                <option value="JO">Jordan</option>
-                <option value="KZ">Kazakhstan</option>
-                <option value="KE">Kenya</option>
-                <option ue="KI">Kiribati</option>
-                <option value="KP">
-                  Korea, Democratic People's Republic of
-                </option>
-                <option value="KW">Kuwait</option>
-                <option value="KG">Kyrgyzstan</option>
-                <option value="LA">Lao People's Democratic Republic</option>
-                <option value="LV">Latvia</option>
-                <option value="LB">Lebanon</option>
-                <option value="LS">Lesotho</option>
-                <option value="LR">Liberia</option>
-                <option value="LY">Libya</option>
-                <option value="LI">Liechtenstein</option>
-                <option value="LT">Lithuania</option>
-                <option value="LU">Luxembourg</option>
-                <option value="MO">Macao</option>
-                <option value="MK">
-                  Macedonia, the former Yugoslav Republic of
-                </option>
-                <option value="MG">Madagascar</option>
-                <option value="MW">Malawi</option>
-                <option value="MY">Malaysia</option>
-                <option value="MV">Maldives</option>
-                <option value="ML">Mali</option>
-                <option value="MT">Malta</option>
-                <option value="MH">Marshall Islands</option>
-                <option value="MQ">Martinique</option>
-                <option value="MR">Mauritania</option>
-                <option value="MU">Mauritius</option>
-                <option value="YT">Mayotte</option>
-                <option value="MX">Mexico</option>
-                <option value="FM">Micronesia, Federated States of</option>
-                <option value="MD">Moldova, Republic of</option>
-                <option value="MC">Monaco</option>
-                <option value="MN">Mongolia</option>
-                <option value="ME">Montenegro</option>
-                <option value="MS">Montserrat</option>
-                <option value="MA">Morocco</option>
-                <option value="MZ">Mozambique</option>
-                <option value="MM">Myanmar</option>
-                <option value="NA">Namibia</option>
-                <option value="NR">Nauru</option>
-                <option value="NP">Nepal</option>
-                <option value="NL">Netherlands</option>
-                <option value="NC">New Caledonia</option>
-                <option value="NZ">New Zealand</option>
-                <option value="NI">Nicaragua</option>
-                <option value="NE">Niger</option>
-                <option value="NG">Nigeria</option>
-                <option value="NU">Niue</option>
-                <option value="NF">Norfolk Island</option>
-                <option value="MP">Northern Mariana Islands</option>
-                <option value="NO">Norway</option>
-                <option value="OM">Oman</option>
-                <option value="PK">Pakistan</option>
-                <option value="PW">Palau</option>
-                <option value="PS">Palestinian Territory, Occupied</option>
-                <option value="PA">Panama</option>
-                <option value="PG">Papua New Guinea</option>
-                <option value="PY">Paraguay</option>
-                <option value="PE">Peru</option>
-                <option value="PH">Philippines</option>
-                <option value="PN">Pitcairn</option>
-                <option value="PL">Poland</option>
-                <option value="PT">Portugal</option>
-                <option value="PR">Puerto Rico</option>
-                <option value="QA">Qatar</option>
-                <option value="RE">Réunion</option>
-                <option value="RO">Romania</option>
-                <option value="RU">Russian Federation</option>
-                <option value="RW">Rwanda</option>
-                <option value="BL">Saint Barthélemy</option>
-                <option value="SH">
-                  Saint Helena, Ascension and Tristan da Cunha
-                </option>
-                <option value="KN">Saint Kitts and Nevis</option>
-                <option value="LC">Saint Lucia</option>
-                <option value="MF">Saint Martin (French part)</option>
-                <option value="PM">Saint Pierre and Miquelon</option>
-                <option value="VC">Saint Vincent and the Grenadines</option>
-                <option value="WS">Samoa</option>
-                <option value="SM">San Marino</option>
-                <option value="ST">Sao Tome and Principe</option>
-                <option value="SA">Saudi Arabia</option>
-                <option value="SN">Senegal</option>
-                <option value="RS">Serbia</option>
-                <option value="SC">Seychelles</option>
-                <option value="SL">Sierra Leone</option>
-                <option value="SG">Singapore</option>
-                <option value="SX">Sint Maarten (Dutch part)</option>
-                <option value="SK">Slovakia</option>
-                <option value="SI">Slovenia</option>
-                <option value="SB">Solomon Islands</option>
-                <option value="SO">Somalia</option>
-                <option value="ZA">South Africa</option>
-                <option value="GS">
-                  South Georgia and the South Sandwich Islands
-                </option>
-                <option value="KR">South Korea</option>
-                <option value="SS">South Sudan</option>
-                <option value="ES">Spain</option>
-                <option value="LK">Sri Lanka</option>
-                <option value="SD">Sudan</option>
-                <option value="SR">Suriname</option>
-                <option value="SJ">Svalbard and Jan Mayen</option>
-                <option value="SZ">Swaziland</option>
-                <option value="SE">Sweden</option>
-                <option value="CH">Switzerland</option>
-                <option value="SY">Syrian Arab Republic</option>
-                <option value="TW">Taiwan, Province of China</option>
-                <option value="TJ">Tajikistan</option>
-                <option value="TZ">Tanzania, United Republic of</option>
-                <option value="TH">Thailand</option>
-                <option value="TL">Timor-Leste</option>
-                <option value="TG">Togo</option>
-                <option value="TK">Tokelau</option>
-                <option value="TO">Tonga</option>
-                <option value="TT">Trinidad and Tobago</option>
-                <option value="TN">Tunisia</option>
-                <option value="TR">Turkey</option>
-                <option value="TM">Turkmenistan</option>
-                <option value="TC">Turks and Caicos Islands</option>
-                <option value="TV">Tuvalu</option>
-                <option value="UG">Uganda</option>
-                <option value="UA">Ukraine</option>
-                <option value="AE">United Arab Emirates</option>
-                <option value="GB">United Kingdom</option>
-                <option value="US">United States</option>
-                <option value="UY">Uruguay</option>
-                <option value="UZ">Uzbekistan</option>
-                <option value="VU">Vanuatu</option>
-                <option value="VE">Venezuela, Bolivarian Republic of</option>
-                <option value="VN">Vietnam</option>
-                <option value="VI">Virgin Islands</option>
-                <option value="WF">Wallis and Futuna</option>
-                <option value="EH">Western Sahara</option>
-                <option value="YE">Yemen</option>
-                <option value="ZM">Zambia</option>
-                <option value="ZW">Zimbabwe</option>
-              </Field>
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="country" />
-                </div>
-              </div>
+              <input
+                type="email"
+                name="email"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Email address"
+                v-model="profileDetails.email"
+              />
             </div>
-            <!--end::Col-->
           </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
+          <!-- Date of Birth & Place of Birth -->
           <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6"
-              >Language</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
-            <div class="col-lg-8 fv-row">
-              <!--begin::Input-->
-              <Field
-                as="select"
-                name="language"
-                class="form-select form-select-solid form-select-lg"
-                v-model="profileDetails.language"
-              >
-                <option value="id">Bahasa Indonesia - Indonesian</option>
-                <option value="msa">Bahasa Melayu - Malay</option>
-                <option value="ca">Català - Catalan</option>
-                <option value="cs">Čeština - Czech</option>
-                <option value="da">Dansk - Danish</option>
-                <option value="de">Deutsch - German</option>
-                <option value="en">English</option>
-                <option value="en-gb">English UK - British English</option>
-                <option value="es">Español - Spanish</option>
-                <option value="fil">Filipino</option>
-                <option value="fr">Français - French</option>
-                <option value="ga">Gaeilge - Irish (beta)</option>
-                <option value="gl">Galego - Galician (beta)</option>
-                <option value="hr">Hrvatski - Croatian</option>
-                <option value="it">Italiano - Italian</option>
-                <option value="hu">Magyar - Hungarian</option>
-                <option value="nl">Nederlands - Dutch</option>
-                <option value="no">Norsk - Norwegian</option>
-                <option value="pl">Polski - Polish</option>
-                <option value="pt">Português - Portuguese</option>
-                <option value="ro">Română - Romanian</option>
-                <option value="sk">Slovenčina - Slovak</option>
-                <option value="fi">Suomi - Finnish</option>
-                <option value="sv">Svenska - Swedish</option>
-                <option value="vi">Tiếng Việt - Vietnamese</option>
-                <option value="tr">Türkçe - Turkish</option>
-                <option value="el">Ελληνικά - Greek</option>
-                <option value="bg">Български език - Bulgarian</option>
-                <option value="ru">Русский - Russian</option>
-                <option value="sr">Српски - Serbian</option>
-                <option value="uk">Українська мова - Ukrainian</option>
-                <option value="he">עִבְרִית - Hebrew</option>
-                <option value="ur">اردو - Urdu (beta)</option>
-                <option value="ar">العربية - Arabic</option>
-                <option value="fa">فارسی - Persian</option>
-                <option value="mr">मराठी - Marathi</option>
-                <option value="hi">हिन्दी - Hindi</option>
-                <option value="bn">বাংলা - Bangla</option>
-                <option value="gu">ગુજરાતી - Gujarati</option>
-                <option value="ta">தமிழ் - Tamil</option>
-                <option value="kn">ಕನ್ನಡ - Kannada</option>
-                <option value="th">ภาษาไทย - Thai</option>
-                <option value="ko">한국어 - Korean</option>
-                <option value="ja">日本語 - Japanese</option>
-                <option value="zh-cn">简体中文 - Simplified Chinese</option>
-                <option value="zh-tw">繁體中文 - Traditional Chinese</option>
-              </Field>
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="language" />
-                </div>
-              </div>
-              <!--end::Input-->
-
-              <!--begin::Hint-->
-              <div class="form-text">
-                Please select a preferred language, including date, time, and
-                number formatting.
-              </div>
-              <!--end::Hint-->
+            <div class="col-lg-6">
+              <label class="col-form-label fw-semobold fs-6">Date of Birth</label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                class="form-control form-control-lg form-control-solid"
+                v-model="profileDetails.dateOfBirth"
+              />
             </div>
-            <!--end::Col-->
+            <div class="col-lg-6">
+              <label class="col-form-label fw-semobold fs-6">Place of Birth</label>
+              <input
+                type="text"
+                name="placeOfBirth"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Place of birth"
+                v-model="profileDetails.placeOfBirth"
+              />
+            </div>
           </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
+          <!-- Address -->
           <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6"
-              >Time Zone</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">Address</label>
             <div class="col-lg-8 fv-row">
-              <Field
-                as="select"
-                name="timezone"
-                class="form-select form-select-solid form-select-lg"
-                v-model="profileDetails.timezone"
-              >
-                <option
-                  data-bs-offset="-39600"
-                  value="International Date Line West"
-                >
-                  (GMT-11:00) International Date Line West
-                </option>
-                <option data-bs-offset="-39600" value="Midway Island">
-                  (GMT-11:00) Midway Island
-                </option>
-                <option data-bs-offset="-39600" value="Samoa">
-                  (GMT-11:00) Samoa
-                </option>
-                <option data-bs-offset="-36000" value="Hawaii">
-                  (GMT-10:00) Hawaii
-                </option>
-                <option data-bs-offset="-28800" value="Alaska">
-                  (GMT-08:00) Alaska
-                </option>
-                <option
-                  data-bs-offset="-25200"
-                  value="Pacific Time (US &amp; Canada)"
-                >
-                  (GMT-07:00) Pacific Time (US &amp; Canada)
-                </option>
-                <option data-bs-offset="-25200" value="Tijuana">
-                  (GMT-07:00) Tijuana
-                </option>
-                <option data-bs-offset="-25200" value="Arizona">
-                  (GMT-07:00) Arizona
-                </option>
-                <option
-                  data-bs-offset="-21600"
-                  value="Mountain Time (US &amp; Canada)"
-                >
-                  (GMT-06:00) Mountain Time (US &amp; Canada)
-                </option>
-                <option data-bs-offset="-21600" value="Chihuahua">
-                  (GMT-06:00) Chihuahua
-                </option>
-                <option data-bs-offset="-21600" value="Mazatlan">
-                  (GMT-06:00) Mazatlan
-                </option>
-                <option data-bs-offset="-21600" value="Saskatchewan">
-                  (GMT-06:00) Saskatchewan
-                </option>
-                <option data-bs-offset="-21600" value="Central America">
-                  (GMT-06:00) Central America
-                </option>
-                <option
-                  data-bs-offset="-18000"
-                  value="Central Time (US &amp; Canada)"
-                >
-                  (GMT-05:00) Central Time (US &amp; Canada)
-                </option>
-                <option data-bs-offset="-18000" value="Guadalajara">
-                  (GMT-05:00) Guadalajara
-                </option>
-                <option data-bs-offset="-18000" value="Mexico City">
-                  (GMT-05:00) Mexico City
-                </option>
-                <option data-bs-offset="-18000" value="Monterrey">
-                  (GMT-05:00) Monterrey
-                </option>
-                <option data-bs-offset="-18000" value="Bogota">
-                  (GMT-05:00) Bogota
-                </option>
-                <option data-bs-offset="-18000" value="Lima">
-                  (GMT-05:00) Lima
-                </option>
-                <option data-bs-offset="-18000" value="Quito">
-                  (GMT-05:00) Quito
-                </option>
-                <option
-                  data-bs-offset="-14400"
-                  value="Eastern Time (US &amp; Canada)"
-                >
-                  (GMT-04:00) Eastern Time (US &amp; Canada)
-                </option>
-                <option data-bs-offset="-14400" value="Indiana (East)">
-                  (GMT-04:00) Indiana (East)
-                </option>
-                <option data-bs-offset="-14400" value="Caracas">
-                  (GMT-04:00) Caracas
-                </option>
-                <option data-bs-offset="-14400" value="La Paz">
-                  (GMT-04:00) La Paz
-                </option>
-                <option data-bs-offset="-14400" value="Georgetown">
-                  (GMT-04:00) Georgetown
-                </option>
-                <option data-bs-offset="-10800" value="Atlantic Time (Canada)">
-                  (GMT-03:00) Atlantic Time (Canada)
-                </option>
-                <option data-bs-offset="-10800" value="Santiago">
-                  (GMT-03:00) Santiago
-                </option>
-                <option data-bs-offset="-10800" value="Brasilia">
-                  (GMT-03:00) Brasilia
-                </option>
-                <option data-bs-offset="-10800" value="Buenos Aires">
-                  (GMT-03:00) Buenos Aires
-                </option>
-                <option data-bs-offset="-9000" value="Newfoundland">
-                  (GMT-02:30) Newfoundland
-                </option>
-                <option data-bs-offset="-7200" value="Greenland">
-                  (GMT-02:00) Greenland
-                </option>
-                <option data-bs-offset="-7200" value="Mid-Atlantic">
-                  (GMT-02:00) Mid-Atlantic
-                </option>
-                <option data-bs-offset="-3600" value="Cape Verde Is.">
-                  (GMT-01:00) Cape Verde Is.
-                </option>
-                <option data-bs-offset="0" value="Azores">(GMT) Azores</option>
-                <option data-bs-offset="0" value="Monrovia">
-                  (GMT) Monrovia
-                </option>
-                <option data-bs-offset="0" value="UTC">(GMT) UTC</option>
-                <option data-bs-offset="3600" value="Dublin">
-                  (GMT+01:00) Dublin
-                </option>
-                <option data-bs-offset="3600" value="Edinburgh">
-                  (GMT+01:00) Edinburgh
-                </option>
-                <option data-bs-offset="3600" value="Lisbon">
-                  (GMT+01:00) Lisbon
-                </option>
-                <option data-bs-offset="3600" value="London">
-                  (GMT+01:00) London
-                </option>
-                <option data-bs-offset="3600" value="Casablanca">
-                  (GMT+01:00) Casablanca
-                </option>
-                <option data-bs-offset="3600" value="West Central Africa">
-                  (GMT+01:00) West Central Africa
-                </option>
-                <option data-bs-offset="7200" value="Belgrade">
-                  (GMT+02:00) Belgrade
-                </option>
-                <option data-bs-offset="7200" value="Bratislava">
-                  (GMT+02:00) Bratislava
-                </option>
-                <option data-bs-offset="7200" value="Budapest">
-                  (GMT+02:00) Budapest
-                </option>
-                <option data-bs-offset="7200" value="Ljubljana">
-                  (GMT+02:00) Ljubljana
-                </option>
-                <option data-bs-offset="7200" value="Prague">
-                  (GMT+02:00) Prague
-                </option>
-                <option data-bs-offset="7200" value="Sarajevo">
-                  (GMT+02:00) Sarajevo
-                </option>
-                <option data-bs-offset="7200" value="Skopje">
-                  (GMT+02:00) Skopje
-                </option>
-                <option data-bs-offset="7200" value="Warsaw">
-                  (GMT+02:00) Warsaw
-                </option>
-                <option data-bs-offset="7200" value="Zagreb">
-                  (GMT+02:00) Zagreb
-                </option>
-                <option data-bs-offset="7200" value="Brussels">
-                  (GMT+02:00) Brussels
-                </option>
-                <option data-bs-offset="7200" value="Copenhagen">
-                  (GMT+02:00) Copenhagen
-                </option>
-                <option data-bs-offset="7200" value="Madrid">
-                  (GMT+02:00) Madrid
-                </option>
-                <option data-bs-offset="7200" value="Paris">
-                  (GMT+02:00) Paris
-                </option>
-                <option data-bs-offset="7200" value="Amsterdam">
-                  (GMT+02:00) Amsterdam
-                </option>
-                <option data-bs-offset="7200" value="Berlin">
-                  (GMT+02:00) Berlin
-                </option>
-                <option data-bs-offset="7200" value="Bern">
-                  (GMT+02:00) Bern
-                </option>
-                <option data-bs-offset="7200" value="Rome">
-                  (GMT+02:00) Rome
-                </option>
-                <option data-bs-offset="7200" value="Stockholm">
-                  (GMT+02:00) Stockholm
-                </option>
-                <option data-bs-offset="7200" value="Vienna">
-                  (GMT+02:00) Vienna
-                </option>
-                <option data-bs-offset="7200" value="Cairo">
-                  (GMT+02:00) Cairo
-                </option>
-                <option data-bs-offset="7200" value="Harare">
-                  (GMT+02:00) Harare
-                </option>
-                <option data-bs-offset="7200" value="Pretoria">
-                  (GMT+02:00) Pretoria
-                </option>
-                <option data-bs-offset="10800" value="Bucharest">
-                  (GMT+03:00) Bucharest
-                </option>
-                <option data-bs-offset="10800" value="Helsinki">
-                  (GMT+03:00) Helsinki
-                </option>
-                <option data-bs-offset="10800" value="Kiev">
-                  (GMT+03:00) Kiev
-                </option>
-                <option data-bs-offset="10800" value="Kyiv">
-                  (GMT+03:00) Kyiv
-                </option>
-                <option data-bs-offset="10800" value="Riga">
-                  (GMT+03:00) Riga
-                </option>
-                <option data-bs-offset="10800" value="Sofia">
-                  (GMT+03:00) Sofia
-                </option>
-                <option data-bs-offset="10800" value="Tallinn">
-                  (GMT+03:00) Tallinn
-                </option>
-                <option data-bs-offset="10800" value="Vilnius">
-                  (GMT+03:00) Vilnius
-                </option>
-                <option data-bs-offset="10800" value="Athens">
-                  (GMT+03:00) Athens
-                </option>
-                <option data-bs-offset="10800" value="Istanbul">
-                  (GMT+03:00) Istanbul
-                </option>
-                <option data-bs-offset="10800" value="Minsk">
-                  (GMT+03:00) Minsk
-                </option>
-                <option data-bs-offset="10800" value="Jerusalem">
-                  (GMT+03:00) Jerusalem
-                </option>
-                <option data-bs-offset="10800" value="Moscow">
-                  (GMT+03:00) Moscow
-                </option>
-                <option data-bs-offset="10800" value="St. Petersburg">
-                  (GMT+03:00) St. Petersburg
-                </option>
-                <option data-bs-offset="10800" value="Volgograd">
-                  (GMT+03:00) Volgograd
-                </option>
-                <option data-bs-offset="10800" value="Kuwait">
-                  (GMT+03:00) Kuwait
-                </option>
-                <option data-bs-offset="10800" value="Riyadh">
-                  (GMT+03:00) Riyadh
-                </option>
-                <option data-bs-offset="10800" value="Nairobi">
-                  (GMT+03:00) Nairobi
-                </option>
-                <option data-bs-offset="10800" value="Baghdad">
-                  (GMT+03:00) Baghdad
-                </option>
-                <option data-bs-offset="14400" value="Abu Dhabi">
-                  (GMT+04:00) Abu Dhabi
-                </option>
-                <option data-bs-offset="14400" value="Muscat">
-                  (GMT+04:00) Muscat
-                </option>
-                <option data-bs-offset="14400" value="Baku">
-                  (GMT+04:00) Baku
-                </option>
-                <option data-bs-offset="14400" value="Tbilisi">
-                  (GMT+04:00) Tbilisi
-                </option>
-                <option data-bs-offset="14400" value="Yerevan">
-                  (GMT+04:00) Yerevan
-                </option>
-                <option data-bs-offset="16200" value="Tehran">
-                  (GMT+04:30) Tehran
-                </option>
-                <option data-bs-offset="16200" value="Kabul">
-                  (GMT+04:30) Kabul
-                </option>
-                <option data-bs-offset="18000" value="Ekaterinburg">
-                  (GMT+05:00) Ekaterinburg
-                </option>
-                <option data-bs-offset="18000" value="Islamabad">
-                  (GMT+05:00) Islamabad
-                </option>
-                <option data-bs-offset="18000" value="Karachi">
-                  (GMT+05:00) Karachi
-                </option>
-                <option data-bs-offset="18000" value="Tashkent">
-                  (GMT+05:00) Tashkent
-                </option>
-                <option data-bs-offset="19800" value="Chennai">
-                  (GMT+05:30) Chennai
-                </option>
-                <option data-bs-offset="19800" value="Kolkata">
-                  (GMT+05:30) Kolkata
-                </option>
-                <option data-bs-offset="19800" value="Mumbai">
-                  (GMT+05:30) Mumbai
-                </option>
-                <option data-bs-offset="19800" value="New Delhi">
-                  (GMT+05:30) New Delhi
-                </option>
-                <option data-bs-offset="19800" value="Sri Jayawardenepura">
-                  (GMT+05:30) Sri Jayawardenepura
-                </option>
-                <option data-bs-offset="20700" value="Kathmandu">
-                  (GMT+05:45) Kathmandu
-                </option>
-                <option data-bs-offset="21600" value="Astana">
-                  (GMT+06:00) Astana
-                </option>
-                <option data-bs-offset="21600" value="Dhaka">
-                  (GMT+06:00) Dhaka
-                </option>
-                <option data-bs-offset="21600" value="Almaty">
-                  (GMT+06:00) Almaty
-                </option>
-                <option data-bs-offset="21600" value="Urumqi">
-                  (GMT+06:00) Urumqi
-                </option>
-                <option data-bs-offset="23400" value="Rangoon">
-                  (GMT+06:30) Rangoon
-                </option>
-                <option data-bs-offset="25200" value="Novosibirsk">
-                  (GMT+07:00) Novosibirsk
-                </option>
-                <option data-bs-offset="25200" value="Bangkok">
-                  (GMT+07:00) Bangkok
-                </option>
-                <option data-bs-offset="25200" value="Hanoi">
-                  (GMT+07:00) Hanoi
-                </option>
-                <option data-bs-offset="25200" value="Jakarta">
-                  (GMT+07:00) Jakarta
-                </option>
-                <option data-bs-offset="25200" value="Krasnoyarsk">
-                  (GMT+07:00) Krasnoyarsk
-                </option>
-                <option data-bs-offset="28800" value="Beijing">
-                  (GMT+08:00) Beijing
-                </option>
-                <option data-bs-offset="28800" value="Chongqing">
-                  (GMT+08:00) Chongqing
-                </option>
-                <option data-bs-offset="28800" value="Hong Kong">
-                  (GMT+08:00) Hong Kong
-                </option>
-                <option data-bs-offset="28800" value="Kuala Lumpur">
-                  (GMT+08:00) Kuala Lumpur
-                </option>
-                <option data-bs-offset="28800" value="Singapore">
-                  (GMT+08:00) Singapore
-                </option>
-                <option data-bs-offset="28800" value="Taipei">
-                  (GMT+08:00) Taipei
-                </option>
-                <option data-bs-offset="28800" value="Perth">
-                  (GMT+08:00) Perth
-                </option>
-                <option data-bs-offset="28800" value="Irkutsk">
-                  (GMT+08:00) Irkutsk
-                </option>
-                <option data-bs-offset="28800" value="Ulaan Bataar">
-                  (GMT+08:00) Ulaan Bataar
-                </option>
-                <option data-bs-offset="32400" value="Seoul">
-                  (GMT+09:00) Seoul
-                </option>
-                <option data-bs-offset="32400" value="Osaka">
-                  (GMT+09:00) Osaka
-                </option>
-                <option data-bs-offset="32400" value="Sapporo">
-                  (GMT+09:00) Sapporo
-                </option>
-                <option data-bs-offset="32400" value="Tokyo">
-                  (GMT+09:00) Tokyo
-                </option>
-                <option data-bs-offset="32400" value="Yakutsk">
-                  (GMT+09:00) Yakutsk
-                </option>
-                <option data-bs-offset="34200" value="Darwin">
-                  (GMT+09:30) Darwin
-                </option>
-                <option data-bs-offset="34200" value="Adelaide">
-                  (GMT+09:30) Adelaide
-                </option>
-                <option data-bs-offset="36000" value="Canberra">
-                  (GMT+10:00) Canberra
-                </option>
-                <option data-bs-offset="36000" value="Melbourne">
-                  (GMT+10:00) Melbourne
-                </option>
-                <option data-bs-offset="36000" value="Sydney">
-                  (GMT+10:00) Sydney
-                </option>
-                <option data-bs-offset="36000" value="Brisbane">
-                  (GMT+10:00) Brisbane
-                </option>
-                <option data-bs-offset="36000" value="Hobart">
-                  (GMT+10:00) Hobart
-                </option>
-                <option data-bs-offset="36000" value="Vladivostok">
-                  (GMT+10:00) Vladivostok
-                </option>
-                <option data-bs-offset="36000" value="Guam">
-                  (GMT+10:00) Guam
-                </option>
-                <option data-bs-offset="36000" value="Port Moresby">
-                  (GMT+10:00) Port Moresby
-                </option>
-                <option data-bs-offset="36000" value="Solomon Is.">
-                  (GMT+10:00) Solomon Is.
-                </option>
-                <option data-bs-offset="39600" value="Magadan">
-                  (GMT+11:00) Magadan
-                </option>
-                <option data-bs-offset="39600" value="New Caledonia">
-                  (GMT+11:00) New Caledonia
-                </option>
-                <option data-bs-offset="43200" value="Fiji">
-                  (GMT+12:00) Fiji
-                </option>
-                <option data-bs-offset="43200" value="Kamchatka">
-                  (GMT+12:00) Kamchatka
-                </option>
-                <option data-bs-offset="43200" value="Marshall Is.">
-                  (GMT+12:00) Marshall Is.
-                </option>
-                <option data-bs-offset="43200" value="Auckland">
-                  (GMT+12:00) Auckland
-                </option>
-                <option data-bs-offset="43200" value="Wellington">
-                  (GMT+12:00) Wellington
-                </option>
-                <option data-bs-offset="46800" value="Nuku'alofa">
-                  (GMT+13:00) Nuku'alofa
-                </option>
-              </Field>
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="timezone" />
-                </div>
-              </div>
+              <textarea
+                name="address"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Address"
+                rows="2"
+                v-model="profileDetails.address"
+              ></textarea>
             </div>
-            <!--end::Col-->
           </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
+          <!-- CV Data -->
           <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6"
-              >Currency</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
-            <div class="col-lg-8 fv-row">
-              <Field
-                as="select"
-                name="currency"
-                class="form-select form-select-solid form-select-lg"
-                v-model="profileDetails.currency"
-              >
-                <option value="USD"><b>USD</b>&#160;-&#160;USA dollar</option>
-                <option value="GBP">
-                  <b>GBP</b>&#160;-&#160;British pound
-                </option>
-                <option value="AUD">
-                  <b>AUD</b>&#160;-&#160;Australian dollar
-                </option>
-                <option value="JPY"><b>JPY</b>&#160;-&#160;Japanese yen</option>
-                <option value="SEK">
-                  <b>SEK</b>&#160;-&#160;Swedish krona
-                </option>
-                <option value="CAD">
-                  <b>CAD</b>&#160;-&#160;Canadian dollar
-                </option>
-                <option value="CHF"><b>CHF</b>&#160;-&#160;Swiss franc</option>
-              </Field>
-              <div class="fv-plugins-message-container">
-                <div class="fv-help-block">
-                  <ErrorMessage name="currency" />
-                </div>
-              </div>
+            <div class="col-lg-6">
+              <label class="col-form-label fw-semobold fs-6">CV File Name</label>
+              <input
+                type="text"
+                name="cvData.fileName"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="e.g. john_doe_cv.pdf"
+                v-model="profileDetails.cvData.fileName"
+              />
             </div>
-            <!--end::Col-->
-          </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-6">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Communication</label
-            >
-            <!--end::Label-->
-
-            <!--begin::Col-->
-            <div class="col-lg-8 fv-row">
-              <!--begin::Options-->
-              <div class="d-flex align-items-center mt-3">
-                <!--begin::Option-->
-                <label
-                  class="form-check form-check-inline form-check-solid me-5"
-                >
-                  <input
-                    class="form-check-input"
-                    name="communication[]"
-                    type="checkbox"
-                  />
-                  <span class="fw-semobold ps-2 fs-6"> Email </span>
-                </label>
-                <!--end::Option-->
-
-                <!--begin::Option-->
-                <label class="form-check form-check-inline form-check-solid">
-                  <input
-                    class="form-check-input"
-                    name="communication[]"
-                    type="checkbox"
-                  />
-                  <span class="fw-semobold ps-2 fs-6"> Phone </span>
-                </label>
-                <!--end::Option-->
-              </div>
-              <!--end::Options-->
+            <div class="col-lg-6">
+              <label class="col-form-label fw-semobold fs-6">CV URL</label>
+              <input
+                type="url"
+                name="cvData.storageUrl"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="https://example.com/cv.pdf"
+                v-model="profileDetails.cvData.storageUrl"
+              />
             </div>
-            <!--end::Col-->
           </div>
-          <!--end::Input group-->
-
-          <!--begin::Input group-->
-          <div class="row mb-0">
-            <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Allow Marketing</label
-            >
-            <!--begin::Label-->
-
-            <!--begin::Label-->
-            <div class="col-lg-8 d-flex align-items-center">
-              <div class="form-check form-check-solid form-switch fv-row">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="allowmarketing"
-                />
-                <label class="form-check-label" for="allowmarketing"></label>
-              </div>
-            </div>
-            <!--begin::Label-->
-          </div>
-          <!--end::Input group-->
         </div>
         <!--end::Card body-->
 
@@ -1207,12 +239,178 @@
           </button>
         </div>
         <!--end::Actions-->
-      </VForm>
+      </form>
       <!--end::Form-->
     </div>
     <!--end::Content-->
   </div>
   <!--end::Basic info-->
+
+   <!-- Sezione Skills -->
+   <div class="card mb-6">
+    <div class="card-header">
+      <h3 class="card-title">Skills</h3>
+      <div class="card-toolbar">
+        <button type="button" class="btn btn-sm btn-primary me-2" @click="addHardSkill">
+          Add Hard Skill
+        </button>
+        <button type="button" class="btn btn-sm btn-secondary" @click="addSoftSkill">
+          Add Soft Skill
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div v-if="profileDetails.hardSkills && profileDetails.hardSkills.length">
+        <h4>Hard Skills</h4>
+        <div v-for="(skill, index) in profileDetails.hardSkills" :key="'hard-' + index" class="mb-3 p-3 border rounded">
+          <div class="row align-items-center">
+            <template v-if="editingHardSkillIndex === index">
+              <div class="col-md-4">
+                <input v-model="skill.name" placeholder="Skill name" class="form-control" />
+              </div>
+              <div class="col-md-3">
+                <select v-model="skill.proficiencyLevel" class="form-select">
+                  <option value="">Level</option>
+                  <option value="1">1 - Beginner</option>
+                  <option value="2">2 - Intermediate</option>
+                  <option value="3">3 - Advanced</option>
+                  <option value="4">4 - Expert</option>
+                  <option value="5">5 - Master</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input v-model="skill.certification" placeholder="Certification" class="form-control" />
+              </div>
+              <div class="col-md-2 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-success" @click="saveHardSkill(skill, index)">Salva</button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteHardSkill(skill, index)">Delete</button>
+              </div>
+            </template>
+            <template v-else>
+              <div class="col-md-4">
+                {{ skill.name }}
+              </div>
+              <div class="col-md-3">
+                {{ skill.proficiencyLevel }}
+              </div>
+              <div class="col-md-3">
+                {{ skill.certification }}
+              </div>
+              <div class="col-md-2 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-warning" @click="editHardSkill(index)">Edit</button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteHardSkill(skill, index)">Delete</button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+      <div v-if="profileDetails.softSkills && profileDetails.softSkills.length">
+        <h4>Soft Skills</h4>
+        <div v-for="(skill, index) in profileDetails.softSkills" :key="'soft-' + index" class="mb-3 p-3 border rounded">
+          <div class="row align-items-center">
+            <template v-if="editingSoftSkillIndex === index">
+              <div class="col-md-4">
+                <input v-model="skill.name" placeholder="Skill name" class="form-control" />
+              </div>
+              <div class="col-md-3">
+                <select v-model="skill.proficiencyLevel" class="form-select">
+                  <option value="">Level</option>
+                  <option value="1">1 - Beginner</option>
+                  <option value="2">2 - Intermediate</option>
+                  <option value="3">3 - Advanced</option>
+                  <option value="4">4 - Expert</option>
+                  <option value="5">5 - Master</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input v-model="skill.certification" placeholder="Certification" class="form-control" />
+              </div>
+              <div class="col-md-2 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-success" @click="saveSoftSkill(skill, index)">Salva</button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteSoftSkill(skill, index)">Delete</button>
+              </div>
+            </template>
+            <template v-else>
+              <div class="col-md-4">
+                {{ skill.name }}
+              </div>
+              <div class="col-md-3">
+                {{ skill.proficiencyLevel }}
+              </div>
+              <div class="col-md-3">
+                {{ skill.certification }}
+              </div>
+              <div class="col-md-2 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-warning" @click="editSoftSkill(index)">Edit</button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteSoftSkill(skill, index)">Delete</button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Sezione Experience -->
+  <div class="card mb-6">
+    <div class="card-header">
+      <h3 class="card-title">Work Experience</h3>
+      <div class="card-toolbar">
+        <button type="button" class="btn btn-sm btn-primary" @click="addExperience">
+          Add Experience
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div v-if="profileDetails.experiences && profileDetails.experiences.length">
+        <div v-for="(exp, index) in profileDetails.experiences" :key="'exp-' + index" class="mb-4 p-4 border rounded">
+          <template v-if="editingExperienceIndex === index">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <input v-model="exp.jobTitle" class="form-control" placeholder="Job Title" />
+              </div>
+              <div class="col-md-6">
+                <input v-model="exp.companyName" class="form-control" placeholder="Company Name" />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <input v-model="exp.startDate" type="date" class="form-control" placeholder="Start Date" />
+              </div>
+              <div class="col-md-6">
+                <input v-model="exp.endDate" type="date" class="form-control" placeholder="End Date" />
+              </div>
+            </div>
+            <div class="mb-3">
+              <textarea v-model="exp.description" class="form-control" rows="2" placeholder="Description"></textarea>
+            </div>
+            <div class="mb-3">
+              <input v-model="exp.technologiesUsed" class="form-control" placeholder="Technologies (comma separated)" />
+            </div>
+            <div class="text-end">
+              <button type="button" class="btn btn-sm btn-success me-2" @click="saveExperience(exp, index)">Salva</button>
+              <button type="button" class="btn btn-sm btn-danger" @click="deleteExperience(exp, index)">Delete</button>
+            </div>
+          </template>
+          <template v-else>
+            <div class="row mb-3">
+              <div class="col-md-6">{{ exp.jobTitle }}</div>
+              <div class="col-md-6">{{ exp.companyName }}</div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">{{ exp.startDate }}</div>
+              <div class="col-md-6">{{ exp.endDate }}</div>
+            </div>
+            <div class="mb-3">{{ exp.description }}</div>
+            <div class="mb-3">{{ Array.isArray(exp.technologiesUsed) ? exp.technologiesUsed.join(', ') : exp.technologiesUsed }}</div>
+            <div class="text-end">
+              <button type="button" class="btn btn-sm btn-warning me-2" @click="editExperience(index)">Edit</button>
+              <button type="button" class="btn btn-sm btn-danger" @click="deleteExperience(exp, index)">Delete</button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!--begin::Sign-in Method-->
   <div class="card mb-5 mb-xl-10">
@@ -1238,7 +436,7 @@
           <div id="kt_signin_email" :class="{ 'd-none': emailFormDisplay }">
             <div class="fs-4 fw-bolder mb-1">Email Address</div>
             <div class="fs-6 fw-semobold text-gray-600">
-              support@keenthemes.com
+              {{ currentUser?.email || 'No email set' }}
             </div>
           </div>
 
@@ -1248,12 +446,12 @@
             class="flex-row-fluid"
           >
             <!--begin::Form-->
-            <VForm
+            <form
               id="kt_signin_change_email"
               class="form"
+              method="post"
               novalidate
-              @submit="updateEmail()"
-              :validation-schema="changeEmail"
+              @submit.prevent="updateEmail()"
             >
               <div class="row mb-6">
                 <div class="col-lg-6 mb-4 mb-lg-0">
@@ -1263,19 +461,15 @@
                       class="form-label fs-6 fw-bold mb-3"
                       >Enter New Email Address</label
                     >
-                    <Field
+                    <input
                       type="email"
                       class="form-control form-control-lg form-control-solid fw-semobold fs-6"
                       id="emailaddress"
                       placeholder="Email Address"
                       name="emailaddress"
-                      value="support@keenthemes.com"
+                      v-model="emailFormData.newEmail"
                     />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="emailaddress" />
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
                 <div class="col-lg-6">
@@ -1285,17 +479,14 @@
                       class="form-label fs-6 fw-bold mb-3"
                       >Confirm Password</label
                     >
-                    <Field
+                    <input
                       type="password"
                       class="form-control form-control-lg form-control-solid fw-semobold fs-6"
                       name="confirmemailpassword"
                       id="confirmemailpassword"
+                      v-model="emailFormData.confirmEmailPassword"
                     />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="confirmemailpassword" />
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -1323,7 +514,7 @@
                   Cancel
                 </button>
               </div>
-            </VForm>
+            </form>
             <!--end::Form-->
           </div>
           <div
@@ -1360,12 +551,12 @@
             </div>
 
             <!--begin::Form-->
-            <VForm
+            <form
               id="kt_signin_change_password"
               class="form"
+              method="post"
               novalidate
-              @submit="updatePassword()"
-              :validation-schema="changePassword"
+              @submit.prevent="updatePassword()"
             >
               <div class="row mb-6">
                 <div class="col-lg-4">
@@ -1375,17 +566,14 @@
                       class="form-label fs-6 fw-bold mb-3"
                       >Current Password</label
                     >
-                    <Field
+                    <input
                       type="password"
                       class="form-control form-control-lg form-control-solid fw-semobold fs-6"
                       name="currentpassword"
                       id="currentpassword"
+                      v-model="passwordFormData.currentPassword"
                     />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="currentpassword" />
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
                 <div class="col-lg-4">
@@ -1395,17 +583,14 @@
                       class="form-label fs-6 fw-bold mb-3"
                       >New Password</label
                     >
-                    <Field
+                    <input
                       type="password"
                       class="form-control form-control-lg form-control-solid fw-semobold fs-6"
                       name="newpassword"
                       id="newpassword"
+                      v-model="passwordFormData.newPassword"
                     />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="newpassword" />
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
                 <div class="col-lg-4">
@@ -1415,17 +600,14 @@
                       class="form-label fs-6 fw-bold mb-3"
                       >Confirm New Password</label
                     >
-                    <Field
+                    <input
                       type="password"
                       class="form-control form-control-lg form-control-solid fw-semobold fs-6"
                       name="confirmpassword"
                       id="confirmpassword"
+                      v-model="passwordFormData.confirmPassword"
                     />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">
-                        <ErrorMessage name="confirmpassword" />
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -1453,7 +635,7 @@
                   Cancel
                 </button>
               </div>
-            </VForm>
+            </form>
             <!--end::Form-->
           </div>
           <div
@@ -1476,677 +658,6 @@
     <!--end::Content-->
   </div>
   <!--end::Sign-in Method-->
-
-  <!--begin::Connected Accounts-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_connected_accounts"
-      aria-expanded="true"
-      aria-controls="kt_account_connected_accounts"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Connected Accounts</h3>
-      </div>
-    </div>
-    <!--end::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_connected_accounts" class="collapse show">
-      <!--begin::Card body-->
-      <div class="card-body border-top p-9">
-        <div
-          class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6"
-        >
-          <KTIcon
-            icon-name="design-frame"
-            icon-class="fs-2tx text-primary me-4"
-          />
-
-          <!--begin::Wrapper-->
-          <div class="d-flex flex-stack flex-grow-1">
-            <!--begin::Content-->
-            <div class="fw-semobold">
-              <div class="fs-6 text-gray-600">
-                Two-factor authentication adds an extra layer of security to
-                your account. To log in, in you'll need to provide a 4 digit
-                amazing code. <a href="#" class="fw-bold">Learn More</a>
-              </div>
-            </div>
-            <!--end::Content-->
-          </div>
-          <!--end::Wrapper-->
-        </div>
-
-        <!--begin::Items-->
-        <div class="py-2">
-          <!--begin::Item-->
-          <div class="d-flex flex-stack">
-            <div class="d-flex">
-              <img
-                :src="getAssetPath('media/svg/brand-logos/google-icon.svg')"
-                class="w-30px me-6"
-                alt=""
-              />
-
-              <div class="d-flex flex-column">
-                <a href="#" class="fs-5 text-dark text-hover-primary fw-bold"
-                  >Google</a
-                >
-                <div class="fs-6 fw-semobold text-gray-400">
-                  Plan properly your workflow
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-end">
-              <div class="form-check form-check-solid form-switch">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="googleswitch"
-                  checked
-                />
-                <label class="form-check-label" for="googleswitch"></label>
-              </div>
-            </div>
-          </div>
-          <!--end::Item-->
-
-          <div class="separator separator-dashed my-5"></div>
-
-          <!--begin::Item-->
-          <div class="d-flex flex-stack">
-            <div class="d-flex">
-              <img
-                :src="getAssetPath('media/svg/brand-logos/github.svg')"
-                class="w-30px me-6"
-                alt=""
-              />
-
-              <div class="d-flex flex-column">
-                <a href="#" class="fs-5 text-dark text-hover-primary fw-bold"
-                  >Github</a
-                >
-                <div class="fs-6 fw-semobold text-gray-400">
-                  Keep eye on on your Repositories
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-end">
-              <div class="form-check form-check-solid form-switch">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="githubswitch"
-                  checked
-                />
-                <label class="form-check-label" for="githubswitch"></label>
-              </div>
-            </div>
-          </div>
-          <!--end::Item-->
-
-          <div class="separator separator-dashed my-5"></div>
-
-          <!--begin::Item-->
-          <div class="d-flex flex-stack">
-            <div class="d-flex">
-              <img
-                :src="getAssetPath('media/svg/brand-logos/slack-icon.svg')"
-                class="w-30px me-6"
-                alt=""
-              />
-
-              <div class="d-flex flex-column">
-                <a href="#" class="fs-5 text-dark text-hover-primary fw-bold"
-                  >Slack</a
-                >
-                <div class="fs-6 fw-semobold text-gray-400">
-                  Integrate Projects Discussions
-                </div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-end">
-              <div class="form-check form-check-solid form-switch">
-                <input
-                  class="form-check-input w-45px h-30px"
-                  type="checkbox"
-                  id="slackswitch"
-                />
-                <label class="form-check-label" for="slackswitch"></label>
-              </div>
-            </div>
-          </div>
-          <!--end::Item-->
-        </div>
-        <!--end::Items-->
-      </div>
-      <!--end::Card body-->
-
-      <!--begin::Card footer-->
-      <div class="card-footer d-flex justify-content-end py-6 px-9">
-        <button class="btn btn-light btn-active-light-primary me-2">
-          Discard
-        </button>
-        <button
-          ref="submitButton2"
-          class="btn btn-primary"
-          @click="saveChanges2()"
-        >
-          <span class="indicator-label"> Save Changes </span>
-          <span class="indicator-progress">
-            Please wait...
-            <span
-              class="spinner-border spinner-border-sm align-middle ms-2"
-            ></span>
-          </span>
-        </button>
-      </div>
-      <!--end::Card footer-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Connected Accounts-->
-
-  <!--begin::Notifications-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_email_preferences"
-      aria-expanded="true"
-      aria-controls="kt_account_email_preferences"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Email Preferences</h3>
-      </div>
-    </div>
-    <!--begin::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_email_preferences" class="collapse show">
-      <!--begin::Form-->
-      <form class="form" @submit.prevent="saveChanges3()">
-        <!--begin::Card body-->
-        <div class="card-body border-top px-9 py-9">
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Successful Payments</span>
-              <span class="text-muted fs-6"
-                >Receive a notification for every successful payment.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              checked
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Payouts</span>
-              <span class="text-muted fs-6"
-                >Receive a notification for every initiated payout.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Fee Collection</span>
-              <span class="text-muted fs-6"
-                >Receive a notification each time you collect a fee from
-                sales</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              checked
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Customer Payment Dispute</span>
-              <span class="text-muted fs-6"
-                >Receive a notification if a payment is disputed by a customer
-                and for dispute purposes.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Refund Alerts</span>
-              <span class="text-muted fs-6"
-                >Receive a notification if a payment is stated as risk by the
-                Finance Department.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              checked
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Invoice Payments</span>
-              <span class="text-muted fs-6"
-                >Receive a notification if a customer sends an incorrect amount
-                to pay their invoice.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-
-          <!--begin::Option-->
-          <label
-            class="form-check form-check-custom form-check-solid align-items-start"
-          >
-            <!--begin::Input-->
-            <input
-              class="form-check-input me-3"
-              type="checkbox"
-              name="email-preferences1"
-              value="1"
-            />
-            <!--end::Input-->
-
-            <!--begin::Label-->
-            <span class="form-check-label d-flex flex-column align-items-start">
-              <span class="fw-bold fs-5 mb-0">Webhook API Endpoints</span>
-              <span class="text-muted fs-6"
-                >Receive notifications for consistently failing webhook API
-                endpoints.</span
-              >
-            </span>
-            <!--end::Label-->
-          </label>
-          <!--end::Option-->
-          <!--begin::Option-->
-          <div class="separator separator-dashed my-6"></div>
-          <!--end::Option-->
-        </div>
-        <!--end::Card body-->
-
-        <!--begin::Card footer-->
-        <div class="card-footer d-flex justify-content-end py-6 px-9">
-          <button class="btn btn-light btn-active-light-primary me-2">
-            Discard
-          </button>
-          <button
-            ref="submitButton3"
-            type="submit"
-            class="btn btn-primary px-6"
-          >
-            <span class="indicator-label"> Save Changes </span>
-            <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
-            </span>
-          </button>
-        </div>
-        <!--end::Card footer-->
-      </form>
-      <!--end::Form-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Notifications-->
-
-  <!--begin::Notifications-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_notifications"
-      aria-expanded="true"
-      aria-controls="kt_account_notifications"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Notifications</h3>
-      </div>
-    </div>
-    <!--begin::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_notifications" class="collapse show">
-      <!--begin::Form-->
-      <form class="form" @submit.prevent="saveChanges4()">
-        <!--begin::Card body-->
-        <div class="card-body border-top px-9 pt-3 pb-4">
-          <!--begin::Table-->
-          <div class="table-responsive">
-            <table
-              class="table table-row-dashed border-gray-300 align-middle gy-6"
-            >
-              <tbody class="fs-6 fw-semobold">
-                <!--begin::Table row-->
-                <tr>
-                  <td class="min-w-250px fs-4 fw-bold">Notifications</td>
-                  <td class="w-125px">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="kt_settings_notification_email"
-                        checked
-                        data-kt-check="true"
-                        data-kt-check-target="[data-kt-settings-notification=email]"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="kt_settings_notification_email"
-                      >
-                        Email
-                      </label>
-                    </div>
-                  </td>
-                  <td class="w-125px">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="kt_settings_notification_phone"
-                        checked
-                        data-kt-check="true"
-                        data-kt-check-target="[data-kt-settings-notification=phone]"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="kt_settings_notification_phone"
-                      >
-                        Phone
-                      </label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td>Billing Updates</td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value="1"
-                        id="billing1"
-                        checked
-                        data-kt-settings-notification="email"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="billing1"
-                      ></label>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="billing2"
-                        checked
-                        data-kt-settings-notification="phone"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="billing2"
-                      ></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td>New Team Members</td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="team1"
-                        checked
-                        data-kt-settings-notification="email"
-                      />
-                      <label class="form-check-label ps-2" for="team1"></label>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="team2"
-                        data-kt-settings-notification="phone"
-                      />
-                      <label class="form-check-label ps-2" for="team2"></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td>Completed Projects</td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="project1"
-                        data-kt-settings-notification="email"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="project1"
-                      ></label>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="project2"
-                        checked
-                        data-kt-settings-notification="phone"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="project2"
-                      ></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-
-                <!--begin::Table row-->
-                <tr>
-                  <td class="border-bottom-0">Newsletters</td>
-                  <td class="border-bottom-0">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="newsletter1"
-                        data-kt-settings-notification="email"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="newsletter1"
-                      ></label>
-                    </div>
-                  </td>
-                  <td class="border-bottom-0">
-                    <div class="form-check form-check-solid">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                        id="newsletter2"
-                        data-kt-settings-notification="phone"
-                      />
-                      <label
-                        class="form-check-label ps-2"
-                        for="newsletter2"
-                      ></label>
-                    </div>
-                  </td>
-                </tr>
-                <!--begin::Table row-->
-              </tbody>
-            </table>
-          </div>
-          <!--end::Table-->
-        </div>
-        <!--end::Card body-->
-
-        <!--begin::Card footer-->
-        <div class="card-footer d-flex justify-content-end py-6 px-9">
-          <button class="btn btn-light btn-active-light-primary me-2">
-            Discard
-          </button>
-          <button
-            ref="submitButton4"
-            type="submit"
-            class="btn btn-primary px-6"
-          >
-            <span class="indicator-label"> Save Changes </span>
-            <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
-            </span>
-          </button>
-        </div>
-        <!--end::Card footer-->
-      </form>
-      <!--end::Form-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Notifications-->
 
   <!--begin::Deactivate Account-->
   <div class="card mb-5 mb-xl-10">
@@ -2247,44 +758,54 @@
     <!--end::Content-->
   </div>
   <!--end::Deactivate Account-->
+
+  </div>
+  <!--end::Settings Content-->
 </template>
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref } from "vue";
-import { ErrorMessage, Field, Form as VForm } from "vee-validate";
+import { defineComponent, ref, inject, watch, onMounted, onUnmounted, computed, nextTick } from "vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import * as Yup from "yup";
 import ApiService from "@/core/services/ApiService";
 import { useAuthStore } from "@/stores/auth";
-import { getEmployee, updateEmployee } from "@/core/services/businessServices/Employee";
+// Updated to use ApplicationUser API calls
+// import { getEmployee, updateEmployee } from "@/core/services/businessServices/Employee";
+import { useRoute } from "vue-router";
+import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
+import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
+import type { Employee } from "@/core/models/Employee";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
+
+interface CvData {
+  fileName: string;
+  storageUrl: string;
+}
 
 interface ProfileDetails {
-  avatar: string;
-  name: string;
-  surname: string;
-  company: string;
-  contactPhone: string;
-  companySite: string;
-  country: string;
-  language: string;
-  timezone: string;
-  currency: string;
-  communications: {
-    email: boolean;
-    phone: boolean;
-  };
-  allowMarketing: boolean;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  placeOfBirth: string;
+  address: string;
+  currentRole: string;
+  department: string;
+  isAvailable: boolean;
+  hardSkills: Array<any>;
+  softSkills: Array<any>;
+  experiences: Array<any>;
+  cvData: CvData;
 }
 
 export default defineComponent({
   name: "account-settings",
   components: {
-    ErrorMessage,
-    Field,
-    VForm,
   },
   setup() {
+    const route = useRoute();
     const submitButton1 = ref<HTMLElement | null>(null);
     const submitButton2 = ref<HTMLElement | null>(null);
     const submitButton3 = ref<HTMLElement | null>(null);
@@ -2293,82 +814,144 @@ export default defineComponent({
     const updateEmailButton = ref<HTMLElement | null>(null);
     const updatePasswordButton = ref<HTMLElement | null>(null);
 
+    // Reactive states
     const emailFormDisplay = ref(false);
     const passwordFormDisplay = ref(false);
+    const editingHardSkillIndex = ref<number | null>(null);
+    const editingSoftSkillIndex = ref<number | null>(null);
+    const editingExperienceIndex = ref<number | null>(null);
 
-    const profileDetailsValidator = Yup.object().shape({
-      fname: Yup.string().required().label("First name"),
-      lname: Yup.string().required().label("Last name"),
-      company: Yup.string().required().label("Company"),
-      phone: Yup.string().required().label("Contact phone"),
-      website: Yup.string().label("Webside"),
-      country: Yup.string().required().label("Country"),
-      language: Yup.string().required().label("Language"),
-      timezone: Yup.string().required().label("Timezone"),
-      currency: Yup.string().required().label("Currency"),
+    // Email change form data
+    const emailFormData = ref({
+      newEmail: '',
+      confirmEmailPassword: ''
     });
 
-    const changeEmail = Yup.object().shape({
-      emailaddress: Yup.string().required().email().label("Email"),
-      confirmemailpassword: Yup.string().required().label("Password"),
+    // Password change form data
+    const passwordFormData = ref({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
     });
 
-    const changePassword = Yup.object().shape({
-      currentpassword: Yup.string().required().label("Current password"),
-      newpassword: Yup.string().min(4).required().label("Password"),
-      confirmpassword: Yup.string()
-        .min(4)
-        .required()
-        .oneOf([Yup.ref("newpassword")], "Passwords must match")
-        .label("Password Confirmation"),
+    const { currentUser, updateCurrentUser, refreshCurrentUser } = useCurrentUser();
+
+    // Profile details reactive object
+    const profileDetails = ref({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
+      placeOfBirth: '',
+      address: '',
+      currentRole: '',
+      department: '',
+      isAvailable: false,
+      hardSkills: [] as Array<any>,
+      softSkills: [] as Array<any>,
+      experiences: [] as Array<any>,
+      cvData: {
+        fileName: '',
+        storageUrl: ''
+      }
     });
 
-    const profileDetails = ref<ProfileDetails>({
-      avatar: getAssetPath("media/avatars/300-1.jpg"),
-      name: "Max",
-      surname: "Smith",
-      company: "Keenthemes",
-      contactPhone: "044 3276 454 935",
-      companySite: "keenthemes.com",
-      country: "MY",
-      language: "msa",
-      timezone: "Kuala Lumpur",
-      currency: "USD",
-      communications: {
-        email: false,
-        phone: false,
-      },
-      allowMarketing: false,
-    });
+    // Helper function to format date for HTML input
+    const formatDateForInput = (dateValue: string | Date | null | undefined): string => {
+      if (!dateValue) return '';
+      try {
+        const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+        return date.toISOString().split('T')[0]; // Convert to yyyy-MM-dd format
+      } catch (error) {
+        console.warn('Invalid date format:', dateValue);
+        return '';
+      }
+    };
+
+    // Helper function to convert form date (yyyy-MM-dd) to ISO format
+    const formatDateForAPI = (dateString: string): string | undefined => {
+      if (!dateString) return undefined;
+      try {
+        const date = new Date(dateString + 'T00:00:00.000Z');
+        return date.toISOString();
+      } catch (error) {
+        console.warn('Invalid date format:', dateString);
+        return undefined;
+      }
+    };
+
+    // Watch for current user changes and update profile details
+    watch(currentUser, (val) => {
+      if (val) {
+        profileDetails.value = {
+          firstName: val.firstName || '',
+          lastName: val.lastName || '',
+          email: val.email || '',
+          phone: val.phone || '',
+          dateOfBirth: formatDateForInput(val.dateOfBirth),
+          placeOfBirth: val.placeOfBirth || '',
+          address: val.address || '',
+          currentRole: val.currentRole || '',
+          department: val.department || '',
+          isAvailable: val.isAvailable ?? false,
+          hardSkills: val.hardSkills || [],
+          softSkills: val.softSkills || [],
+          experiences: (val.experiences || []).map(exp => ({
+            ...exp,
+            startDate: formatDateForInput(exp.startDate),
+            endDate: formatDateForInput(exp.endDate)
+          })),
+          cvData: {
+            fileName: val.cvData?.fileName || '',
+            storageUrl: val.cvData?.storageUrl || ''
+          }
+        };
+      }
+    }, { immediate: true });
 
     const authStore = useAuthStore();
 
-    // Carica i dati Employee all'avvio
-    if (authStore.user?.employeeId) {
-      getEmployee(authStore.user.employeeId).then((employee) => {
-        if (employee) {
-          profileDetails.value.name = employee.first_name || '';
-          profileDetails.value.surname = employee.last_name || '';
-          profileDetails.value.contactPhone = employee.phone || '';
-          profileDetails.value.company = employee.department || '';
-          profileDetails.value.country = employee.address || '';
-          // puoi aggiungere altri campi se necessario
-        }
-      });
-    }
-
-    const saveChanges1 = () => {
+    const saveChanges1 = async () => {
       if (submitButton1.value) {
         // Activate indicator
         submitButton1.value.setAttribute("data-kt-indicator", "on");
-        // Salva avatar tramite API
-        if (authStore.user?.employeeId) {
-          ApiService.put(`users/${authStore.user.employeeId}`, { avatar: profileDetails.value.avatar })
-            .then(() => {
-              setTimeout(() => {
-                submitButton1.value?.removeAttribute("data-kt-indicator");
-              }, 2000);
-            });
+        
+        try {
+          // Preparo i dati da salvare per l'utente corrente
+          const userData = {
+            firstName: profileDetails.value.firstName,
+            lastName: profileDetails.value.lastName,
+            email: profileDetails.value.email,
+            phone: profileDetails.value.phone,
+            dateOfBirth: formatDateForAPI(profileDetails.value.dateOfBirth),
+            placeOfBirth: profileDetails.value.placeOfBirth,
+            address: profileDetails.value.address,
+            currentRole: profileDetails.value.currentRole,
+            department: profileDetails.value.department,
+            isAvailable: profileDetails.value.isAvailable,
+          };
+
+          // Update the current user
+          await updateCurrentUser(userData);
+          
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Profile updated!',
+            text: 'Your profile has been updated successfully.'
+          });
+        } catch (error) {
+          console.error("Error updating profile:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'There was an error updating your profile.'
+          });
+        } finally {
+          setTimeout(() => {
+            submitButton1.value?.removeAttribute("data-kt-indicator");
+          }, 1000);
         }
       }
     };
@@ -2430,26 +1013,109 @@ export default defineComponent({
       }
     };
 
-    const updateEmail = () => {
+    const updateEmail = async () => {
       if (updateEmailButton.value) {
         // Activate indicator
         updateEmailButton.value.setAttribute("data-kt-indicator", "on");
 
-        setTimeout(() => {
-          updateEmailButton.value?.removeAttribute("data-kt-indicator");
+        try {
+          // Validate form
+          if (!emailFormData.value.newEmail || !emailFormData.value.confirmEmailPassword) {
+            throw new Error('Please fill in all fields');
+          }
 
-          emailFormDisplay.value = false;
-        }, 2000);
+          // Call API to update email
+          const response = await ApiService.put('/auth/update-email', {
+            newEmail: emailFormData.value.newEmail,
+            currentPassword: emailFormData.value.confirmEmailPassword
+          });
+
+          if (response.data.user) {
+            // Update current user email in the store and reactive data
+            profileDetails.value.email = response.data.user.email;
+            
+            // Update auth store if needed
+            if (authStore.user) {
+              authStore.user.email = response.data.user.email;
+            }
+
+            // Refresh current user data to ensure UI is updated
+            await refreshCurrentUser();
+          }
+
+          // Clear form
+          emailFormData.value.newEmail = '';
+          emailFormData.value.confirmEmailPassword = '';
+
+          Swal.fire({
+            text: "Email is successfully changed!",
+            icon: "success",
+            confirmButtonText: "Ok",
+            buttonsStyling: false,
+            heightAuto: false,
+            customClass: {
+              confirmButton: "btn btn-light-primary",
+            },
+          }).then(() => {
+            emailFormDisplay.value = false;
+          });
+
+        } catch (error: any) {
+          console.error("Error updating email:", error);
+          
+          let errorMessage = 'Failed to update email';
+          if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          Swal.fire({
+            text: errorMessage,
+            icon: "error",
+            confirmButtonText: "Ok",
+            buttonsStyling: false,
+            heightAuto: false,
+            customClass: {
+              confirmButton: "btn btn-light-primary",
+            },
+          });
+        } finally {
+          updateEmailButton.value?.removeAttribute("data-kt-indicator");
+        }
       }
     };
 
-    const updatePassword = () => {
+    const updatePassword = async () => {
       if (updatePasswordButton.value) {
         // Activate indicator
         updatePasswordButton.value.setAttribute("data-kt-indicator", "on");
 
-        setTimeout(() => {
-          updatePasswordButton.value?.removeAttribute("data-kt-indicator");
+        try {
+          // Validate form
+          if (!passwordFormData.value.currentPassword || !passwordFormData.value.newPassword || !passwordFormData.value.confirmPassword) {
+            throw new Error('Please fill in all fields');
+          }
+
+          if (passwordFormData.value.newPassword !== passwordFormData.value.confirmPassword) {
+            throw new Error('New passwords do not match');
+          }
+
+          if (passwordFormData.value.newPassword.length < 8) {
+            throw new Error('New password must be at least 8 characters long');
+          }
+
+          // Call API to update password
+          await ApiService.put('/auth/update-password', {
+            currentPassword: passwordFormData.value.currentPassword,
+            newPassword: passwordFormData.value.newPassword,
+            confirmPassword: passwordFormData.value.confirmPassword
+          });
+
+          // Clear form
+          passwordFormData.value.currentPassword = '';
+          passwordFormData.value.newPassword = '';
+          passwordFormData.value.confirmPassword = '';
 
           Swal.fire({
             text: "Password is successfully changed!",
@@ -2463,13 +1129,255 @@ export default defineComponent({
           }).then(() => {
             passwordFormDisplay.value = false;
           });
-        }, 2000);
+
+        } catch (error: any) {
+          console.error("Error updating password:", error);
+          
+          let errorMessage = 'Failed to update password';
+          if (error.response?.data?.error) {
+            errorMessage = error.response.data.error;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          Swal.fire({
+            text: errorMessage,
+            icon: "error",
+            confirmButtonText: "Ok",
+            buttonsStyling: false,
+            heightAuto: false,
+            customClass: {
+              confirmButton: "btn btn-light-primary",
+            },
+          });
+        } finally {
+          updatePasswordButton.value?.removeAttribute("data-kt-indicator");
+        }
       }
     };
 
-    const removeImage = () => {
-      profileDetails.value.avatar = "/media/avatars/blank.png";
+    // Skills
+    const addHardSkill = () => {
+      if (!profileDetails.value.hardSkills) profileDetails.value.hardSkills = [];
+      profileDetails.value.hardSkills.push({ name: '', proficiencyLevel: '', certification: '' });
+      editingHardSkillIndex.value = profileDetails.value.hardSkills.length - 1;
     };
+    const addSoftSkill = () => {
+      if (!profileDetails.value.softSkills) profileDetails.value.softSkills = [];
+      profileDetails.value.softSkills.push({ name: '', proficiencyLevel: '', certification: '' });
+      editingSoftSkillIndex.value = profileDetails.value.softSkills.length - 1;
+    };
+    const saveHardSkill = async (skill, index) => {
+      try {
+        if (!profileDetails.value.hardSkills) profileDetails.value.hardSkills = [];
+        if (!currentUser.value?.id) {
+          throw new Error('User not logged in');
+        }
+        
+        // Preparo solo i campi accettati dal backend
+        const dataToSend = {
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
+          certification: skill.certification,
+          applicationUserHard: { connect: { id: currentUser.value.id } },
+        };
+        if (skill.id) {
+          await updateSkill(skill.id, dataToSend);
+        } else {
+          const created = await createSkill(dataToSend);
+          if (created) profileDetails.value.hardSkills[index] = created;
+        }
+        editingHardSkillIndex.value = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Hard skill saved!',
+          text: 'The skill has been saved successfully.'
+        });
+      } catch (error) {
+        console.error("Error saving hard skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error saving the skill.'
+        });
+      }
+    };
+    
+    const editHardSkill = (index) => {
+      editingHardSkillIndex.value = index;
+    };
+    const deleteHardSkill = async (skill, index) => {
+      try {
+        if (skill.id) await deleteSkill(skill.id);
+        profileDetails.value.hardSkills?.splice(index, 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Hard skill deleted!',
+          text: 'The skill has been deleted successfully.'
+        });
+      } catch (error) {
+        console.error("Error deleting hard skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error deleting the skill.'
+        });
+      }
+    };
+
+    const saveSoftSkill = async (skill, index) => {
+      try {
+        if (!profileDetails.value.softSkills) profileDetails.value.softSkills = [];
+        if (!currentUser.value?.id) {
+          throw new Error('User not logged in');
+        }
+        
+        // Preparo solo i campi accettati dal backend
+        const dataToSend = {
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
+          certification: skill.certification,
+          applicationUserSoft: { connect: { id: currentUser.value.id } },
+        };
+        if (skill.id) {
+          await updateSkill(skill.id, dataToSend);
+        } else {
+          const created = await createSkill(dataToSend);
+          if (created) profileDetails.value.softSkills[index] = created;
+        }
+        editingSoftSkillIndex.value = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Soft skill saved!',
+          text: 'The skill has been saved successfully.'
+        });
+      } catch (error) {
+        console.error("Error saving soft skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error saving the skill.'
+        });
+      }
+    };
+    
+    const editSoftSkill = (index) => {
+      editingSoftSkillIndex.value = index;
+    };
+    const deleteSoftSkill = async (skill, index) => {
+      try {
+        if (skill.id) await deleteSkill(skill.id);
+        profileDetails.value.softSkills?.splice(index, 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Soft skill deleted!',
+          text: 'The skill has been deleted successfully.'
+        });
+      } catch (error) {
+        console.error("Error deleting soft skill:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error deleting the skill.'
+        });
+      }
+    };
+
+    // Experience
+    const addExperience = () => {
+      if (!profileDetails.value.experiences) profileDetails.value.experiences = [];
+      profileDetails.value.experiences.push({ jobTitle: '', companyName: '', startDate: '', endDate: '', description: '', technologiesUsed: '' });
+      editingExperienceIndex.value = profileDetails.value.experiences.length - 1;
+    };
+    const saveExperience = async (exp, index) => {
+      try {
+        if (!profileDetails.value.experiences) profileDetails.value.experiences = [];
+        if (!currentUser.value?.id) {
+          throw new Error('User not logged in');
+        }
+        
+        if (typeof exp.technologiesUsed === 'string') {
+          exp.technologiesUsed = exp.technologiesUsed.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        
+        if (exp.id) {
+          // Per l'update, prepariamo i dati con le date convertite
+          const updateData = {
+            ...exp,
+            startDate: exp.startDate ? new Date(formatDateForAPI(exp.startDate) || exp.startDate) : undefined,
+            endDate: exp.endDate ? new Date(formatDateForAPI(exp.endDate) || exp.endDate) : undefined,
+          };
+          await updateExperience(exp.id, updateData);
+        } else {
+          // Per la creazione, convertiamo le date usando la funzione helper
+          const experienceData = {
+            jobTitle: exp.jobTitle,
+            companyName: exp.companyName,
+            startDate: exp.startDate ? new Date(formatDateForAPI(exp.startDate) || exp.startDate) : undefined,
+            endDate: exp.endDate ? new Date(formatDateForAPI(exp.endDate) || exp.endDate) : undefined,
+            description: exp.description || undefined,
+            technologiesUsed: exp.technologiesUsed || [],
+            applicationUser: { connect: { id: currentUser.value.id } }
+          };
+          const created = await createExperience(experienceData);
+          if (created) {
+            // Format the returned dates back to form format
+            const formattedCreated = {
+              ...created,
+              startDate: formatDateForInput(created.startDate),
+              endDate: formatDateForInput(created.endDate)
+            };
+            profileDetails.value.experiences[index] = formattedCreated;
+          }
+        }
+        editingExperienceIndex.value = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Experience saved!',
+          text: 'The experience has been saved successfully.'
+        });
+      } catch (error) {
+        console.error("Error saving experience:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error saving the experience.'
+        });
+      }
+    };
+
+    const editExperience = (index) => {
+      editingExperienceIndex.value = index;
+    };
+    const deleteExperienceFn = async (exp, index) => {
+      try {
+        if (exp.id) await deleteExperience(exp.id);
+        profileDetails.value.experiences?.splice(index, 1);
+        Swal.fire({
+          icon: 'success',
+          title: 'Experience deleted!',
+          text: 'The experience has been deleted successfully.'
+        });
+      } catch (error) {
+        console.error("Error deleting experience:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error deleting the experience.'
+        });
+      }
+    };
+
+    // Clean up temporary files on component unmount
+    onMounted(() => {
+      window.addEventListener('beforeunload', () => {
+        // This cleanup is now handled by onUnmounted
+      });
+    });
+
+    onUnmounted(async () => {
+      // Cleanup is no longer needed since avatar management moved to Account.vue
+    });
 
     return {
       submitButton1,
@@ -2477,24 +1385,47 @@ export default defineComponent({
       submitButton3,
       submitButton4,
       submitButton5,
+      updateEmailButton,
+      updatePasswordButton,
       saveChanges1,
       saveChanges2,
       saveChanges3,
       saveChanges4,
       deactivateAccount,
       profileDetails,
+      currentUser,
       emailFormDisplay,
       passwordFormDisplay,
-      removeImage,
-      profileDetailsValidator,
-      changeEmail,
-      changePassword,
-      updateEmailButton,
-      updatePasswordButton,
+      emailFormData,
+      passwordFormData,
       updateEmail,
       updatePassword,
       getAssetPath,
+      // Skills management
+      addHardSkill,
+      addSoftSkill,
+      saveHardSkill,
+      deleteHardSkill,
+      saveSoftSkill,
+      deleteSoftSkill,
+      editingHardSkillIndex,
+      editingSoftSkillIndex,
+      editHardSkill,
+      editSoftSkill,
+      // Experience management
+      addExperience,
+      saveExperience,
+      deleteExperience: deleteExperienceFn,
+      editingExperienceIndex,
+      editExperience,
+      // Date helper functions
+      formatDateForInput,
+      formatDateForAPI,
     };
   },
 });
 </script>
+
+<style scoped>
+/* Avatar management has been moved to Account.vue */
+</style>

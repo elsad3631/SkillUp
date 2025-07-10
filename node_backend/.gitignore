@@ -3,3 +3,8 @@ node_modules
 
 
 /generated/prisma
+
+# Compiled TypeScript output
+dist/
+*.js
+*.js.map

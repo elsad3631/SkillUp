@@ -29,18 +29,7 @@ export const projectController = {
     await projectService.remove(req.params.id);
     res.status(204).send();
   }),
-  createSkillRequirement: asyncHandler(async (req: Request, res: Response) => {
-    const skill = await projectService.createSkillRequirement(req.body);
-    res.status(201).json(skill);
-  }),
-  updateSkillRequirement: asyncHandler(async (req: Request, res: Response) => {
-    const skill = await projectService.updateSkillRequirement(req.params.id, req.body);
-    res.json(skill);
-  }),
-  deleteSkillRequirement: asyncHandler(async (req: Request, res: Response) => {
-    await projectService.deleteSkillRequirement(req.params.id);
-    res.status(204).send();
-  }),
+
   getUserProjects: asyncHandler(async (req: Request, res: Response) => {
     const user = (req as any).user;
     if (!user || !user.userId) {

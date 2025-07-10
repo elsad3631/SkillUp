@@ -1,6 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import { applicationUserService } from '../services/applicationuser.service';
 
+type ApplicationUser = {
+  id: string;
+  username: string;
+  email: string;
+  roles: string[];
+  avatar?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  dateOfBirth?: Date | null;
+  placeOfBirth?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  currentRole?: string | null;
+  department?: string | null;
+  isAvailable: boolean;
+};
+
 function asyncHandler(fn: Function) {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -109,26 +126,26 @@ export const applicationUserController = {
     let users = await applicationUserService.getAll();
     
     if (role) {
-      users = users.filter(user => user.roles.includes(role as string));
+      users = users.filter((user: ApplicationUser) => user.roles.includes(role as string));
     }
     
     if (department) {
-      users = users.filter(user => (user as any).department === department);
+      users = users.filter((user: ApplicationUser) => user.department === department);
     }
     
     if (isAvailable !== undefined) {
       const available = isAvailable === 'true';
-      users = users.filter(user => (user as any).isAvailable === available);
+      users = users.filter((user: ApplicationUser) => user.isAvailable === available);
     }
     
     if (query) {
       const searchTerm = (query as string).toLowerCase();
-      users = users.filter(user => 
-        (user as any).firstName?.toLowerCase().includes(searchTerm) ||
-        (user as any).lastName?.toLowerCase().includes(searchTerm) ||
+      users = users.filter((user: ApplicationUser) => 
+        user.firstName?.toLowerCase().includes(searchTerm) ||
+        user.lastName?.toLowerCase().includes(searchTerm) ||
         user.email.toLowerCase().includes(searchTerm) ||
         user.username.toLowerCase().includes(searchTerm) ||
-        (user as any).department?.toLowerCase().includes(searchTerm)
+        user.department?.toLowerCase().includes(searchTerm)
       );
     }
     
@@ -141,22 +158,22 @@ export const applicationUserController = {
     
     const stats = {
       total: allUsers.length,
-      available: allUsers.filter(u => (u as any).isAvailable).length,
+      available: allUsers.filter((u: ApplicationUser) => u.isAvailable).length,
       roles: {} as Record<string, number>,
       departments: {} as Record<string, number>,
     };
     
     // Count by roles
-    allUsers.forEach(user => {
-      user.roles.forEach(role => {
+    allUsers.forEach((user: ApplicationUser) => {
+      user.roles.forEach((role: string) => {
         stats.roles[role] = (stats.roles[role] || 0) + 1;
       });
     });
     
     // Count by departments
-    allUsers.forEach(user => {
-      if ((user as any).department) {
-        stats.departments[(user as any).department] = (stats.departments[(user as any).department] || 0) + 1;
+    allUsers.forEach((user: ApplicationUser) => {
+      if (user.department) {
+        stats.departments[user.department] = (stats.departments[user.department] || 0) + 1;
       }
     });
     

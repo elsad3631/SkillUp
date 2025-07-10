@@ -68,7 +68,6 @@ model Project {
   id                 String              @id @default(uuid())
   name               String
   description        String?
-  requiredSoftSkills String[]
   startDate          DateTime?
   endDate            DateTime?
   status             String
@@ -76,16 +75,21 @@ model Project {
   budget             Float?
   priority           String?
   assignments        ProjectAssignment[]
-  requiredHardSkills SkillRequirement[]
+  requiredHardSkills ProjectSkill[]      @relation("ProjectHardSkills")
+  requiredSoftSkills ProjectSkill[]      @relation("ProjectSoftSkills")
 }
 
-model SkillRequirement {
+model ProjectSkill {
   id                  String   @id @default(uuid())
   name                String
-  minProficiencyLevel Int
-  isMandatory         Boolean
-  projectId           String?
-  project             Project? @relation(fields: [projectId], references: [id])
+  minProficiencyLevel Int?
+  proficiencyLevel    Int? // For soft skills (like EmployeeSkill)
+  certification       String? // For both hard and soft skills
+  isMandatory         Boolean?
+  projectHardId       String?
+  projectSoftId       String?
+  projectHard         Project? @relation("ProjectHardSkills", fields: [projectHardId], references: [id], onDelete: Cascade)
+  projectSoft         Project? @relation("ProjectSoftSkills", fields: [projectSoftId], references: [id], onDelete: Cascade)
 }
 
 model ProjectAssignment {

@@ -455,6 +455,31 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/projects/:id",
+        component: () => import("@/views/project/Account.vue"),
+        redirect: (to) => `/projects/${to.params.id}/overview`,
+        children: [
+          {
+            path: "overview",
+            name: "project-overview",
+            component: () => import("@/views/project/Overview.vue"),
+            meta: {
+              pageTitle: "Project Overview",
+              breadcrumbs: ["Home", "Projects", "Overview"],
+            },
+          },
+          {
+            path: "settings",
+            name: "project-settings",
+            component: () => import("@/views/project/Settings.vue"),
+            meta: {
+              pageTitle: "Project Settings",
+              breadcrumbs: ["Home", "Projects", "Settings"],
+            },
+          },
+        ],
+      },
+      {
         path: '/asset-types',
         name: 'AssetTypeList',
         component: () => import('@/views/AssetTypeList.vue'),

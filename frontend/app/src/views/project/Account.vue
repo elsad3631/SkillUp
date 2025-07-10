@@ -6,7 +6,7 @@
         <span class="visually-hidden">Loading...</span>
       </div>
       <div class="mt-3">
-        <span class="fw-semobold text-gray-600">Loading employee data...</span>
+        <span class="fw-semobold text-gray-600">Loading project data...</span>
       </div>
     </div>
   </div>
@@ -19,7 +19,7 @@
         <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
       </div>
       <div class="mb-3">
-        <h4 class="text-danger">Error Loading Employee</h4>
+        <h4 class="text-danger">Error Loading Project</h4>
         <p class="text-gray-600">{{ error }}</p>
       </div>
       <button @click="handleRefreshClick" class="btn btn-primary">
@@ -36,66 +36,21 @@
       <div class="card-body pt-9 pb-0">
         <!--begin::Details-->
         <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
-          <!--begin: Pic-->
+          <!--begin: Icon-->
           <div class="me-7 mb-4">
             <div
               class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative"
             >
-              <img 
-                :src="currentAvatarUrl" 
-                :alt="`${employee?.firstName || ''} ${employee?.lastName || ''} avatar`"
-                @error="handleImageError"
-                @load="handleImageLoad"
-                :class="{ 'opacity-50': imageLoading }"
-              />
-              <div
-                class="position-absolute translate-middle bottom-0 start-100 mb-6 bg-success rounded-circle border border-4 border-white h-20px w-20px"
-              ></div>
-              
-              <!--begin::Avatar controls-->
-              <div class="position-absolute bottom-0 end-0">
-                <!--begin::Change avatar button-->
-                <label
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                  data-bs-toggle="tooltip"
-                  title="Change avatar"
-                  :class="{ 'disabled': avatarComposable.isProcessing.value }"
-                >
-                  <i class="bi bi-pencil-fill fs-7" v-if="!avatarComposable.isUploading.value"></i>
-                  <span class="spinner-border spinner-border-sm" v-if="avatarComposable.isUploading.value"></span>
-
-                  <input 
-                    type="file" 
-                    name="avatar" 
-                    accept=".png, .jpg, .jpeg, .webp" 
-                    @change="handleAvatarUpload"
-                    :disabled="avatarComposable.isProcessing.value"
-                    ref="avatarInput"
-                    style="display: none;"
-                  />
-                </label>
-                <!--end::Change avatar button-->
-
-                <!--begin::Remove avatar button-->
-                <span
-                  v-if="employee?.avatar && currentAvatarUrl !== getAssetPath('media/avatars/blank.png')"
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow ms-1"
-                  data-bs-toggle="tooltip"
-                  @click="handleAvatarRemove"
-                  title="Remove avatar"
-                  :class="{ 'disabled': avatarComposable.isProcessing.value }"
-                  style="cursor: pointer;"
-                >
-                  <i class="bi bi-x fs-2" v-if="!avatarComposable.isDeleting.value"></i>
-                  <span class="spinner-border spinner-border-sm" v-if="avatarComposable.isDeleting.value"></span>
-                </span>
-                <!--end::Remove avatar button-->
+              <div class="symbol-label fs-2 fw-semobold text-success">
+                {{ project?.name?.charAt(0)?.toUpperCase() || 'P' }}
               </div>
-              <!--end::Avatar controls-->
+              <div
+                :class="getStatusIndicatorClass(project?.status)"
+                class="position-absolute translate-middle bottom-0 start-100 mb-6 rounded-circle border border-4 border-white h-20px w-20px"
+              ></div>
             </div>
-            
           </div>
-          <!--end::Pic-->
+          <!--end::Icon-->
 
           <!--begin::Info-->
           <div class="flex-grow-1">
@@ -103,64 +58,46 @@
             <div
               class="d-flex justify-content-between align-items-start flex-wrap mb-2"
             >
-              <!--begin::User-->
+              <!--begin::Project-->
               <div class="d-flex flex-column">
                 <!--begin::Name-->
                 <div class="d-flex align-items-center mb-2">
                   <span class="text-gray-800 fs-2 fw-bold me-1">
-                    {{ employee?.name || employee?.firstName || '' }} {{ employee?.surname || employee?.lastName || '' }}
+                    {{ project?.name || 'Project Name' }}
                   </span>
-                  <a href="#">
-                    <KTIcon icon-name="verify" icon-class="fs-1 text-primary" />
-                  </a>
-
-                  <a
-                    href="#"
-                    class="btn btn-sm btn-light-success fw-bold ms-2 fs-8 py-1 px-3"
-                    data-bs-toggle="modal"
-                    data-bs-target="#kt_modal_upgrade_plan"
-                    >Upgrade to Pro</a
-                  >
+                  <span :class="getStatusBadgeClass(project?.status)" class="badge fs-8 fw-bold ms-2">
+                    {{ project?.status || 'Unknown' }}
+                  </span>
                 </div>
                 <!--end::Name-->
 
                 <!--begin::Info-->
                 <div class="d-flex flex-wrap fw-semobold fs-6 mb-4 pe-2">
-                  <span v-if="employee?.currentRole || employee?.role" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="project?.priority" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                    <KTIcon icon-name="tag" icon-class="fs-4 me-1" />
+                    Priority: {{ project?.priority }}
+                  </span>
+                  <span v-if="project?.budget" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                    <KTIcon icon-name="dollar" icon-class="fs-4 me-1" />
+                    Budget: ${{ project?.budget?.toLocaleString() }}
+                  </span>
+                  <span v-if="project?.managerId" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
                     <KTIcon icon-name="profile-circle" icon-class="fs-4 me-1" />
-                    {{ employee?.currentRole || employee?.role }}
-                  </span>
-                  <span v-if="employee?.location || employee?.placeOfBirth" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
-                    <KTIcon icon-name="geolocation" icon-class="fs-4 me-1" />
-                    {{ employee?.location || employee?.placeOfBirth }}
-                  </span>
-                  <span v-if="employee?.email" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
-                    <KTIcon icon-name="sms" icon-class="fs-4 me-1" />
-                    {{ employee?.email }}
+                    Manager ID: {{ project?.managerId }}
                   </span>
                 </div>
                 <!--end::Info-->
               </div>
-              <!--end::User-->
+              <!--end::Project-->
 
               <!--begin::Actions-->
               <div class="d-flex my-4">
-                <a
-                  href="#"
-                  class="btn btn-sm btn-light me-2"
-                  id="kt_user_follow_button"
-                >
-                  <KTIcon icon-name="check" icon-class="fs-3 d-none" />
-                  Follow
-                </a>
-
-                <a
-                  href="#"
+                <router-link
+                  :to="`/projects/${route.params.id}/settings`"
                   class="btn btn-sm btn-primary me-3"
-                  data-bs-toggle="modal"
-                  data-bs-target="#kt_modal_offer_a_deal"
-                  >Hire Me</a
                 >
+                  Edit Project
+                </router-link>
 
                 <!--begin::Menu-->
                 <div class="me-0">
@@ -193,15 +130,15 @@
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
                       <KTIcon
-                        icon-name="arrow-up"
-                        icon-class="fs-3 text-success me-2"
+                        icon-name="calendar"
+                        icon-class="fs-3 text-primary me-2"
                       />
-                      <div class="fs-2 fw-bold">4500$</div>
+                      <div class="fs-2 fw-bold">{{ getProjectDuration() }}</div>
                     </div>
                     <!--end::Number-->
 
                     <!--begin::Label-->
-                    <div class="fw-semobold fs-6 text-gray-400">Earnings</div>
+                    <div class="fw-semobold fs-6 text-gray-400">Duration (days)</div>
                     <!--end::Label-->
                   </div>
                   <!--end::Stat-->
@@ -213,21 +150,17 @@
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
                       <KTIcon
-                        icon-name="arrow-down"
-                        icon-class="fs-3 text-danger me-2"
+                        icon-name="people"
+                        icon-class="fs-3 text-info me-2"
                       />
-                      <div
-                        class="fs-2 fw-bold"
-                        data-kt-countup="true"
-                        data-kt-countup-value="75"
-                      >
-                        75
+                      <div class="fs-2 fw-bold">
+                        {{ project?.assignments?.length || 0 }}
                       </div>
                     </div>
                     <!--end::Number-->
 
                     <!--begin::Label-->
-                    <div class="fw-semobold fs-6 text-gray-400">Projects</div>
+                    <div class="fw-semobold fs-6 text-gray-400">Team Members</div>
                     <!--end::Label-->
                   </div>
                   <!--end::Stat-->
@@ -239,22 +172,17 @@
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
                       <KTIcon
-                        icon-name="arrow-up"
-                        icon-class="fs-3 text-success me-2"
+                        icon-name="gear"
+                        icon-class="fs-3 text-warning me-2"
                       />
-                      <div
-                        class="fs-2 fw-bold"
-                        data-kt-countup="true"
-                        data-kt-countup-value="60"
-                        data-kt-countup-prefix="%"
-                      >
-                        %60
+                      <div class="fs-2 fw-bold">
+                        {{ (project?.requiredHardSkills?.length || 0) + (project?.requiredSoftSkills?.length || 0) }}
                       </div>
                     </div>
                     <!--end::Number-->
 
                     <!--begin::Label-->
-                    <div class="fw-semobold fs-6 text-gray-400">Success Rate</div>
+                    <div class="fw-semobold fs-6 text-gray-400">Required Skills</div>
                     <!--end::Label-->
                   </div>
                   <!--end::Stat-->
@@ -277,7 +205,7 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
-                :to="`/employees/${route.params.id}/overview`"
+                :to="`/projects/${route.params.id}/overview`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
               >
@@ -288,7 +216,7 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
-                :to="`/employees/${route.params.id}/settings`"
+                :to="`/projects/${route.params.id}/settings`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
               >
@@ -307,258 +235,114 @@
 </template>
 
 <script lang="ts">
-import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref, onMounted, onUnmounted, provide, watch } from "vue";
+import { defineComponent, ref, onMounted, provide, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
-import { useAvatar } from "@/core/composables/useAvatar";
 import Swal from "sweetalert2/dist/sweetalert2.js";
-// Updated to use ApplicationUser API
-// import { getEmployee } from "@/core/services/businessServices/Employee";
 
 export default defineComponent({
-  name: "kt-account",
+  name: "project-account",
   components: {
     Dropdown3,
   },
   setup() {
     const route = useRoute();
-    const employee = ref<any>(null);
+    const project = ref<any>(null);
     const loading = ref(true);
     const error = ref<string | null>(null);
-    const imageLoading = ref(false);
-    const imageError = ref(false);
-    const dataUpdateTrigger = ref(0); // Force reactivity trigger
 
-    // Get avatar functions from composable
-    const { getAvatarDisplayUrl, uploadAvatar, deleteCurrentAvatar, ...avatarComposable } = useAvatar();
-
-    const avatarInput = ref<HTMLInputElement | null>(null);
-
-    const refreshEmployeeData = async (id: string) => {
+    const refreshProjectData = async (id: string) => {
       loading.value = true;
       error.value = '';
       
       try {
-        // Add API_URL prefix to the endpoint, removing duplicate /api/
         const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-        const response = await fetch(`${API_URL}/applicationusers/${id}`);
+        const response = await fetch(`${API_URL}/projects/${id}`);
         if (response.ok) {
-          const newEmployeeData = await response.json();
-          employee.value = newEmployeeData;
+          const newProjectData = await response.json();
+          project.value = newProjectData;
         } else {
-          console.error('❌ Failed to refresh employee data:', response.status);
-          error.value = 'Failed to load employee data. Please try again.';
+          console.error('❌ Failed to refresh project data:', response.status);
+          error.value = 'Failed to load project data. Please try again.';
         }
       } catch (err) {
-        console.error('❌ Failed to refresh user:', err);
-        error.value = 'An error occurred while loading employee data.';
+        console.error('❌ Failed to refresh project:', err);
+        error.value = 'An error occurred while loading project data.';
       }
       loading.value = false;
     };
 
-    // Provide refreshEmployee function to child components
-    provide('refreshEmployee', () => {
+    // Provide refreshProject function to child components
+    provide('refreshProject', () => {
       if (route.params.id) {
-        return refreshEmployeeData(route.params.id as string);
+        return refreshProjectData(route.params.id as string);
       }
     });
 
-    // Provide employee data to child components
-    provide('employee', employee);
-
-    // Handle avatar update events
-    const handleAvatarUpdate = () => {
-      if (employee.value?.id) {
-        refreshEmployeeData(employee.value.id);
-      }
-    };
-
-    // Handle employee data update events
-    const handleEmployeeUpdate = (event: CustomEvent) => {
-      if (event.detail) {
-        employee.value = event.detail;
-      }
-    };
+    // Provide project data to child components
+    provide('project', project);
 
     onMounted(async () => {
       if (route.params.id) {
         try {
-          await refreshEmployeeData(route.params.id as string);
+          await refreshProjectData(route.params.id as string);
         } catch (err) {
-          console.error('Failed to fetch user:', err);
+          console.error('Failed to fetch project:', err);
         }
       }
-
-      // Listen for avatar and employee updates
-      window.addEventListener('avatar-updated', handleAvatarUpdate);
-      window.addEventListener('employee-updated', handleEmployeeUpdate as EventListener);
-    });
-
-    onUnmounted(() => {
-      window.removeEventListener('avatar-updated', handleAvatarUpdate as EventListener);
-      window.removeEventListener('employee-updated', handleEmployeeUpdate as EventListener);
     });
 
     // Watch for route changes
     watch(() => route.params.id, (newId) => {
       if (newId) {
-        refreshEmployeeData(newId as string);
+        refreshProjectData(newId as string);
       }
     });
 
-    // Timestamp for cache busting avatar images
-    const avatarTimestamp = ref(Date.now());
-
-    // Image handling functions
-    const handleImageError = () => {
-      imageError.value = true;
-      imageLoading.value = false;
-      // Se l'immagine non si carica, forza l'uso dell'immagine di default
-      if (employee.value) {
-        employee.value.avatar = '';
-      }
-    };
-
-    const handleImageLoad = () => {
-      imageError.value = false;
-      imageLoading.value = false;
-    };
-
-    // Avatar URL using proxy endpoint
-    const getAvatarUrl = async (avatarUrl: string | undefined) => {
-      // Se non c'è avatar o è una stringa vuota, mostra subito l'immagine di default
-      if (!avatarUrl || avatarUrl.trim() === '') {
-        return getAssetPath('media/avatars/blank.png');
-      }
-      
-      // Se l'immagine ha dato errore, mostra l'immagine di default
-      if (imageError.value) {
-        return getAssetPath('media/avatars/blank.png');
-      }
-      
-      // Use proxy endpoint for avatar display
-      const displayUrl = await getAvatarDisplayUrl(avatarUrl);
-      
-      if (!displayUrl) {
-        return getAssetPath('media/avatars/blank.png');
-      }
-      
-      // Add timestamp for cache busting
-      return `${displayUrl}${avatarTimestamp.value ? `?t=${avatarTimestamp.value}` : ''}`;
-    };
-
-    // Computed property for avatar URL
-    const currentAvatarUrl = ref(getAssetPath('media/avatars/blank.png'));
-
-    // Watch employee avatar changes
-    watch(() => employee.value?.avatar, async (newAvatar) => {
-      currentAvatarUrl.value = await getAvatarUrl(newAvatar);
-    }, { immediate: true });
-
-    // Avatar upload handler (immediate save)
-    const handleAvatarUpload = async (event: Event) => {
-      const input = event.target as HTMLInputElement;
-      if (!input.files?.length || !employee.value?.id) return;
-
-      const file = input.files[0];
-      
-      try {
-        await uploadAvatar(employee.value.id, file);
-        
-        // Update avatar timestamp for instant refresh
-        avatarTimestamp.value = Date.now();
-        
-        // Show success message
-        Swal.fire({
-          title: 'Success!',
-          text: 'Avatar updated successfully',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
-        });
-        
-        // Refresh employee data in background
-        refreshEmployeeData(employee.value.id);
-      } catch (error) {
-        console.error('❌ Failed to upload and save avatar', error);
-        
-        // Show error message
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to update avatar',
-          icon: 'error'
-        });
-      }
-      
-      // Reset input
-      input.value = '';
-    };
-
-    // Avatar removal handler (immediate delete)
-    const handleAvatarRemove = async () => {
-      if (!employee.value?.id) return;
-      
-      try {
-        await deleteCurrentAvatar(employee.value.id);
-        
-        // Reset error state
-        imageError.value = false;
-        
-        // Update avatar timestamp and clear current avatar
-        avatarTimestamp.value = Date.now();
-        if (employee.value) {
-          employee.value.avatar = ''; // Usa stringa vuota invece di undefined
-        }
-        
-        // Show success message
-        Swal.fire({
-          title: 'Success!',
-          text: 'Avatar removed successfully',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false
-        });
-        
-        // Refresh employee data in background
-        refreshEmployeeData(employee.value.id);
-      } catch (error) {
-        console.error('❌ Failed to delete avatar', error);
-        
-        // Show error message
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to remove avatar',
-          icon: 'error'
-        });
-      }
-    };
-
     const handleRefreshClick = () => {
-      if (employee.value?.id) {
-        refreshEmployeeData(employee.value.id);
+      if (route.params.id) {
+        refreshProjectData(route.params.id as string);
       }
+    };
+
+    const getStatusIndicatorClass = (status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'active': return 'bg-success';
+        case 'completed': return 'bg-primary';
+        case 'on hold': return 'bg-warning';
+        case 'cancelled': return 'bg-danger';
+        default: return 'bg-secondary';
+      }
+    };
+
+    const getStatusBadgeClass = (status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'active': return 'badge-light-success';
+        case 'completed': return 'badge-light-primary';
+        case 'on hold': return 'badge-light-warning';
+        case 'cancelled': return 'badge-light-danger';
+        default: return 'badge-light-secondary';
+      }
+    };
+
+    const getProjectDuration = () => {
+      if (!project.value?.startDate || !project.value?.endDate) return 'N/A';
+      const start = new Date(project.value.startDate);
+      const end = new Date(project.value.endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays.toString();
     };
 
     return {
-      getAssetPath,
       route,
-      employee,
+      project,
       loading,
-      imageLoading,
-      imageError,
-      handleImageError,
-      handleImageLoad,
-      getAvatarUrl,
-      refreshEmployeeData,
-      handleRefreshClick,
       error,
-      dataUpdateTrigger,
-      avatarComposable,
-      handleAvatarUpload,
-      handleAvatarRemove,
-      avatarInput,
-      currentAvatarUrl,
+      handleRefreshClick,
+      getStatusIndicatorClass,
+      getStatusBadgeClass,
+      getProjectDuration,
     };
   },
 });

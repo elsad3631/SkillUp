@@ -116,7 +116,7 @@
                   </div>
                   <div v-for="(skill, index) in form.requiredHardSkills" :key="`hard-${index}`" class="mb-3 p-3 border rounded">
                     <div class="row">
-                      <div class="col-md-4">
+                      <div class="col-md-3">
                         <input v-model="skill.name" placeholder="Skill name" class="form-control" />
                       </div>
                       <div class="col-md-3">
@@ -130,12 +130,15 @@
                         </select>
                       </div>
                       <div class="col-md-3">
-                        <div class="form-check">
+                        <input v-model="skill.certification" placeholder="Certification" class="form-control" />
+                      </div>
+                      <div class="col-md-2">
+                        <div class="form-check mb-2">
                           <input v-model="skill.isMandatory" class="form-check-input" type="checkbox" />
                           <label class="form-check-label">Mandatory</label>
                         </div>
                       </div>
-                      <div class="col-md-2">
+                      <div class="col-md-1">
                         <button type="button" class="btn btn-sm btn-danger" @click="removeHardSkillRequirement(index)">
                           <KTIcon icon-name="trash" icon-class="fs-2" />
                         </button>
@@ -153,16 +156,29 @@
                   </div>
                   <div v-for="(skill, index) in form.requiredSoftSkills" :key="`soft-${index}`" class="mb-3 p-3 border rounded">
                     <div class="row">
-                      <div class="col-md-8">
+                      <div class="col-md-3">
                         <input v-model="skill.name" placeholder="Skill name" class="form-control" />
                       </div>
-                      <div class="col-md-2 d-flex align-items-center">
-                        <div class="form-check">
+                      <div class="col-md-3">
+                        <select v-model="skill.proficiencyLevel" class="form-select">
+                          <option value="">Level</option>
+                          <option value="1">1 - Beginner</option>
+                          <option value="2">2 - Intermediate</option>
+                          <option value="3">3 - Advanced</option>
+                          <option value="4">4 - Expert</option>
+                          <option value="5">5 - Master</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <input v-model="skill.certification" placeholder="Certification" class="form-control" />
+                      </div>
+                      <div class="col-md-2">
+                        <div class="form-check mb-2">
                           <input v-model="skill.isMandatory" class="form-check-input" type="checkbox" />
                           <label class="form-check-label">Mandatory</label>
                         </div>
                       </div>
-                      <div class="col-md-2">
+                      <div class="col-md-1">
                         <button type="button" class="btn btn-sm btn-danger" @click="removeSoftSkillRequirement(index)">
                           <KTIcon icon-name="trash" icon-class="fs-2" />
                         </button>
@@ -236,6 +252,7 @@ export default defineComponent({
       form.requiredHardSkills.push({
         name: "",
         minProficiencyLevel: "",
+        certification: "",
         isMandatory: false,
       });
     };
@@ -247,6 +264,8 @@ export default defineComponent({
     const addSoftSkillRequirement = () => {
       form.requiredSoftSkills.push({
         name: '',
+        proficiencyLevel: '',
+        certification: '',
         isMandatory: false,
       });
     };

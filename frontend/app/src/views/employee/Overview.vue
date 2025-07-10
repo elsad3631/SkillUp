@@ -133,20 +133,75 @@
                   </div>
                   <div class="card-body">
                     <div v-if="employee.hardSkills && employee.hardSkills.length">
-                      <h4>Hard Skills</h4>
-                      <ul>
-                        <li v-for="(skill, i) in employee.hardSkills" :key="'hard-' + i">
-                          {{ skill.name }} ({{ skill.proficiencyLevel }}) <span v-if="skill.certification">- {{ skill.certification }}</span>
-                        </li>
-                      </ul>
+                      <h4 class="mb-4">Hard Skills</h4>
+                      <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                          <thead>
+                            <tr class="fw-bold text-muted">
+                              <th class="min-w-150px">Skill Name</th>
+                              <th class="min-w-100px">Proficiency Level</th>
+                              <th class="min-w-150px">Certification</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(skill, i) in employee.hardSkills" :key="'hard-' + i">
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  <div class="fw-bold text-dark">{{ skill.name }}</div>
+                                </div>
+                              </td>
+                              <td>
+                                <span class="badge badge-light-info">Level {{ skill.proficiencyLevel }}</span>
+                              </td>
+                              <td>
+                                <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div v-if="employee.softSkills && employee.softSkills.length">
-                      <h4>Soft Skills</h4>
-                      <ul>
-                        <li v-for="(skill, i) in employee.softSkills" :key="'soft-' + i">
-                          {{ skill.name }} ({{ skill.proficiencyLevel }}) <span v-if="skill.certification">- {{ skill.certification }}</span>
-                        </li>
-                      </ul>
+                    
+                    <div v-if="employee.softSkills && employee.softSkills.length" class="mt-6">
+                      <h4 class="mb-4">Soft Skills</h4>
+                      <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                          <thead>
+                            <tr class="fw-bold text-muted">
+                              <th class="min-w-150px">Skill Name</th>
+                              <th class="min-w-100px">Proficiency Level</th>
+                              <th class="min-w-150px">Certification</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(skill, i) in employee.softSkills" :key="'soft-' + i">
+                              <td>
+                                <div class="d-flex align-items-center">
+                                  <div class="fw-bold text-dark">{{ skill.name }}</div>
+                                </div>
+                              </td>
+                              <td>
+                                <span class="badge badge-light-success">Level {{ skill.proficiencyLevel }}</span>
+                              </td>
+                              <td>
+                                <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div v-if="(!employee.hardSkills || !employee.hardSkills.length) && 
+                               (!employee.softSkills || !employee.softSkills.length)">
+                      <div class="text-center py-10">
+                        <i class="ki-duotone ki-technology-4 fs-3x text-muted mb-4">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        <div class="text-muted fw-semibold fs-6">No skills registered yet.</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -156,15 +211,61 @@
                   </div>
                   <div class="card-body">
                     <div v-if="employee.experiences && employee.experiences.length">
-                      <div v-for="(exp, i) in employee.experiences" :key="'exp-' + i" class="mb-4 p-4 border rounded">
-                        <div><strong>{{ exp.jobTitle }}</strong> @ <strong>{{ exp.companyName }}</strong></div>
-                        <div>{{ exp.startDate ? (new Date(exp.startDate)).toLocaleDateString() : '' }} - {{ exp.endDate ? (new Date(exp.endDate)).toLocaleDateString() : '' }}</div>
-                        <div>{{ exp.description }}</div>
-                        <div v-if="exp.technologiesUsed && exp.technologiesUsed.length">Tech: {{ exp.technologiesUsed.join(', ') }}</div>
+                      <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                          <thead>
+                            <tr class="fw-bold text-muted">
+                              <th class="min-w-150px">Position</th>
+                              <th class="min-w-150px">Company</th>
+                              <th class="min-w-120px">Duration</th>
+                              <th class="min-w-200px">Description</th>
+                              <th class="min-w-150px">Technologies</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(exp, i) in employee.experiences" :key="'exp-' + i">
+                              <td>
+                                <div class="fw-bold text-dark">{{ exp.jobTitle }}</div>
+                              </td>
+                              <td>
+                                <div class="fw-semibold text-muted">{{ exp.companyName }}</div>
+                              </td>
+                              <td>
+                                <div class="text-muted">
+                                  <div>{{ exp.startDate ? (new Date(exp.startDate)).toLocaleDateString() : 'N/A' }}</div>
+                                  <div class="text-center">to</div>
+                                  <div>{{ exp.endDate ? (new Date(exp.endDate)).toLocaleDateString() : 'Present' }}</div>
+                                </div>
+                              </td>
+                              <td>
+                                <div class="text-muted" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="exp.description">
+                                  {{ exp.description || 'No description available' }}
+                                </div>
+                              </td>
+                              <td>
+                                <div v-if="exp.technologiesUsed && exp.technologiesUsed.length" class="d-flex flex-wrap gap-1">
+                                  <span v-for="tech in exp.technologiesUsed.slice(0, 3)" :key="tech" class="badge badge-light-primary">
+                                    {{ tech }}
+                                  </span>
+                                  <span v-if="exp.technologiesUsed.length > 3" class="badge badge-light-secondary">
+                                    +{{ exp.technologiesUsed.length - 3 }} more
+                                  </span>
+                                </div>
+                                <div v-else class="text-muted">No technologies specified</div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                     <div v-else>
-                      <em>No experience data.</em>
+                      <div class="text-center py-10">
+                        <i class="ki-duotone ki-briefcase fs-3x text-muted mb-4">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        <div class="text-muted fw-semibold fs-6">No work experience registered yet.</div>
+                      </div>
                     </div>
                   </div>
                 </div>

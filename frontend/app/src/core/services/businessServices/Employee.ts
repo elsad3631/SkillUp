@@ -1,6 +1,6 @@
 import ApiService from "@/core/services/ApiService";
 import { useAuthStore } from "@/stores/auth";
-import { Employee } from "@/core/models/Employee";
+import type { Employee } from "@/core/models/Employee";
 
 const store = useAuthStore();
 

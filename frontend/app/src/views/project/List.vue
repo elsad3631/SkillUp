@@ -52,9 +52,9 @@
             <Datatable v-else @on-sort="sort" @on-items-select="onItemSelect" :data="tableData" :header="tableHeader"
                 :enable-items-per-page-dropdown="true" :checkbox-enabled="true" checkbox-label="id">
                 <template v-slot:name="{ row: project }">
-                    <a href="#" class="text-gray-600 text-hover-primary mb-1" @click.prevent="openEditModal(project)" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_project">
+                    <router-link :to="`/projects/${project.id}/overview`" class="text-gray-600 text-hover-primary mb-1">
                         {{ project.name }}
-                    </a>
+                    </router-link>
                     <div class="text-muted fw-semobold text-muted d-block fs-7">
                         {{ project.description }}
                     </div>
@@ -86,9 +86,9 @@
                 </template>
 
                 <template v-slot:actions="{ row: project }">
-                    <button @click="openEditModal(project)" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_project" class="btn btn-sm btn-light-primary me-2">
+                    <router-link :to="`/projects/${project.id}/overview`" class="btn btn-sm btn-light-primary me-2">
                         Details
-                    </button>
+                    </router-link>
                     <button @click="deleteSingleProject(project.id)" class="btn btn-sm btn-danger">
                         Delete
                     </button>
@@ -99,15 +99,6 @@
 
     <!-- Modals -->
     <AddProjectModal @project-created="onProjectCreated" :close-modal="() => closeModal('kt_modal_add_project')" />
-    <EditProjectModal 
-      :project="selectedProject" 
-      @project-updated="onProjectUpdated" 
-      :close-modal="() => closeModal('kt_modal_edit_project')"
-    >
-      <template #default>
-        <Loading v-if="editModalLoading" />
-      </template>
-    </EditProjectModal>
 </template>
 
 <script lang="ts">
@@ -115,11 +106,10 @@ import { defineComponent, onMounted, ref } from "vue";
 import Datatable from "@/components/kt-datatable/KTDataTable.vue";
 import { MenuComponent } from "@/assets/ts/components";
 import arraySort from "array-sort";
-import { Project } from "@/core/models/Project";
+import type { Project } from "@/core/models/Project";
 import { getProjects, deleteProject, getProject } from "@/core/services/businessServices/Project";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddProjectModal from "@/components/project/AddProjectModal.vue";
-import EditProjectModal from "@/components/project/EditProjectModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 
@@ -128,7 +118,6 @@ export default defineComponent({
     components: {
         Datatable,
         AddProjectModal,
-        EditProjectModal,
         Loading,
     },
     setup() {
@@ -175,9 +164,7 @@ export default defineComponent({
         const initProjects = ref<Project[]>([]);
         const selectedIds = ref<string[]>([]);
         const search = ref<string>("");
-        const selectedProject = ref<Project | null>(null);
         const loading = ref(false);
-        const editModalLoading = ref(false);
 
         const fetchProjects = async () => {
             loading.value = true;
@@ -195,36 +182,7 @@ export default defineComponent({
             Swal.fire('Success', 'Project has been created.', 'success');
         };
 
-        const onProjectUpdated = (updatedProject: Project) => {
-            const index = tableData.value.findIndex(p => p.id === updatedProject.id);
-            if (index !== -1) {
-                tableData.value[index] = updatedProject;
-                initProjects.value[index] = updatedProject;
-                Swal.fire('Success', 'Project has been updated.', 'success');
-            }
-        };
 
-        // Funzione per mostrare la modale via Bootstrap JS
-        const showEditModal = () => {
-            const modal = document.getElementById('kt_modal_edit_project');
-            if (modal && (window as any).bootstrap) {
-                const bootstrapModal = new (window as any).bootstrap.Modal(modal);
-                bootstrapModal.show();
-            }
-        };
-
-        const openEditModal = async (project: Project) => {
-            editModalLoading.value = true;
-            // Recupera i dati aggiornati dal backend
-            const freshProject = await getProject(project.id);
-            if (freshProject) {
-                selectedProject.value = freshProject;
-            } else {
-                selectedProject.value = project; // fallback
-            }
-            editModalLoading.value = false;
-            showEditModal(); // Apri la modale dopo aver caricato i dati
-        };
 
         const deleteFewProjects = async () => {
             if (selectedIds.value.length === 0) return;
@@ -349,21 +307,17 @@ export default defineComponent({
             tableHeader,
             search,
             selectedIds,
-            selectedProject,
             searchItems,
             sort,
             onItemSelect,
             deleteFewProjects,
             deleteSingleProject,
-            openEditModal,
             onProjectCreated,
-            onProjectUpdated,
             getStatusBadgeClass,
             getPriorityBadgeClass,
             formatDate,
             closeModal,
             loading,
-            editModalLoading,
         };
     },
 });

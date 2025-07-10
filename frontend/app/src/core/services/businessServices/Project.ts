@@ -1,6 +1,6 @@
 import ApiService from "@/core/services/ApiService";
 import { useAuthStore } from "@/stores/auth";
-import { Project } from "@/core/models/Project";
+import type { Project } from "@/core/models/Project";
 
 const store = useAuthStore();
 
@@ -53,32 +53,7 @@ const deleteProject = (id: string): Promise<boolean> => {
     });
 };
 
-const createSkillRequirement = (projectId: string, skill: any): Promise<any> => {
-  return ApiService.post(`skill-requirements`, { ...skill, projectId })
-    .then(({ data }) => data)
-    .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      return undefined;
-    });
-};
 
-const updateSkillRequirement = (skillId: string, skill: any): Promise<any> => {
-  return ApiService.put(`skill-requirements/${skillId}`, skill)
-    .then(({ data }) => data)
-    .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      return undefined;
-    });
-};
-
-const deleteSkillRequirement = (skillId: string): Promise<boolean> => {
-  return ApiService.delete(`skill-requirements/${skillId}`)
-    .then(() => true)
-    .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      return false;
-    });
-};
 
 const getUserProjects = (): Promise<Array<Project> | undefined> => {
   // Imposta l'header di autenticazione prima della chiamata
@@ -98,8 +73,5 @@ export {
   createProject,
   updateProject,
   deleteProject,
-  createSkillRequirement,
-  updateSkillRequirement,
-  deleteSkillRequirement,
   getUserProjects
 }; 

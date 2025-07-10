@@ -1,6 +1,6 @@
 <template>
   <!--begin::Loading State for Overview-->
-  <div v-if="!employee" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+  <div v-if="!project" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
     <div class="text-center">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -22,9 +22,9 @@
         <div class="d-flex align-items-center">          
           <!--begin::Title-->
           <div>
-            <h3 class="fw-bold m-0">Profile Details</h3>
-            <div class="text-muted fs-7" v-if="employee?.firstName || employee?.lastName">
-              {{ (employee?.firstName || '') + ' ' + (employee?.lastName || '') }}
+            <h3 class="fw-bold m-0">Project Details</h3>
+            <div class="text-muted fs-7" v-if="project?.name">
+              {{ project?.name }}
             </div>
           </div>
           <!--end::Title-->
@@ -33,10 +33,10 @@
 
         <!--begin::Action-->
         <router-link
-          v-if="employee && employee.id"
-          :to="`/employees/${employee.id}/settings`"
+          v-if="project && project.id"
+          :to="`/projects/${project.id}/settings`"
           class="btn btn-primary align-self-center"
-          >Edit Profile</router-link>
+          >Edit Project</router-link>
         <!--end::Action-->
       </div>
       <!--begin::Card header-->
@@ -50,121 +50,223 @@
               <!--begin::Row-->
               <div class="row mb-7">
                 <!--begin::Label-->
-                <label class="col-lg-4 fw-semobold text-muted">Full Name</label>
+                <label class="col-lg-4 fw-semobold text-muted">Project Name</label>
                 <!--end::Label-->
 
                 <!--begin::Col-->
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ (employee?.firstName || '') + ' ' + (employee?.lastName || '') }}</span>
+                  <span class="fw-bold fs-6 text-dark">{{ project?.name || '' }}</span>
                 </div>
                 <!--end::Col-->
               </div>
               <!--end::Row-->
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Email</label>
+                <label class="col-lg-4 fw-semobold text-muted">Description</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.email || '' }}</span>
+                  <span class="fw-bold fs-6 text-dark">{{ project?.description || 'No description provided' }}</span>
                 </div>
               </div>
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Phone</label>
+                <label class="col-lg-4 fw-semobold text-muted">Status</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.phone || '' }}</span>
+                  <span :class="getStatusBadgeClass(project?.status)" class="badge fw-bold">
+                    {{ project?.status || '' }}
+                  </span>
                 </div>
               </div>
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Date of Birth</label>
+                <label class="col-lg-4 fw-semobold text-muted">Priority</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.dateOfBirth ? (new Date(employee.dateOfBirth)).toLocaleDateString() : '' }}</span>
+                  <span :class="getPriorityBadgeClass(project?.priority)" class="badge fw-bold">
+                    {{ project?.priority || 'Not set' }}
+                  </span>
                 </div>
               </div>
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Place of Birth</label>
+                <label class="col-lg-4 fw-semobold text-muted">Budget</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.placeOfBirth || '' }}</span>
+                  <span class="fw-bold fs-6 text-dark">
+                    {{ project?.budget ? `$${project.budget.toLocaleString()}` : 'Not specified' }}
+                  </span>
                 </div>
               </div>
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Address</label>
+                <label class="col-lg-4 fw-semobold text-muted">Start Date</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.address || '' }}</span>
+                  <span class="fw-bold fs-6 text-dark">{{ project?.startDate ? formatDate(project.startDate) : 'Not set' }}</span>
                 </div>
               </div>
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Current Role</label>
+                <label class="col-lg-4 fw-semobold text-muted">End Date</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.currentRole || '' }}</span>
+                  <span class="fw-bold fs-6 text-dark">{{ project?.endDate ? formatDate(project.endDate) : 'Not set' }}</span>
                 </div>
               </div>
 
               <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Department</label>
+                <label class="col-lg-4 fw-semobold text-muted">Manager ID</label>
                 <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.department || '' }}</span>
+                  <span class="fw-bold fs-6 text-dark">{{ project?.managerId || 'Not assigned' }}</span>
                 </div>
               </div>
 
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Available</label>
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ employee?.isAvailable ? 'Yes' : 'No' }}</span>
-                </div>
-              </div>
+                              <!-- Required Skills -->
+                <div v-if="project">
+                  <div class="card mb-6">
+                    <div class="card-header">
+                      <h3 class="card-title">Required Skills</h3>
+                    </div>
+                    <div class="card-body">
+                      <div v-if="project.requiredHardSkills && project.requiredHardSkills.length">
+                        <h4 class="mb-4">Technical Skills</h4>
+                        <div class="table-responsive">
+                          <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                            <thead>
+                              <tr class="fw-bold text-muted">
+                                <th class="min-w-150px">Skill Name</th>
+                                <th class="min-w-100px">Min Level</th>
+                                <th class="min-w-120px">Certification</th>
+                                <th class="min-w-100px">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(skill, i) in project.requiredHardSkills" :key="'hard-' + i">
+                                <td>
+                                  <div class="d-flex align-items-center">
+                                    <div class="fw-bold text-dark">{{ skill.name }}</div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <span class="fw-bold text-muted">{{ skill.minProficiencyLevel || 'Not specified' }}</span>
+                                </td>
+                                <td>
+                                  <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
+                                </td>
+                                <td>
+                                  <span v-if="skill.isMandatory" class="badge badge-light-danger">Mandatory</span>
+                                  <span v-else class="badge badge-light-success">Optional</span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      
+                      <div v-if="project.requiredSoftSkills && project.requiredSoftSkills.length" class="mt-6">
+                        <h4 class="mb-4">Soft Skills</h4>
+                        <div class="table-responsive">
+                          <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                            <thead>
+                              <tr class="fw-bold text-muted">
+                                <th class="min-w-150px">Skill Name</th>
+                                <th class="min-w-100px">Level</th>
+                                <th class="min-w-120px">Certification</th>
+                                <th class="min-w-100px">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(skill, i) in project.requiredSoftSkills" :key="'soft-' + i">
+                                <td>
+                                  <div class="d-flex align-items-center">
+                                    <div class="fw-bold text-dark">{{ skill.name }}</div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <span class="fw-bold text-muted">{{ skill.proficiencyLevel || 'Not specified' }}</span>
+                                </td>
+                                <td>
+                                  <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
+                                </td>
+                                <td>
+                                  <span v-if="skill.isMandatory" class="badge badge-light-danger">Mandatory</span>
+                                  <span v-else class="badge badge-light-success">Optional</span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
 
-              <div class="row mb-7" v-if="employee?.cvData">
-                <label class="col-lg-4 fw-semobold text-muted">CV File</label>
-                <div class="col-lg-8">
-                  <a v-if="employee.cvData.storageUrl" :href="employee.cvData.storageUrl" target="_blank">{{ employee.cvData.fileName }}</a>
-                  <span v-else>{{ employee.cvData.fileName }}</span>
-                </div>
-              </div>
+                      <div v-if="(!project.requiredHardSkills || !project.requiredHardSkills.length) && 
+                                 (!project.requiredSoftSkills || !project.requiredSoftSkills.length)">
+                        <div class="text-center py-10">
+                          <i class="ki-duotone ki-information-5 fs-3x text-muted mb-4">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                            <span class="path3"></span>
+                          </i>
+                          <div class="text-muted fw-semibold fs-6">No required skills specified.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-              <!-- Skills & Experience -->
-              <div v-if="employee">
+                <!-- Team Assignments -->
                 <div class="card mb-6">
                   <div class="card-header">
-                    <h3 class="card-title">Skills</h3>
+                    <h3 class="card-title">Team Assignments</h3>
                   </div>
                   <div class="card-body">
-                    <div v-if="employee.hardSkills && employee.hardSkills.length">
-                      <h4>Hard Skills</h4>
-                      <ul>
-                        <li v-for="(skill, i) in employee.hardSkills" :key="'hard-' + i">
-                          {{ skill.name }} ({{ skill.proficiencyLevel }}) <span v-if="skill.certification">- {{ skill.certification }}</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div v-if="employee.softSkills && employee.softSkills.length">
-                      <h4>Soft Skills</h4>
-                      <ul>
-                        <li v-for="(skill, i) in employee.softSkills" :key="'soft-' + i">
-                          {{ skill.name }} ({{ skill.proficiencyLevel }}) <span v-if="skill.certification">- {{ skill.certification }}</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div class="card mb-6">
-                  <div class="card-header">
-                    <h3 class="card-title">Work Experience</h3>
-                  </div>
-                  <div class="card-body">
-                    <div v-if="employee.experiences && employee.experiences.length">
-                      <div v-for="(exp, i) in employee.experiences" :key="'exp-' + i" class="mb-4 p-4 border rounded">
-                        <div><strong>{{ exp.jobTitle }}</strong> @ <strong>{{ exp.companyName }}</strong></div>
-                        <div>{{ exp.startDate ? (new Date(exp.startDate)).toLocaleDateString() : '' }} - {{ exp.endDate ? (new Date(exp.endDate)).toLocaleDateString() : '' }}</div>
-                        <div>{{ exp.description }}</div>
-                        <div v-if="exp.technologiesUsed && exp.technologiesUsed.length">Tech: {{ exp.technologiesUsed.join(', ') }}</div>
+                    <div v-if="project.assignments && project.assignments.length">
+                      <div class="table-responsive">
+                        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+                          <thead>
+                            <tr class="fw-bold text-muted">
+                              <th class="min-w-120px">User ID</th>
+                              <th class="min-w-120px">Role</th>
+                              <th class="min-w-100px">Allocation</th>
+                              <th class="min-w-100px">Start Date</th>
+                              <th class="min-w-100px">End Date</th>
+                              <th class="min-w-100px">Status</th>
+                              <th class="min-w-200px">Feedback</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(assignment, i) in project.assignments" :key="'assignment-' + i">
+                              <td>
+                                <div class="fw-bold text-dark">{{ assignment.applicationUserId }}</div>
+                              </td>
+                              <td>
+                                <div class="fw-semibold text-muted">{{ assignment.roleOnProject }}</div>
+                              </td>
+                              <td>
+                                <span class="badge badge-light-primary">{{ assignment.allocationPercentage }}%</span>
+                              </td>
+                              <td>
+                                <div class="text-muted">{{ formatDate(assignment.assignmentStartDate) }}</div>
+                              </td>
+                              <td>
+                                <div class="text-muted">{{ assignment.assignmentEndDate ? formatDate(assignment.assignmentEndDate) : 'Ongoing' }}</div>
+                              </td>
+                              <td>
+                                <span :class="getAssignmentStatusBadgeClass(assignment.status)" class="badge">
+                                  {{ assignment.status }}
+                                </span>
+                              </td>
+                              <td>
+                                <div class="text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="assignment.feedbackReceived">
+                                  {{ assignment.feedbackReceived || 'No feedback' }}
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                     <div v-else>
-                      <em>No experience data.</em>
+                      <div class="text-center py-10">
+                        <i class="ki-duotone ki-users fs-3x text-muted mb-4">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                        </i>
+                        <div class="text-muted fw-semibold fs-6">No team members assigned yet.</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -222,18 +324,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, inject, onMounted, onUnmounted } from "vue";
-import { getAssetPath } from "@/core/helpers/assets";
+import { defineComponent, inject } from "vue";
 import KTChartWidget1 from "@/components/widgets/charts/Widget1.vue";
 import KTListWidget1 from "@/components/widgets/lists/Widget1.vue";
 import KTListWidget5 from "@/components/widgets/lists/Widget5.vue";
 import KTTableWidget5 from "@/components/widgets/tables/Widget5.vue";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
-import { useRoute } from "vue-router";
-import type { Employee } from "@/core/models/Employee";
 
 export default defineComponent({
-  name: "employee-overview",
+  name: "project-overview",
   components: {
     Dropdown3,
     KTChartWidget1,
@@ -242,12 +341,49 @@ export default defineComponent({
     KTTableWidget5,
   },
   setup() {
-    const employee = inject<any>('employee');
-    const refreshEmployee = inject<any>('refreshEmployee');
+    const project = inject<any>('project');
+    const refreshProject = inject<any>('refreshProject');
+
+    const formatDate = (date: Date | string | undefined) => {
+      if (!date) return 'N/A';
+      return new Date(date).toLocaleDateString();
+    };
+
+    const getStatusBadgeClass = (status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'active': return 'badge-light-success';
+        case 'completed': return 'badge-light-primary';
+        case 'on hold': return 'badge-light-warning';
+        case 'cancelled': return 'badge-light-danger';
+        default: return 'badge-light-secondary';
+      }
+    };
+
+    const getPriorityBadgeClass = (priority: string) => {
+      switch (priority?.toLowerCase()) {
+        case 'high': return 'badge-light-danger';
+        case 'medium': return 'badge-light-warning';
+        case 'low': return 'badge-light-success';
+        default: return 'badge-light-secondary';
+      }
+    };
+
+    const getAssignmentStatusBadgeClass = (status: string) => {
+      switch (status?.toLowerCase()) {
+        case 'active': return 'badge-light-success';
+        case 'completed': return 'badge-light-primary';
+        case 'on hold': return 'badge-light-warning';
+        case 'cancelled': return 'badge-light-danger';
+        default: return 'badge-light-secondary';
+      }
+    };
 
     return {
-      getAssetPath,
-      employee,
+      project,
+      formatDate,
+      getStatusBadgeClass,
+      getPriorityBadgeClass,
+      getAssignmentStatusBadgeClass,
     };
   },
 });

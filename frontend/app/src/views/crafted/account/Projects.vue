@@ -141,7 +141,7 @@ import { getAssetPath } from "@/core/helpers/assets";
 import { defineComponent, ref, onMounted } from "vue";
 import KTCard from "@/components/cards/Card1.vue";
 import { getUserProjects } from "@/core/services/businessServices/Project";
-import { Project } from "@/core/models/Project";
+import type { Project } from "@/core/models/Project";
 
 export default defineComponent({
   name: "profile-projects",

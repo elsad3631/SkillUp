@@ -4,23 +4,36 @@ const prisma = new PrismaClient();
 export const projectService = {
   async getAll() {
     const projects = await prisma.project.findMany({
-      include: { requiredHardSkills: true },
+      include: { 
+        requiredHardSkills: true,
+        requiredSoftSkills: true 
+      },
     });
-    // Map requiredHardSkills to camelCase in the response
+    // Map requiredHardSkills and requiredSoftSkills to camelCase in the response
     return projects.map((project: any) => ({
       ...project,
       requiredHardSkills: project.requiredHardSkills?.map((skill: any) => ({
         id: skill.id,
         name: skill.name,
         minProficiencyLevel: skill.minProficiencyLevel,
+        certification: skill.certification,
         isMandatory: skill.isMandatory,
+      })) || [],
+      requiredSoftSkills: project.requiredSoftSkills?.map((skill: any) => ({
+        id: skill.id,
+        name: skill.name,
+        proficiencyLevel: skill.proficiencyLevel,
+        certification: skill.certification,
       })) || [],
     }));
   },
   async getById(id: string) {
     const project = await prisma.project.findUnique({
       where: { id },
-      include: { requiredHardSkills: true },
+      include: { 
+        requiredHardSkills: true,
+        requiredSoftSkills: true 
+      },
     });
     if (!project) return null;
     return {
@@ -29,7 +42,14 @@ export const projectService = {
         id: skill.id,
         name: skill.name,
         minProficiencyLevel: skill.minProficiencyLevel,
+        certification: skill.certification,
         isMandatory: skill.isMandatory,
+      })) || [],
+      requiredSoftSkills: project.requiredSoftSkills?.map((skill: any) => ({
+        id: skill.id,
+        name: skill.name,
+        proficiencyLevel: skill.proficiencyLevel,
+        certification: skill.certification,
       })) || [],
     };
   },
@@ -48,7 +68,7 @@ export const projectService = {
       required_soft_skills,
     } = data;
 
-    // Mappo le hard skills come relazione annidata
+    // Mappo le skills come relazioni annidate
     const prismaData: any = {
       name,
       description,
@@ -58,14 +78,27 @@ export const projectService = {
       endDate: end_date ? new Date(end_date) : undefined,
       budget,
       priority,
-      requiredSoftSkills: required_soft_skills?.map((s: any) => typeof s === 'string' ? s : s.name) || [],
     };
 
+    // Gestisci soft skills come relazione annidata (usando projectSoftId)
+    if (required_soft_skills && Array.isArray(required_soft_skills) && required_soft_skills.length > 0) {
+      prismaData.requiredSoftSkills = {
+        create: required_soft_skills.map((skill: any) => ({
+          name: typeof skill === 'string' ? skill : skill.name,
+          proficiencyLevel: skill.proficiencyLevel ? Number(skill.proficiencyLevel) : undefined,
+          certification: skill.certification || undefined,
+          isMandatory: skill.isMandatory ?? false,
+        })),
+      };
+    }
+
+    // Gestisci hard skills come relazione annidata (usando projectHardId)
     if (required_hard_skills && Array.isArray(required_hard_skills) && required_hard_skills.length > 0) {
       prismaData.requiredHardSkills = {
         create: required_hard_skills.map((skill: any) => ({
           name: skill.name,
           minProficiencyLevel: Number(skill.minProficiencyLevel || skill.min_proficiency_level || 1),
+          certification: skill.certification || undefined,
           isMandatory: skill.isMandatory ?? skill.is_mandatory ?? false,
         })),
       };
@@ -74,7 +107,7 @@ export const projectService = {
     return prisma.project.create({ data: prismaData });
   },
   async update(id: string, data: any) {
-    // Mappa solo i campi semplici
+    // Mappa solo i campi semplici - le skills vengono gestite tramite API separate
     const {
       name,
       description,
@@ -84,8 +117,6 @@ export const projectService = {
       end_date,
       budget,
       priority,
-      required_soft_skills,
-      // required_hard_skills, // <-- NON USARE QUI
     } = data;
 
     const prismaData: any = {
@@ -97,7 +128,6 @@ export const projectService = {
       endDate: end_date ? new Date(end_date) : undefined,
       budget,
       priority,
-      requiredSoftSkills: required_soft_skills?.map((s: any) => typeof s === 'string' ? s : s.name) || [],
     };
 
     return prisma.project.update({ where: { id }, data: prismaData });
@@ -105,30 +135,7 @@ export const projectService = {
   async remove(id: string) {
     return prisma.project.delete({ where: { id } });
   },
-  async createSkillRequirement(data: any) {
-    // data: { projectId, name, minProficiencyLevel, isMandatory }
-    return prisma.skillRequirement.create({
-      data: {
-        projectId: data.projectId,
-        name: data.name,
-        minProficiencyLevel: Number(data.minProficiencyLevel || 1),
-        isMandatory: data.isMandatory ?? false,
-      },
-    });
-  },
-  async updateSkillRequirement(id: string, data: any) {
-    return prisma.skillRequirement.update({
-      where: { id },
-      data: {
-        name: data.name,
-        minProficiencyLevel: Number(data.minProficiencyLevel || 1),
-        isMandatory: data.isMandatory ?? false,
-      },
-    });
-  },
-  async deleteSkillRequirement(id: string) {
-    return prisma.skillRequirement.delete({ where: { id } });
-  },
+
   async getUserProjects(userId: string) {
     const userProjects = await prisma.projectAssignment.findMany({
       where: {
@@ -138,6 +145,7 @@ export const projectService = {
         project: {
           include: {
             requiredHardSkills: true,
+            requiredSoftSkills: true,
           },
         },
       },
@@ -152,12 +160,19 @@ export const projectService = {
       allocationPercentage: assignment.allocationPercentage,
       assignmentStatus: assignment.status,
       feedbackReceived: assignment.feedbackReceived,
-      // Mappa le required hard skills come nel metodo getAll
+      // Mappa le required skills come nel metodo getAll
       requiredHardSkills: assignment.project.requiredHardSkills?.map((skill: any) => ({
         id: skill.id,
         name: skill.name,
         minProficiencyLevel: skill.minProficiencyLevel,
+        certification: skill.certification,
         isMandatory: skill.isMandatory,
+      })) || [],
+      requiredSoftSkills: assignment.project.requiredSoftSkills?.map((skill: any) => ({
+        id: skill.id,
+        name: skill.name,
+        proficiencyLevel: skill.proficiencyLevel,
+        certification: skill.certification,
       })) || [],
     }));
   },

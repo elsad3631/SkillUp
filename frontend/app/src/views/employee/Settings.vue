@@ -282,8 +282,12 @@
                 <input v-model="skill.certification" placeholder="Certification" class="form-control" />
               </div>
               <div class="col-md-2 d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-success" @click="saveHardSkill(skill, index)">Salva</button>
-                <button type="button" class="btn btn-sm btn-danger" @click="deleteHardSkill(skill, index)">Delete</button>
+                <button type="button" class="btn btn-sm btn-success" @click="saveHardSkill(skill, index)">
+                  <KTIcon icon-name="check" icon-class="fs-3" />
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteHardSkill(skill, index)">
+                  <KTIcon icon-name="trash" icon-class="fs-3" />
+                </button>
               </div>
             </template>
             <template v-else>
@@ -297,8 +301,12 @@
                 {{ skill.certification }}
               </div>
               <div class="col-md-2 d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-warning" @click="editHardSkill(index)">Edit</button>
-                <button type="button" class="btn btn-sm btn-danger" @click="deleteHardSkill(skill, index)">Delete</button>
+                <button type="button" class="btn btn-sm btn-warning" @click="editHardSkill(index)">
+                  <KTIcon icon-name="pencil" icon-class="fs-3" />
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteHardSkill(skill, index)">
+                  <KTIcon icon-name="trash" icon-class="fs-3" />
+                </button>
               </div>
             </template>
           </div>
@@ -326,8 +334,12 @@
                 <input v-model="skill.certification" placeholder="Certification" class="form-control" />
               </div>
               <div class="col-md-2 d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-success" @click="saveSoftSkill(skill, index)">Salva</button>
-                <button type="button" class="btn btn-sm btn-danger" @click="deleteSoftSkill(skill, index)">Delete</button>
+                <button type="button" class="btn btn-sm btn-success" @click="saveSoftSkill(skill, index)">
+                  <KTIcon icon-name="check" icon-class="fs-3" />
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteSoftSkill(skill, index)">
+                  <KTIcon icon-name="trash" icon-class="fs-3" />
+                </button>
               </div>
             </template>
             <template v-else>
@@ -341,8 +353,12 @@
                 {{ skill.certification }}
               </div>
               <div class="col-md-2 d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-warning" @click="editSoftSkill(index)">Edit</button>
-                <button type="button" class="btn btn-sm btn-danger" @click="deleteSoftSkill(skill, index)">Delete</button>
+                <button type="button" class="btn btn-sm btn-warning" @click="editSoftSkill(index)">
+                  <KTIcon icon-name="pencil" icon-class="fs-3" />
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" @click="deleteSoftSkill(skill, index)">
+                  <KTIcon icon-name="trash" icon-class="fs-3" />
+                </button>
               </div>
             </template>
           </div>
@@ -387,8 +403,12 @@
               <input v-model="exp.technologiesUsed" class="form-control" placeholder="Technologies (comma separated)" />
             </div>
             <div class="text-end">
-              <button type="button" class="btn btn-sm btn-success me-2" @click="saveExperience(exp, index)">Salva</button>
-              <button type="button" class="btn btn-sm btn-danger" @click="deleteExperience(exp, index)">Delete</button>
+              <button type="button" class="btn btn-sm btn-success me-2" @click="saveExperience(exp, index)">
+                <KTIcon icon-name="check" icon-class="fs-3" />
+              </button>
+              <button type="button" class="btn btn-sm btn-danger" @click="deleteExperience(exp, index)">
+                <KTIcon icon-name="trash" icon-class="fs-3" />
+              </button>
             </div>
           </template>
           <template v-else>
@@ -403,8 +423,12 @@
             <div class="mb-3">{{ exp.description }}</div>
             <div class="mb-3">{{ Array.isArray(exp.technologiesUsed) ? exp.technologiesUsed.join(', ') : exp.technologiesUsed }}</div>
             <div class="text-end">
-              <button type="button" class="btn btn-sm btn-warning me-2" @click="editExperience(index)">Edit</button>
-              <button type="button" class="btn btn-sm btn-danger" @click="deleteExperience(exp, index)">Delete</button>
+              <button type="button" class="btn btn-sm btn-warning me-2" @click="editExperience(index)">
+                <KTIcon icon-name="pencil" icon-class="fs-3" />
+              </button>
+              <button type="button" class="btn btn-sm btn-danger" @click="deleteExperience(exp, index)">
+                <KTIcon icon-name="trash" icon-class="fs-3" />
+              </button>
             </div>
           </template>
         </div>

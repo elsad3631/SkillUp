@@ -10,19 +10,38 @@
 
     <!--begin::Controls-->
     <div class="d-flex flex-wrap my-1">
+      <!--begin::Assign Projects Button-->
+      <div v-if="isEmployeeView" class="me-3">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#kt_modal_add_project_assignment"
+        >
+          <i class="ki-duotone ki-plus fs-2">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+          Assign Projects
+        </button>
+      </div>
+      <!--end::Assign Projects Button-->
+      
       <!--begin::Select wrapper-->
       <div class="m-0">
         <!--begin::Select-->
         <select
+          v-model="selectedStatus"
+          @change="filterProjects"
           name="status"
-          data-control="select2"
-          data-hide-search="true"
           class="form-select form-select-white form-select-sm fw-bold w-125px"
         >
-          <option value="Active" selected>Active</option>
-          <option value="Approved">In Progress</option>
-          <option value="Declined">To Do</option>
-          <option value="In Progress">Completed</option>
+          <option value="">All Status</option>
+          <option value="Active">Active</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+          <option value="On Hold">On Hold</option>
         </select>
         <!--end::Select-->
       </div>
@@ -41,16 +60,18 @@
       class="col-md-6 col-xl-4"
     >
       <KTCard
-        :status="project.status"
-        :status-data-badge-color="getStatusBadge(project.status || '')"
+        :status="(project as any).assignmentStatus || project.status"
+        :status-data-badge-color="getStatusBadge((project as any).assignmentStatus || project.status || '')"
         :progress="calculateProgress(project)"
         :icon="getProjectIcon(index)"
         :title="project.name || 'Progetto senza nome'"
-        :date="formatDate(project.start_date)"
-        :budget="formatBudget(project.budget)"
-        :users="getProjectUsers(index)"
-        :description="project.description"
+        :date="formatDate((project as any).assignmentStartDate || (project as any).startDate || project.start_date)"
+        :start-date="formatDate((project as any).assignmentStartDate || (project as any).startDate || project.start_date)"
+        :end-date="formatDate((project as any).assignmentEndDate || (project as any).endDate || project.end_date)"
+        :users="getProjectUsers(project)"
+        :description="getProjectDescription(project)"
       ></KTCard>
+
     </div>
     <!--end::Col-->
     
@@ -134,22 +155,37 @@
       <!--end::Pages-->
     </div>
     <!--end::Pagination-->
+
+    <!--begin::Assign Projects Modal-->
+    <AddProjectAssignmentModal
+      v-if="isEmployeeView && employeeId"
+      :employee-id="employeeId"
+      :assigned-project-ids="assignedProjectIds"
+      @assignment-created="handleAssignmentCreated"
+    />
+    <!--end::Assign Projects Modal-->
 </template>
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import KTCard from "@/components/cards/Card1.vue";
-import { getUserProjects } from "@/core/services/businessServices/Project";
+import AddProjectAssignmentModal from "@/components/employee/AddProjectAssignmentModal.vue";
+import { getUserProjects, getEmployeeProjects } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
 
 export default defineComponent({
   name: "profile-projects",
   components: {
     KTCard,
+    AddProjectAssignmentModal,
   },
   setup() {
+    const route = useRoute();
     const projects = ref<Project[]>([]);
+    const allProjects = ref<Project[]>([]); // Lista completa senza filtri
+    const selectedStatus = ref<string>(""); // Status filtro selezionato
     const isLoading = ref(true);
     const error = ref<string | null>(null);
 
@@ -166,32 +202,33 @@ export default defineComponent({
       "media/svg/brand-logos/kanba.svg",
     ];
 
-    // Avatars mock per gli utenti dei progetti
-    const mockUsers = [
-      [
-        { name: "Emma Smith", src: getAssetPath("media/avatars/300-6.jpg") },
-        { name: "Rudy Stone", src: getAssetPath("media/avatars/300-1.jpg") },
-        { name: "Susan Redwood", initials: "S", state: "primary" },
-      ],
-      [
-        { name: "Alan Warden", initials: "A", state: "warning" },
-        { name: "Brian Cox", src: getAssetPath("media/avatars/300-5.jpg") },
-      ],
-      [
-        { name: "Mad Masy", src: getAssetPath("media/avatars/300-6.jpg") },
-        { name: "Cris Willson", src: getAssetPath("media/avatars/300-1.jpg") },
-        { name: "Mike Garcie", initials: "M", state: "info" },
-      ],
-    ];
+    // Stati per colori avatar quando non c'è immagine
+    const avatarStates = ["primary", "success", "warning", "info", "danger"];
+
+    // ID employee dalla rotta
+    const employeeId = computed(() => route.params.id as string);
+
+    // Determina se siamo in modalità employee view o account view
+    const isEmployeeView = computed(() => !!employeeId.value);
+
+    // ID dei progetti già assegnati
+    const assignedProjectIds = computed(() => 
+      projects.value.map(project => project.id).filter(Boolean) as string[]
+    );
 
     const loadProjects = async () => {
       try {
         isLoading.value = true;
         error.value = null;
         
-        const userProjects = await getUserProjects();
+        // Se abbiamo un employee ID, carica i suoi progetti, altrimenti usa getUserProjects
+        const userProjects = employeeId.value 
+          ? await getEmployeeProjects(employeeId.value)
+          : await getUserProjects();
+          
         if (userProjects) {
-          projects.value = userProjects;
+          allProjects.value = userProjects; // Salva la lista completa
+          projects.value = userProjects; // Lista visualizzata (filtrata)
         } else {
           error.value = "Impossibile caricare i progetti";
         }
@@ -203,11 +240,37 @@ export default defineComponent({
       }
     };
 
+    // Handler per quando vengono assegnati nuovi progetti
+    const handleAssignmentCreated = () => {
+      loadProjects();
+    };
+
+    // Funzione per filtrare i progetti
+    const filterProjects = () => {
+      if (!selectedStatus.value) {
+        // Se nessun filtro selezionato, mostra tutti i progetti
+        projects.value = allProjects.value;
+      } else {
+        // Filtra per status
+        projects.value = allProjects.value.filter((project: any) => {
+          const projectStatus = (project as any).assignmentStatus || project.status;
+          return projectStatus === selectedStatus.value;
+        });
+      }
+    };
+
     // Funzione per calcolare la percentuale di progresso
     const calculateProgress = (project: any) => {
-      if (project.status === "Completed") return 100;
-      if (project.status === "In Progress") return project.allocationPercentage || 50;
-      if (project.status === "Pending") return 30;
+      // Usa lo status del progetto o dell'assignment
+      const status = project.assignmentStatus || project.status;
+      
+      if (status === "Completed") return 100;
+      if (status === "In Progress" || status === "Active") {
+        // Usa la percentuale di allocazione dell'assignment se disponibile
+        return project.allocationPercentage || 50;
+      }
+      if (status === "Pending") return 30;
+      if (status === "On Hold") return 25;
       return 10;
     };
 
@@ -216,9 +279,34 @@ export default defineComponent({
       return getAssetPath(projectIcons[index % projectIcons.length]);
     };
 
-    // Funzione per ottenere gli utenti mock
-    const getProjectUsers = (index: number) => {
-      return mockUsers[index % mockUsers.length];
+    // Funzione per ottenere gli utenti reali del progetto
+    const getProjectUsers = (project: any) => {
+      if (!project.assignedUsers || project.assignedUsers.length === 0) {
+        return [];
+      }
+
+      return project.assignedUsers.map((user: any, index: number) => {
+        // Se l'utente ha un avatar, usalo
+        if (user.avatar) {
+          return {
+            name: user.name,
+            src: user.avatar.startsWith('http') 
+              ? user.avatar 
+              : getAssetPath(`media/avatars/${user.avatar}`),
+          };
+        }
+        
+        // Altrimenti usa le iniziali con un colore
+        const initials = user.firstName && user.lastName
+          ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
+          : user.name.split(' ').map((n: string) => n.charAt(0)).join('').substring(0, 2);
+          
+        return {
+          name: user.name,
+          initials: initials.toUpperCase(),
+          state: avatarStates[index % avatarStates.length],
+        };
+      });
     };
 
     // Funzione per mappare lo status ai badge
@@ -226,8 +314,11 @@ export default defineComponent({
       const statusMap: Record<string, string> = {
         "Completed": "badge-light-success",
         "In Progress": "badge-light-primary",
-        "Pending": "badge-light",
+        "Active": "badge-light-success",
+        "Pending": "badge-light-warning",
+        "On Hold": "badge-light-secondary",
         "Overdue": "badge-light-danger",
+        "Cancelled": "badge-light-dark",
       };
       return statusMap[status] || "badge-light";
     };
@@ -252,6 +343,27 @@ export default defineComponent({
       }).format(budget);
     };
 
+    // Funzione per ottenere la descrizione dinamica del progetto
+    const getProjectDescription = (project: any) => {
+      let description = project.description || "";
+      
+      // Aggiungi informazioni dell'assignment se disponibili
+      if (project.roleOnProject) {
+        description += description ? `\n\nRuolo: ${project.roleOnProject}` : `Ruolo: ${project.roleOnProject}`;
+      }
+      
+      if (project.allocationPercentage) {
+        description += `\nAllocazione: ${project.allocationPercentage}%`;
+      }
+
+      if (project.assignmentEndDate) {
+        const endDate = new Date(project.assignmentEndDate);
+        description += `\nScadenza assignment: ${endDate.toLocaleDateString("it-IT")}`;
+      }
+      
+      return description || "Nessuna descrizione disponibile";
+    };
+
     onMounted(() => {
       loadProjects();
     });
@@ -260,6 +372,10 @@ export default defineComponent({
       projects,
       isLoading,
       error,
+      employeeId,
+      isEmployeeView,
+      assignedProjectIds,
+      selectedStatus,
       getAssetPath,
       calculateProgress,
       getProjectIcon,
@@ -267,7 +383,10 @@ export default defineComponent({
       getStatusBadge,
       formatDate,
       formatBudget,
+      getProjectDescription,
       loadProjects,
+      handleAssignmentCreated,
+      filterProjects,
     };
   },
 });

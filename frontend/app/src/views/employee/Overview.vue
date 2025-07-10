@@ -34,7 +34,7 @@
         <!--begin::Action-->
         <router-link
           v-if="employee && employee.id"
-          :to="`/employees/${employee.id}/settings`"
+          :to="editProfileUrl"
           class="btn btn-primary align-self-center"
           >Edit Profile</router-link>
         <!--end::Action-->
@@ -331,6 +331,7 @@ import KTListWidget5 from "@/components/widgets/lists/Widget5.vue";
 import KTTableWidget5 from "@/components/widgets/tables/Widget5.vue";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
 import { useRoute } from "vue-router";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 import type { Employee } from "@/core/models/Employee";
 
 export default defineComponent({
@@ -343,12 +344,36 @@ export default defineComponent({
     KTTableWidget5,
   },
   setup() {
+    const route = useRoute();
     const employee = inject<any>('employee');
     const refreshEmployee = inject<any>('refreshEmployee');
+    
+    // Determina se siamo in modalità employee view o account view
+    const isEmployeeView = computed(() => !!route.params.id);
+    
+    // Get current user for account mode
+    const { currentUser } = useCurrentUser();
+    
+    // Unified user data - use employee in employee mode, currentUser in account mode
+    const userData = computed(() => {
+      if (isEmployeeView.value) {
+        return employee.value;
+      } else {
+        return currentUser.value;
+      }
+    });
+
+    // Edit Profile URL based on mode
+    const editProfileUrl = computed(() => {
+      return isEmployeeView.value 
+        ? `/employees/${userData.value?.id}/settings`
+        : '/crafted/account/settings';
+    });
 
     return {
       getAssetPath,
-      employee,
+      employee: userData, // Unified reference
+      editProfileUrl,
     };
   },
 });

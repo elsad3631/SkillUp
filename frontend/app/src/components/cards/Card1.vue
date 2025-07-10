@@ -41,23 +41,23 @@
 
       <!--begin::Info-->
       <div class="d-flex flex-wrap mb-5">
-        <!--begin::Due-->
+        <!--begin::Start Date-->
         <div
           class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-7 mb-3"
         >
           <div class="fs-6 text-gray-800 fw-bold">{{ getDate }}</div>
-          <div class="fw-semobold text-gray-400">Due Date</div>
+          <div class="fw-semobold text-gray-400">Start Date</div>
         </div>
-        <!--end::Due-->
+        <!--end::Start Date-->
 
-        <!--begin::Budget-->
+        <!--begin::Dates-->
         <div
-          class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 mb-3"
+          class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-7 mb-3"
         >
-          <div class="fs-6 text-gray-800 fw-bold">{{ getBudget }}</div>
-          <div class="fw-semobold text-gray-400">Budget</div>
+          <div class="fs-6 text-gray-800 fw-bold">{{ getEndDate }}</div>
+          <div class="fw-semobold text-gray-400">End Date</div>
         </div>
-        <!--end::Budget-->
+        <!--end::Dates-->
       </div>
       <!--end::Info-->
 
@@ -133,6 +133,10 @@ export default defineComponent({
 
     budget: String,
 
+    startDate: String,
+
+    endDate: String,
+
     users: Array as () => Array<any>,
   },
   setup(props) {
@@ -148,6 +152,14 @@ export default defineComponent({
 
     const getBudget = computed(() => {
       return props.budget ? props.budget : "$284,900.00";
+    });
+
+    const getStartDate = computed(() => {
+      return props.startDate ? props.startDate : "N/A";
+    });
+
+    const getEndDate = computed(() => {
+      return props.endDate ? props.endDate : "N/A";
     });
 
     const getStatus = computed(() => {
@@ -168,6 +180,8 @@ export default defineComponent({
       getDescription,
       getDate,
       getBudget,
+      getStartDate,
+      getEndDate,
       getStatus,
       getStatusDataBadgeColor,
       getStatusDataColor,

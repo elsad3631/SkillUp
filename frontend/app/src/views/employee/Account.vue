@@ -277,7 +277,7 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
-                :to="`/employees/${route.params.id}/overview`"
+                :to="overviewUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
               >
@@ -288,7 +288,18 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
-                :to="`/employees/${route.params.id}/settings`"
+                :to="projectsUrl"
+                class="nav-link text-active-primary me-6"
+                active-class="active"
+              >
+                Projects
+              </router-link>
+            </li>
+            <!--end::Nav item-->
+            <!--begin::Nav item-->
+            <li class="nav-item">
+              <router-link
+                :to="settingsUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
               >
@@ -308,10 +319,11 @@
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref, onMounted, onUnmounted, provide, watch } from "vue";
+import { defineComponent, ref, onMounted, onUnmounted, provide, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
 import { useAvatar } from "@/core/composables/useAvatar";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 // Updated to use ApplicationUser API
 // import { getEmployee } from "@/core/services/businessServices/Employee";
@@ -330,47 +342,64 @@ export default defineComponent({
     const imageError = ref(false);
     const dataUpdateTrigger = ref(0); // Force reactivity trigger
 
+    // Determina se siamo in modalità employee view o account view
+    const employeeId = computed(() => route.params.id as string);
+    const isEmployeeView = computed(() => !!employeeId.value);
+
+    // Get current user composable for account mode
+    const { currentUser, fetchCurrentUser } = useCurrentUser();
+
     // Get avatar functions from composable
     const { getAvatarDisplayUrl, uploadAvatar, deleteCurrentAvatar, ...avatarComposable } = useAvatar();
 
     const avatarInput = ref<HTMLInputElement | null>(null);
 
-    const refreshEmployeeData = async (id: string) => {
+    const refreshEmployeeData = async (id?: string) => {
       loading.value = true;
       error.value = '';
       
       try {
-        // Add API_URL prefix to the endpoint, removing duplicate /api/
-        const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-        const response = await fetch(`${API_URL}/applicationusers/${id}`);
-        if (response.ok) {
-          const newEmployeeData = await response.json();
-          employee.value = newEmployeeData;
+        if (isEmployeeView.value && id) {
+          // Employee mode: fetch specific employee
+          const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_URL}/applicationusers/${id}`);
+          if (response.ok) {
+            const newEmployeeData = await response.json();
+            employee.value = newEmployeeData;
+          } else {
+            console.error('❌ Failed to refresh employee data:', response.status);
+            error.value = 'Failed to load employee data. Please try again.';
+          }
         } else {
-          console.error('❌ Failed to refresh employee data:', response.status);
-          error.value = 'Failed to load employee data. Please try again.';
+          // Account mode: fetch current user
+          await fetchCurrentUser();
+          employee.value = currentUser.value;
         }
       } catch (err) {
         console.error('❌ Failed to refresh user:', err);
-        error.value = 'An error occurred while loading employee data.';
+        error.value = 'An error occurred while loading user data.';
       }
       loading.value = false;
     };
 
     // Provide refreshEmployee function to child components
     provide('refreshEmployee', () => {
-      if (route.params.id) {
+      if (isEmployeeView.value && route.params.id) {
         return refreshEmployeeData(route.params.id as string);
+      } else {
+        return refreshEmployeeData();
       }
     });
 
-    // Provide employee data to child components
+    // Provide employee data to child components - unified for both modes
     provide('employee', employee);
 
     // Handle avatar update events
     const handleAvatarUpdate = () => {
-      if (employee.value?.id) {
+      if (isEmployeeView.value && employee.value?.id) {
         refreshEmployeeData(employee.value.id);
+      } else if (!isEmployeeView.value) {
+        refreshEmployeeData();
       }
     };
 
@@ -382,12 +411,14 @@ export default defineComponent({
     };
 
     onMounted(async () => {
-      if (route.params.id) {
-        try {
+      try {
+        if (isEmployeeView.value && route.params.id) {
           await refreshEmployeeData(route.params.id as string);
-        } catch (err) {
-          console.error('Failed to fetch user:', err);
+        } else {
+          await refreshEmployeeData();
         }
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
       }
 
       // Listen for avatar and employee updates
@@ -402,8 +433,10 @@ export default defineComponent({
 
     // Watch for route changes
     watch(() => route.params.id, (newId) => {
-      if (newId) {
+      if (isEmployeeView.value && newId) {
         refreshEmployeeData(newId as string);
+      } else if (!isEmployeeView.value) {
+        refreshEmployeeData();
       }
     });
 
@@ -478,8 +511,12 @@ export default defineComponent({
           showConfirmButton: false
         });
         
-        // Refresh employee data in background
-        refreshEmployeeData(employee.value.id);
+        // Refresh data in background
+        if (isEmployeeView.value) {
+          refreshEmployeeData(employee.value.id);
+        } else {
+          refreshEmployeeData();
+        }
       } catch (error) {
         console.error('❌ Failed to upload and save avatar', error);
         
@@ -520,8 +557,12 @@ export default defineComponent({
           showConfirmButton: false
         });
         
-        // Refresh employee data in background
-        refreshEmployeeData(employee.value.id);
+        // Refresh data in background
+        if (isEmployeeView.value) {
+          refreshEmployeeData(employee.value.id);
+        } else {
+          refreshEmployeeData();
+        }
       } catch (error) {
         console.error('❌ Failed to delete avatar', error);
         
@@ -535,10 +576,31 @@ export default defineComponent({
     };
 
     const handleRefreshClick = () => {
-      if (employee.value?.id) {
+      if (isEmployeeView.value && employee.value?.id) {
         refreshEmployeeData(employee.value.id);
+      } else if (!isEmployeeView.value) {
+        refreshEmployeeData();
       }
     };
+
+    // Navigation URLs based on mode
+    const overviewUrl = computed(() => {
+      return isEmployeeView.value 
+        ? `/employees/${route.params.id}/overview`
+        : '/crafted/account/overview';
+    });
+
+    const projectsUrl = computed(() => {
+      return isEmployeeView.value 
+        ? `/employees/${route.params.id}/projects`
+        : '/crafted/account/projects';
+    });
+
+    const settingsUrl = computed(() => {
+      return isEmployeeView.value 
+        ? `/employees/${route.params.id}/settings`
+        : '/crafted/account/settings';
+    });
 
     return {
       getAssetPath,
@@ -559,6 +621,9 @@ export default defineComponent({
       handleAvatarRemove,
       avatarInput,
       currentAvatarUrl,
+      overviewUrl,
+      projectsUrl,
+      settingsUrl,
     };
   },
 });

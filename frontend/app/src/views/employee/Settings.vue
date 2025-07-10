@@ -793,6 +793,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useRoute } from "vue-router";
 import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 import type { Employee } from "@/core/models/Employee";
 
 interface CvData {
@@ -838,8 +839,23 @@ export default defineComponent({
     const editingSoftSkillIndex = ref<number | null>(null);
     const editingExperienceIndex = ref<number | null>(null);
 
+    // Determina se siamo in modalità employee view o account view
+    const isEmployeeView = computed(() => !!route.params.id);
+
+    // Get current user composable for account mode
+    const { currentUser, updateCurrentUser, refreshCurrentUser } = useCurrentUser();
+
     const employee = inject<any>('employee');
     const refreshEmployee = inject<any>('refreshEmployee');
+
+    // Unified user data - use employee in employee mode, currentUser in account mode
+    const userData = computed(() => {
+      if (isEmployeeView.value) {
+        return employee.value;
+      } else {
+        return currentUser.value;
+      }
+    });
 
     // Profile details reactive object
     const profileDetails = ref({
@@ -862,8 +878,8 @@ export default defineComponent({
       }
     });
 
-    // Watch for employee changes and update profile details
-    watch(employee, (val) => {
+    // Watch for user data changes and update profile details
+    watch(userData, (val) => {
       if (val) {
         profileDetails.value = {
           firstName: val.firstName || val.first_name || '',
@@ -895,8 +911,8 @@ export default defineComponent({
         submitButton1.value.setAttribute("data-kt-indicator", "on");
         
         try {
-          if (route.params.id) {
-            // Preparo i dati da salvare
+          if (isEmployeeView.value && route.params.id) {
+            // Employee mode: update specific employee
             const employeeData: Partial<Employee> = {
               first_name: profileDetails.value.firstName,
               last_name: profileDetails.value.lastName,
@@ -940,14 +956,31 @@ export default defineComponent({
             if (refreshEmployee) {
               await refreshEmployee();
             }
-            
-            // Show success message
-            Swal.fire({
-              icon: 'success',
-              title: 'Profile updated!',
-              text: 'Your profile has been updated successfully.'
-            });
+          } else {
+            // Account mode: update current user
+            const userData = {
+              firstName: profileDetails.value.firstName,
+              lastName: profileDetails.value.lastName,
+              email: profileDetails.value.email,
+              phone: profileDetails.value.phone,
+              dateOfBirth: profileDetails.value.dateOfBirth ? new Date(profileDetails.value.dateOfBirth).toISOString() : undefined,
+              placeOfBirth: profileDetails.value.placeOfBirth,
+              address: profileDetails.value.address,
+              currentRole: profileDetails.value.currentRole,
+              department: profileDetails.value.department,
+              isAvailable: profileDetails.value.isAvailable,
+            };
+
+            // Update the current user
+            await updateCurrentUser(userData);
           }
+          
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Profile updated!',
+            text: 'Your profile has been updated successfully.'
+          });
         } catch (error) {
           console.error("Error updating profile:", error);
           Swal.fire({
@@ -1076,7 +1109,10 @@ export default defineComponent({
           name: skill.name,
           proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
           certification: skill.certification,
-          employeeHard: { connect: { id: route.params.id } },
+          ...(isEmployeeView.value 
+            ? { employeeHard: { connect: { id: route.params.id } } }
+            : { applicationUserHard: { connect: { id: userData.value?.id } } }
+          ),
         };
         if (skill.id) {
           await updateSkill(skill.id, dataToSend);
@@ -1130,7 +1166,10 @@ export default defineComponent({
           name: skill.name,
           proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
           certification: skill.certification,
-          employeeSoft: { connect: { id: route.params.id } },
+          ...(isEmployeeView.value 
+            ? { employeeSoft: { connect: { id: route.params.id } } }
+            : { applicationUserSoft: { connect: { id: userData.value?.id } } }
+          ),
         };
         if (skill.id) {
           await updateSkill(skill.id, dataToSend);
@@ -1191,7 +1230,15 @@ export default defineComponent({
         if (exp.id) {
           await updateExperience(exp.id, exp);
         } else {
-          const created = await createExperience({ ...exp, employeeId: route.params.id });
+          const experienceData = isEmployeeView.value 
+            ? { ...exp, employeeId: route.params.id }
+            : { 
+                ...exp, 
+                applicationUser: { connect: { id: userData.value?.id } },
+                startDate: exp.startDate ? new Date(exp.startDate) : undefined,
+                endDate: exp.endDate ? new Date(exp.endDate) : undefined,
+              };
+          const created = await createExperience(experienceData);
           if (created) profileDetails.value.experiences[index] = created;
         }
         editingExperienceIndex.value = null;
@@ -1255,7 +1302,7 @@ export default defineComponent({
       saveChanges4,
       deactivateAccount,
       profileDetails,
-      employee,
+      employee: userData, // Unified reference
       emailFormDisplay,
       passwordFormDisplay,
       updateEmail,

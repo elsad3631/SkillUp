@@ -179,4 +179,20 @@ export const applicationUserController = {
     
     res.json(stats);
   }),
+
+  // Project-related endpoints
+  getUserProjects: asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    
+    // Import projectService here to avoid circular dependencies
+    const { projectService } = await import('../services/project.service');
+    
+    try {
+      const projects = await projectService.getUserProjects(id);
+      res.json(projects);
+    } catch (error) {
+      console.error('Error fetching user projects:', error);
+      res.status(500).json({ message: 'Failed to fetch user projects' });
+    }
+  }),
 }; 

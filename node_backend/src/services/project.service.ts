@@ -146,6 +146,19 @@ export const projectService = {
           include: {
             requiredHardSkills: true,
             requiredSoftSkills: true,
+            assignments: {
+              include: {
+                applicationUser: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    currentRole: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -160,6 +173,17 @@ export const projectService = {
       allocationPercentage: assignment.allocationPercentage,
       assignmentStatus: assignment.status,
       feedbackReceived: assignment.feedbackReceived,
+      // Aggiungi tutti gli utenti assegnati al progetto
+      assignedUsers: assignment.project.assignments?.map((assign: any) => ({
+        id: assign.applicationUser.id,
+        name: `${assign.applicationUser.firstName || ''} ${assign.applicationUser.lastName || ''}`.trim(),
+        firstName: assign.applicationUser.firstName,
+        lastName: assign.applicationUser.lastName,
+        avatar: assign.applicationUser.avatar,
+        role: assign.roleOnProject,
+        currentRole: assign.applicationUser.currentRole,
+        allocationPercentage: assign.allocationPercentage,
+      })) || [],
       // Mappa le required skills come nel metodo getAll
       requiredHardSkills: assignment.project.requiredHardSkills?.map((skill: any) => ({
         id: skill.id,
@@ -174,6 +198,39 @@ export const projectService = {
         proficiencyLevel: skill.proficiencyLevel,
         certification: skill.certification,
       })) || [],
+    }));
+  },
+
+  async getProjectUsers(projectId: string) {
+    const assignments = await prisma.projectAssignment.findMany({
+      where: {
+        projectId: projectId,
+      },
+      include: {
+        applicationUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+            currentRole: true,
+          },
+        },
+      },
+    });
+
+    return assignments.map((assignment: any) => ({
+      id: assignment.applicationUser.id,
+      name: `${assignment.applicationUser.firstName || ''} ${assignment.applicationUser.lastName || ''}`.trim(),
+      firstName: assignment.applicationUser.firstName,
+      lastName: assignment.applicationUser.lastName,
+      avatar: assignment.applicationUser.avatar,
+      role: assignment.roleOnProject,
+      currentRole: assignment.applicationUser.currentRole,
+      allocationPercentage: assignment.allocationPercentage,
+      assignmentStartDate: assignment.assignmentStartDate,
+      assignmentEndDate: assignment.assignmentEndDate,
+      status: assignment.status,
     }));
   },
 }; 

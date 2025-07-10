@@ -118,7 +118,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: "/crafted/account",
         name: "account",
-        component: () => import("@/views/crafted/account/Account.vue"),
+        component: () => import("@/views/employee/Account.vue"),
         meta: {
           breadcrumbs: ["Crafted", "Account"],
         },
@@ -126,7 +126,7 @@ const routes: Array<RouteRecordRaw> = [
           {
             path: "overview",
             name: "account-overview",
-            component: () => import("@/views/crafted/account/Overview.vue"),
+            component: () => import("@/views/employee/Overview.vue"),
             meta: {
               pageTitle: "Overview",
             },
@@ -134,7 +134,7 @@ const routes: Array<RouteRecordRaw> = [
           {
             path: "settings",
             name: "account-settings",
-            component: () => import("@/views/crafted/account/Settings.vue"),
+            component: () => import("@/views/employee/Settings.vue"),
             meta: {
               pageTitle: "Settings",
             },
@@ -142,7 +142,7 @@ const routes: Array<RouteRecordRaw> = [
           {
             path: "projects",
             name: "account-projects",
-            component: () => import("@/views/crafted/account/Projects.vue"),
+            component: () => import("@/views/employee/Projects.vue"),
             meta: {
               pageTitle: "Projects",
             },
@@ -432,6 +432,15 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               pageTitle: "Employee Overview",
               breadcrumbs: ["Home", "Employees", "Overview"],
+            },
+          },
+          {
+            path: "projects",
+            name: "employee-projects",
+            component: () => import("@/views/employee/Projects.vue"),
+            meta: {
+              pageTitle: "Employee Projects",
+              breadcrumbs: ["Home", "Employees", "Projects"],
             },
           },
           {

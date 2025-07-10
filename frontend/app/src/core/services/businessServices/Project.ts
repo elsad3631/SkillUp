@@ -26,7 +26,7 @@ const getProject = (id: string): Promise<Project | undefined> => {
     });
 };
 
-const createProject = (formData: Project): Promise<Project | undefined> => {
+const createProject = (formData: any): Promise<Project | undefined> => {
   return ApiService.post(`projects`, formData)
     .then(({ data }) => data as Project)
     .catch(({ response }) => {
@@ -35,7 +35,7 @@ const createProject = (formData: Project): Promise<Project | undefined> => {
     });
 };
 
-const updateProject = (id: string, formData: Project): Promise<Project | undefined> => {
+const updateProject = (id: string, formData: any): Promise<Project | undefined> => {
   return ApiService.put(`projects/${id}`, formData)
     .then(({ data }) => data as Project)
     .catch(({ response }) => {
@@ -53,8 +53,6 @@ const deleteProject = (id: string): Promise<boolean> => {
     });
 };
 
-
-
 const getUserProjects = (): Promise<Array<Project> | undefined> => {
   // Imposta l'header di autenticazione prima della chiamata
   ApiService.setHeader();
@@ -67,11 +65,51 @@ const getUserProjects = (): Promise<Array<Project> | undefined> => {
     });
 };
 
+// Nuove funzioni per le assegnazioni di progetti
+const getEmployeeProjects = (employeeId: string): Promise<Array<Project> | undefined> => {
+  return ApiService.get(`applicationusers/${employeeId}/projects`)
+    .then(({ data }) => data as Project[])
+    .catch(({ response }) => {
+      console.error("Error getting employee projects:", response);
+      // Fallback: ottieni tutti i progetti dell'utente corrente se l'endpoint specifico non esiste
+      return getUserProjects();
+    });
+};
+
+const assignProjectToEmployee = (assignmentData: {
+  applicationUserId: string;
+  projectId: string;
+  roleOnProject: string;
+  assignmentStartDate: string;
+  assignmentEndDate?: string;
+  allocationPercentage: number;
+  status: string;
+}): Promise<any | undefined> => {
+  return ApiService.post(`appointments`, assignmentData)
+    .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const removeProjectAssignment = (assignmentId: string): Promise<boolean> => {
+  return ApiService.delete(`appointments/${assignmentId}`)
+    .then(() => true)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return false;
+    });
+};
+
 export {
   getProjects,
   getProject,
   createProject,
   updateProject,
   deleteProject,
-  getUserProjects
+  getUserProjects,
+  getEmployeeProjects,
+  assignProjectToEmployee,
+  removeProjectAssignment
 }; 

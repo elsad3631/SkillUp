@@ -21,6 +21,9 @@ router.get('/filter/available', applicationUserController.getAvailableUsers);
 router.get('/filter/employees', applicationUserController.getEmployees);
 router.get('/filter/admins', applicationUserController.getAdmins);
 
+// Project-related endpoints
+router.get('/:id/projects', applicationUserController.getUserProjects);
+
 // Advanced operations
 router.get('/admin/stats', applicationUserController.getStats);
 router.get('/admin/search', applicationUserController.search);

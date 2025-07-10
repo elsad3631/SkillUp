@@ -80,6 +80,18 @@ const deleteSkillRequirement = (skillId: string): Promise<boolean> => {
     });
 };
 
+const getUserProjects = (): Promise<Array<Project> | undefined> => {
+  // Imposta l'header di autenticazione prima della chiamata
+  ApiService.setHeader();
+  
+  return ApiService.query(`projects/my-projects`, {})
+    .then(({ data }) => data as Project[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 export {
   getProjects,
   getProject,
@@ -88,5 +100,6 @@ export {
   deleteProject,
   createSkillRequirement,
   updateSkillRequirement,
-  deleteSkillRequirement
+  deleteSkillRequirement,
+  getUserProjects
 }; 

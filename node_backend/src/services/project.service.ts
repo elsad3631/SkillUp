@@ -129,4 +129,36 @@ export const projectService = {
   async deleteSkillRequirement(id: string) {
     return prisma.skillRequirement.delete({ where: { id } });
   },
+  async getUserProjects(userId: string) {
+    const userProjects = await prisma.projectAssignment.findMany({
+      where: {
+        applicationUserId: userId,
+      },
+      include: {
+        project: {
+          include: {
+            requiredHardSkills: true,
+          },
+        },
+      },
+    });
+
+    return userProjects.map((assignment: any) => ({
+      ...assignment.project,
+      // Aggiungi info specifiche dell'assignment
+      roleOnProject: assignment.roleOnProject,
+      assignmentStartDate: assignment.assignmentStartDate,
+      assignmentEndDate: assignment.assignmentEndDate,
+      allocationPercentage: assignment.allocationPercentage,
+      assignmentStatus: assignment.status,
+      feedbackReceived: assignment.feedbackReceived,
+      // Mappa le required hard skills come nel metodo getAll
+      requiredHardSkills: assignment.project.requiredHardSkills?.map((skill: any) => ({
+        id: skill.id,
+        name: skill.name,
+        minProficiencyLevel: skill.minProficiencyLevel,
+        isMandatory: skill.isMandatory,
+      })) || [],
+    }));
+  },
 }; 

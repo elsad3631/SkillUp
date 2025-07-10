@@ -41,4 +41,12 @@ export const projectController = {
     await projectService.deleteSkillRequirement(req.params.id);
     res.status(204).send();
   }),
+  getUserProjects: asyncHandler(async (req: Request, res: Response) => {
+    const user = (req as any).user;
+    if (!user || !user.userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+    const projects = await projectService.getUserProjects(user.userId);
+    res.json(projects);
+  }),
 }; 

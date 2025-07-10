@@ -6,7 +6,7 @@
         <span class="visually-hidden">Loading...</span>
       </div>
       <div class="mt-3">
-        <span class="fw-semobold text-gray-600">Loading profile data...</span>
+        <span class="fw-semobold text-gray-600">Loading employee data...</span>
       </div>
     </div>
   </div>
@@ -19,7 +19,7 @@
         <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
       </div>
       <div class="mb-3">
-        <h4 class="text-danger">Error Loading Profile</h4>
+        <h4 class="text-danger">Error Loading Employee</h4>
         <p class="text-gray-600">{{ error }}</p>
       </div>
       <button @click="handleRefreshClick" class="btn btn-primary">
@@ -30,7 +30,7 @@
   <!--end::Error State-->
 
   <!--begin::Content (shown when loaded)-->
-  <div v-else-if="currentUser">
+  <div v-else>
     <!--begin::Navbar-->
     <div class="card mb-5 mb-xl-10">
       <div class="card-body pt-9 pb-0">
@@ -43,7 +43,7 @@
             >
               <img 
                 :src="currentAvatarUrl" 
-                :alt="`${currentUser?.firstName || ''} ${currentUser?.lastName || ''} avatar`"
+                :alt="`${employee?.firstName || ''} ${employee?.lastName || ''} avatar`"
                 @error="handleImageError"
                 @load="handleImageLoad"
                 :class="{ 'opacity-50': imageLoading }"
@@ -78,7 +78,7 @@
 
                 <!--begin::Remove avatar button-->
                 <span
-                  v-if="currentUser?.avatar && currentAvatarUrl !== getAssetPath('media/avatars/blank.png')"
+                  v-if="employee?.avatar && currentAvatarUrl !== getAssetPath('media/avatars/blank.png')"
                   class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow ms-1"
                   data-bs-toggle="tooltip"
                   @click="handleAvatarRemove"
@@ -108,7 +108,7 @@
                 <!--begin::Name-->
                 <div class="d-flex align-items-center mb-2">
                   <span class="text-gray-800 fs-2 fw-bold me-1">
-                    {{ userDisplayName }}
+                    {{ employee?.name || employee?.firstName || '' }} {{ employee?.surname || employee?.lastName || '' }}
                   </span>
                   <a href="#">
                     <KTIcon icon-name="verify" icon-class="fs-1 text-primary" />
@@ -126,17 +126,17 @@
 
                 <!--begin::Info-->
                 <div class="d-flex flex-wrap fw-semobold fs-6 mb-4 pe-2">
-                  <span v-if="currentUser?.currentRole" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="employee?.currentRole || employee?.role" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
                     <KTIcon icon-name="profile-circle" icon-class="fs-4 me-1" />
-                    {{ currentUser?.currentRole }}
+                    {{ employee?.currentRole || employee?.role }}
                   </span>
-                  <span v-if="currentUser?.placeOfBirth" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="employee?.location || employee?.placeOfBirth" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
                     <KTIcon icon-name="geolocation" icon-class="fs-4 me-1" />
-                    {{ currentUser?.placeOfBirth }}
+                    {{ employee?.location || employee?.placeOfBirth }}
                   </span>
-                  <span v-if="currentUser?.email" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
+                  <span v-if="employee?.email" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
                     <KTIcon icon-name="sms" icon-class="fs-4 me-1" />
-                    {{ currentUser?.email }}
+                    {{ employee?.email }}
                   </span>
                 </div>
                 <!--end::Info-->
@@ -277,7 +277,7 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
-                to="/crafted/account/overview"
+                :to="`/employees/${route.params.id}/overview`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
               >
@@ -288,22 +288,11 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
-                to="/crafted/account/settings"
+                :to="`/employees/${route.params.id}/settings`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
               >
                 Settings
-              </router-link>
-            </li>
-            <!--end::Nav item-->
-            <!--begin::Nav item-->
-            <li class="nav-item">
-              <router-link
-                to="/crafted/account/projects"
-                class="nav-link text-active-primary me-6"
-                active-class="active"
-              >
-                Projects
               </router-link>
             </li>
             <!--end::Nav item-->
@@ -319,14 +308,13 @@
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref, onMounted, onUnmounted, provide, watch, computed } from "vue";
+import { defineComponent, ref, onMounted, onUnmounted, provide, watch } from "vue";
 import { useRoute } from "vue-router";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
 import { useAvatar } from "@/core/composables/useAvatar";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 // Updated to use ApplicationUser API
 // import { getEmployee } from "@/core/services/businessServices/Employee";
-import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
   name: "kt-account",
@@ -335,38 +323,71 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const employee = ref<any>(null);
+    const loading = ref(true);
+    const error = ref<string | null>(null);
     const imageLoading = ref(false);
     const imageError = ref(false);
+    const dataUpdateTrigger = ref(0); // Force reactivity trigger
 
     // Get avatar functions from composable
     const { getAvatarDisplayUrl, uploadAvatar, deleteCurrentAvatar, ...avatarComposable } = useAvatar();
-    const { currentUser, loading, error, fetchCurrentUser } = useCurrentUser();
 
     const avatarInput = ref<HTMLInputElement | null>(null);
 
+    const refreshEmployeeData = async (id: string) => {
+      loading.value = true;
+      error.value = '';
+      
+      try {
+        // Add API_URL prefix to the endpoint, removing duplicate /api/
+        const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+        const response = await fetch(`${API_URL}/applicationusers/${id}`);
+        if (response.ok) {
+          const newEmployeeData = await response.json();
+          employee.value = newEmployeeData;
+        } else {
+          console.error('❌ Failed to refresh employee data:', response.status);
+          error.value = 'Failed to load employee data. Please try again.';
+        }
+      } catch (err) {
+        console.error('❌ Failed to refresh user:', err);
+        error.value = 'An error occurred while loading employee data.';
+      }
+      loading.value = false;
+    };
+
     // Provide refreshEmployee function to child components
     provide('refreshEmployee', () => {
-      return fetchCurrentUser();
+      if (route.params.id) {
+        return refreshEmployeeData(route.params.id as string);
+      }
     });
 
-    // Provide employee data to child components - using currentUser instead
-    provide('employee', currentUser);
+    // Provide employee data to child components
+    provide('employee', employee);
 
     // Handle avatar update events
     const handleAvatarUpdate = () => {
-      fetchCurrentUser();
+      if (employee.value?.id) {
+        refreshEmployeeData(employee.value.id);
+      }
     };
 
     // Handle employee data update events
     const handleEmployeeUpdate = (event: CustomEvent) => {
-      // No longer needed since we use currentUser directly
+      if (event.detail) {
+        employee.value = event.detail;
+      }
     };
 
     onMounted(async () => {
-      try {
-        await fetchCurrentUser();
-      } catch (err) {
-        console.error('Failed to fetch user:', err);
+      if (route.params.id) {
+        try {
+          await refreshEmployeeData(route.params.id as string);
+        } catch (err) {
+          console.error('Failed to fetch user:', err);
+        }
       }
 
       // Listen for avatar and employee updates
@@ -379,6 +400,13 @@ export default defineComponent({
       window.removeEventListener('employee-updated', handleEmployeeUpdate as EventListener);
     });
 
+    // Watch for route changes
+    watch(() => route.params.id, (newId) => {
+      if (newId) {
+        refreshEmployeeData(newId as string);
+      }
+    });
+
     // Timestamp for cache busting avatar images
     const avatarTimestamp = ref(Date.now());
 
@@ -387,8 +415,8 @@ export default defineComponent({
       imageError.value = true;
       imageLoading.value = false;
       // Se l'immagine non si carica, forza l'uso dell'immagine di default
-      if (currentUser.value) {
-        currentUser.value.avatar = '';
+      if (employee.value) {
+        employee.value.avatar = '';
       }
     };
 
@@ -424,19 +452,19 @@ export default defineComponent({
     const currentAvatarUrl = ref(getAssetPath('media/avatars/blank.png'));
 
     // Watch employee avatar changes
-    watch(() => currentUser.value?.avatar, async (newAvatar) => {
+    watch(() => employee.value?.avatar, async (newAvatar) => {
       currentAvatarUrl.value = await getAvatarUrl(newAvatar);
     }, { immediate: true });
 
     // Avatar upload handler (immediate save)
     const handleAvatarUpload = async (event: Event) => {
       const input = event.target as HTMLInputElement;
-      if (!input.files?.length || !currentUser.value?.id) return;
+      if (!input.files?.length || !employee.value?.id) return;
 
       const file = input.files[0];
       
       try {
-        await uploadAvatar(currentUser.value.id, file);
+        await uploadAvatar(employee.value.id, file);
         
         // Update avatar timestamp for instant refresh
         avatarTimestamp.value = Date.now();
@@ -450,8 +478,8 @@ export default defineComponent({
           showConfirmButton: false
         });
         
-        // Refresh current user data in background
-        fetchCurrentUser();
+        // Refresh employee data in background
+        refreshEmployeeData(employee.value.id);
       } catch (error) {
         console.error('❌ Failed to upload and save avatar', error);
         
@@ -469,18 +497,18 @@ export default defineComponent({
 
     // Avatar removal handler (immediate delete)
     const handleAvatarRemove = async () => {
-      if (!currentUser.value?.id) return;
+      if (!employee.value?.id) return;
       
       try {
-        await deleteCurrentAvatar(currentUser.value.id);
+        await deleteCurrentAvatar(employee.value.id);
         
         // Reset error state
         imageError.value = false;
         
         // Update avatar timestamp and clear current avatar
         avatarTimestamp.value = Date.now();
-        if (currentUser.value) {
-          currentUser.value.avatar = ''; // Usa stringa vuota invece di undefined
+        if (employee.value) {
+          employee.value.avatar = ''; // Usa stringa vuota invece di undefined
         }
         
         // Show success message
@@ -492,8 +520,8 @@ export default defineComponent({
           showConfirmButton: false
         });
         
-        // Refresh current user data in background
-        fetchCurrentUser();
+        // Refresh employee data in background
+        refreshEmployeeData(employee.value.id);
       } catch (error) {
         console.error('❌ Failed to delete avatar', error);
         
@@ -507,34 +535,30 @@ export default defineComponent({
     };
 
     const handleRefreshClick = () => {
-      fetchCurrentUser();
-    };
-
-    const userDisplayName = computed(() => {
-      if (currentUser.value) {
-        return `${currentUser.value.firstName || ''} ${currentUser.value.lastName || ''}`.trim();
+      if (employee.value?.id) {
+        refreshEmployeeData(employee.value.id);
       }
-      return '';
-    });
+    };
 
     return {
       getAssetPath,
       route,
+      employee,
       loading,
       imageLoading,
       imageError,
       handleImageError,
       handleImageLoad,
       getAvatarUrl,
+      refreshEmployeeData,
       handleRefreshClick,
       error,
+      dataUpdateTrigger,
       avatarComposable,
       handleAvatarUpload,
       handleAvatarRemove,
       avatarInput,
       currentAvatarUrl,
-      currentUser,
-      userDisplayName,
     };
   },
 });

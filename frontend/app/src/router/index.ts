@@ -139,6 +139,14 @@ const routes: Array<RouteRecordRaw> = [
               pageTitle: "Settings",
             },
           },
+          {
+            path: "projects",
+            name: "account-projects",
+            component: () => import("@/views/crafted/account/Projects.vue"),
+            meta: {
+              pageTitle: "Projects",
+            },
+          },
         ],
       },
       {

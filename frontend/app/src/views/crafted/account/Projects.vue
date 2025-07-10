@@ -33,168 +33,98 @@
   <!--end::Toolbar-->
 
   <!--begin::Row-->
-  <div class="row g-6 g-xl-9">
+  <div class="row g-6 g-xl-9" v-if="!isLoading && !error">
     <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
+    <div 
+      v-for="(project, index) in projects" 
+      :key="project.id"
+      class="col-md-6 col-xl-4"
+    >
       <KTCard
-        :progress="50"
-        title="Fitnes App"
-        :icon="getAssetPath('media/svg/brand-logos/plurk.svg')"
-        :users="users1"
+        :status="project.status"
+        :status-data-badge-color="getStatusBadge(project.status || '')"
+        :progress="calculateProgress(project)"
+        :icon="getProjectIcon(index)"
+        :title="project.name || 'Progetto senza nome'"
+        :date="formatDate(project.start_date)"
+        :budget="formatBudget(project.budget)"
+        :users="getProjectUsers(index)"
+        :description="project.description"
       ></KTCard>
     </div>
     <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="Pending"
-        status-data-badge-color="badge-light"
-        :progress="30"
-        :icon="getAssetPath('media/svg/brand-logos/disqus.svg')"
-        title="Leaf CRM"
-        date="May 10, 2021"
-        budget="$36,400.00"
-        :users="users2"
-      ></KTCard>
+    
+    <!--begin::Empty State-->
+    <div v-if="projects.length === 0" class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-10">
+          <div class="mb-5">
+            <i class="ki-duotone ki-notepad fs-5x text-muted mb-5">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+          </div>
+          <h3 class="text-gray-800">Nessun progetto assegnato</h3>
+          <p class="text-gray-600 mb-0">
+            Al momento non hai progetti assegnati. Contatta il tuo manager per ulteriori informazioni.
+          </p>
+        </div>
+      </div>
     </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="Completed"
-        status-data-badge-color="badge-light-success"
-        :progress="100"
-        :icon="getAssetPath('media/svg/brand-logos/figma-1.svg')"
-        title="Atica Banking"
-        date="Mar 14, 2021"
-        budget="$605,100.00"
-        :users="users3"
-      ></KTCard>
+    <!--end::Empty State-->
+  </div>
+  
+  <!--begin::Loading State-->
+  <div v-if="isLoading" class="row g-6 g-xl-9">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-10">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Caricamento...</span>
+          </div>
+          <p class="text-gray-600 mt-3">Caricamento progetti in corso...</p>
+        </div>
+      </div>
     </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="Pending"
-        :progress="60"
-        status-data-badge-color="badge-light"
-        :icon="getAssetPath('media/svg/brand-logos/sentry-3.svg')"
-        title="Finance Dispatch"
-        budget="$36,400.00"
-        :users="users4"
-      ></KTCard>
+  </div>
+  <!--end::Loading State-->
+  
+  <!--begin::Error State-->
+  <div v-if="error" class="row g-6 g-xl-9">
+    <div class="col-12">
+      <div class="alert alert-danger d-flex align-items-center">
+        <i class="ki-duotone ki-information fs-2x text-danger me-4">
+          <span class="path1"></span>
+          <span class="path2"></span>
+          <span class="path3"></span>
+        </i>
+        <div>
+          <h4 class="alert-heading">Errore nel caricamento</h4>
+          <p class="mb-2">{{ error }}</p>
+          <button @click="loadProjects" class="btn btn-sm btn-outline-danger">
+            Riprova
+          </button>
+        </div>
+      </div>
     </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="In Progress"
-        :progress="40"
-        :icon="getAssetPath('media/svg/brand-logos/xing-icon.svg')"
-        title="9 Degree"
-        date="May 10, 2021"
-        budget="$36,400.00"
-        :users="users5"
-      ></KTCard>
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="In Progress"
-        :progress="70"
-        :icon="getAssetPath('media/svg/brand-logos/tvit.svg')"
-        title="GoPro App"
-        date="May 10, 2021"
-        budget="$36,400.00"
-        :users="users6"
-      ></KTCard>
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="In Progress"
-        :progress="30"
-        :icon="getAssetPath('media/svg/brand-logos/aven.svg')"
-        title="Buldozer CRM"
-        date="May 10, 2021"
-        budget="$36,400.00"
-        :users="users7"
-      ></KTCard>
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="Overdue"
-        :progress="10"
-        status-data-badge-color="badge-light-danger"
-        :icon="getAssetPath('media/svg/brand-logos/treva.svg')"
-        title="Aviasales App"
-        date="May 10, 2021"
-        budget="$36,400.00"
-        :users="users8"
-      ></KTCard>
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6 col-xl-4">
-      <KTCard
-        status="Completed"
-        :progress="100"
-        status-data-badge-color="badge-light-success"
-        :icon="getAssetPath('media/svg/brand-logos/kanba.svg')"
-        title="Oppo CRM"
-        date="May 10, 2021"
-        budget="$36,400.00"
-        :users="users9"
-      ></KTCard>
-    </div>
-    <!--end::Row-->
+  </div>
+     <!--end::Error State-->
+   <!--end::Row-->
 
     <!--begin::Pagination-->
-    <div class="d-flex flex-stack flex-wrap pt-10">
+    <div v-if="!isLoading && !error && projects.length > 0" class="d-flex flex-stack flex-wrap pt-10">
       <div class="fs-6 fw-semobold text-gray-700">
-        Showing 1 to 10 of 50 entries
+        Mostrando {{ projects.length }} {{ projects.length === 1 ? 'progetto' : 'progetti' }}
       </div>
 
       <!--begin::Pages-->
-      <ul class="pagination">
+      <ul class="pagination" v-if="projects.length > 9">
         <li class="page-item previous">
           <a href="#" class="page-link"><i class="previous"></i></a>
         </li>
 
         <li class="page-item active">
           <a href="#" class="page-link">1</a>
-        </li>
-
-        <li class="page-item">
-          <a href="#" class="page-link">2</a>
-        </li>
-
-        <li class="page-item">
-          <a href="#" class="page-link">3</a>
-        </li>
-
-        <li class="page-item">
-          <a href="#" class="page-link">4</a>
-        </li>
-
-        <li class="page-item">
-          <a href="#" class="page-link">5</a>
-        </li>
-
-        <li class="page-item">
-          <a href="#" class="page-link">6</a>
         </li>
 
         <li class="page-item next">
@@ -204,13 +134,14 @@
       <!--end::Pages-->
     </div>
     <!--end::Pagination-->
-  </div>
 </template>
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import KTCard from "@/components/cards/Card1.vue";
+import { getUserProjects } from "@/core/services/businessServices/Project";
+import { Project } from "@/core/models/Project";
 
 export default defineComponent({
   name: "profile-projects",
@@ -218,73 +149,125 @@ export default defineComponent({
     KTCard,
   },
   setup() {
-    const users1 = [
-      { name: "Emma Smith", src: getAssetPath("media/avatars/300-6.jpg") },
-      { name: "Rudy Stone", src: getAssetPath("media/avatars/300-1.jpg") },
-      { name: "Susan Redwood", initials: "S", state: "primary" },
+    const projects = ref<Project[]>([]);
+    const isLoading = ref(true);
+    const error = ref<string | null>(null);
+
+    // Icone predefinite per i progetti
+    const projectIcons = [
+      "media/svg/brand-logos/plurk.svg",
+      "media/svg/brand-logos/disqus.svg",
+      "media/svg/brand-logos/figma-1.svg",
+      "media/svg/brand-logos/sentry-3.svg",
+      "media/svg/brand-logos/xing-icon.svg",
+      "media/svg/brand-logos/tvit.svg",
+      "media/svg/brand-logos/aven.svg",
+      "media/svg/brand-logos/treva.svg",
+      "media/svg/brand-logos/kanba.svg",
     ];
 
-    const users2 = [
-      { name: "Alan Warden", initials: "A", state: "warning" },
-      { name: "Brian Cox", src: getAssetPath("media/avatars/300-5.jpg") },
+    // Avatars mock per gli utenti dei progetti
+    const mockUsers = [
+      [
+        { name: "Emma Smith", src: getAssetPath("media/avatars/300-6.jpg") },
+        { name: "Rudy Stone", src: getAssetPath("media/avatars/300-1.jpg") },
+        { name: "Susan Redwood", initials: "S", state: "primary" },
+      ],
+      [
+        { name: "Alan Warden", initials: "A", state: "warning" },
+        { name: "Brian Cox", src: getAssetPath("media/avatars/300-5.jpg") },
+      ],
+      [
+        { name: "Mad Masy", src: getAssetPath("media/avatars/300-6.jpg") },
+        { name: "Cris Willson", src: getAssetPath("media/avatars/300-1.jpg") },
+        { name: "Mike Garcie", initials: "M", state: "info" },
+      ],
     ];
 
-    const users3 = [
-      { name: "Mad Masy", src: getAssetPath("media/avatars/300-6.jpg") },
-      { name: "Cris Willson", src: getAssetPath("media/avatars/300-1.jpg") },
-      { name: "Mike Garcie", initials: "M", state: "info" },
-    ];
+    const loadProjects = async () => {
+      try {
+        isLoading.value = true;
+        error.value = null;
+        
+        const userProjects = await getUserProjects();
+        if (userProjects) {
+          projects.value = userProjects;
+        } else {
+          error.value = "Impossibile caricare i progetti";
+        }
+      } catch (err) {
+        error.value = "Errore durante il caricamento dei progetti";
+        console.error("Error loading projects:", err);
+      } finally {
+        isLoading.value = false;
+      }
+    };
 
-    const users4 = [
-      { name: "Nich Warden", initials: "N", state: "warning" },
-      { name: "Rob Otto", initials: "R", state: "success" },
-    ];
+    // Funzione per calcolare la percentuale di progresso
+    const calculateProgress = (project: any) => {
+      if (project.status === "Completed") return 100;
+      if (project.status === "In Progress") return project.allocationPercentage || 50;
+      if (project.status === "Pending") return 30;
+      return 10;
+    };
 
-    const users5 = [
-      {
-        name: "Francis Mitcham",
-        src: getAssetPath("media/avatars/300-20.jpg"),
-      },
-      {
-        name: "Michelle Swanston",
-        src: getAssetPath("media/avatars/300-7.jpg"),
-      },
-      { name: "Susan Redwood", initials: "S", state: "primary" },
-    ];
+    // Funzione per ottenere l'icona del progetto
+    const getProjectIcon = (index: number) => {
+      return getAssetPath(projectIcons[index % projectIcons.length]);
+    };
 
-    const users6 = [
-      { name: "Emma Smith", src: getAssetPath("media/avatars/300-6.jpg") },
-      { name: "Rudy Stone", src: getAssetPath("media/avatars/300-1.jpg") },
-      { name: "Susan Redwood", initials: "S", state: "primary" },
-    ];
+    // Funzione per ottenere gli utenti mock
+    const getProjectUsers = (index: number) => {
+      return mockUsers[index % mockUsers.length];
+    };
 
-    const users7 = [
-      { name: "Meloday Macy", src: getAssetPath("media/avatars/300-2.jpg") },
-      { name: "Rabbin Watterman", initials: "S", state: "success" },
-    ];
+    // Funzione per mappare lo status ai badge
+    const getStatusBadge = (status: string) => {
+      const statusMap: Record<string, string> = {
+        "Completed": "badge-light-success",
+        "In Progress": "badge-light-primary",
+        "Pending": "badge-light",
+        "Overdue": "badge-light-danger",
+      };
+      return statusMap[status] || "badge-light";
+    };
 
-    const users8 = [
-      { name: "Emma Smith", src: getAssetPath("media/avatars/300-6.jpg") },
-      { name: "Rudy Stone", src: getAssetPath("media/avatars/300-1.jpg") },
-      { name: "Susan Redwood", initials: "S", state: "primary" },
-    ];
+    // Funzione per formattare la data
+    const formatDate = (date: Date | string | undefined) => {
+      if (!date) return "";
+      const d = typeof date === 'string' ? new Date(date) : date;
+      return d.toLocaleDateString("it-IT", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+    };
 
-    const users9 = [
-      { name: "Meloday Macy", src: getAssetPath("media/avatars/300-2.jpg") },
-      { name: "Rabbin Watterman", initials: "S", state: "danger" },
-    ];
+    // Funzione per formattare il budget
+    const formatBudget = (budget: number | undefined) => {
+      if (!budget) return "";
+      return new Intl.NumberFormat("it-IT", {
+        style: "currency",
+        currency: "EUR"
+      }).format(budget);
+    };
+
+    onMounted(() => {
+      loadProjects();
+    });
 
     return {
-      users1,
-      users2,
-      users3,
-      users4,
-      users5,
-      users6,
-      users7,
-      users8,
-      users9,
+      projects,
+      isLoading,
+      error,
       getAssetPath,
+      calculateProgress,
+      getProjectIcon,
+      getProjectUsers,
+      getStatusBadge,
+      formatDate,
+      formatBudget,
+      loadProjects,
     };
   },
 });

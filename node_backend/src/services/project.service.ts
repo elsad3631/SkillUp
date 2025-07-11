@@ -32,7 +32,22 @@ export const projectService = {
       where: { id },
       include: { 
         requiredHardSkills: true,
-        requiredSoftSkills: true 
+        requiredSoftSkills: true,
+        assignments: {
+          include: {
+            applicationUser: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                currentRole: true,
+                department: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
     if (!project) return null;
@@ -50,6 +65,17 @@ export const projectService = {
         name: skill.name,
         proficiencyLevel: skill.proficiencyLevel,
         certification: skill.certification,
+      })) || [],
+      assignments: project.assignments?.map((assignment: any) => ({
+        id: assignment.id,
+        applicationUserId: assignment.applicationUserId,
+        roleOnProject: assignment.roleOnProject,
+        assignmentStartDate: assignment.assignmentStartDate,
+        assignmentEndDate: assignment.assignmentEndDate,
+        allocationPercentage: assignment.allocationPercentage,
+        status: assignment.status,
+        feedbackReceived: assignment.feedbackReceived,
+        applicationUser: assignment.applicationUser,
       })) || [],
     };
   },

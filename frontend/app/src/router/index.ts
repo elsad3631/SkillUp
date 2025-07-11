@@ -478,6 +478,15 @@ const routes: Array<RouteRecordRaw> = [
             },
           },
           {
+            path: "employee",
+            name: "project-employee",
+            component: () => import("@/views/project/Employee.vue"),
+            meta: {
+              pageTitle: "Project Employee",
+              breadcrumbs: ["Home", "Projects", "Employee"],
+            },
+          },
+          {
             path: "settings",
             name: "project-settings",
             component: () => import("@/views/project/Settings.vue"),

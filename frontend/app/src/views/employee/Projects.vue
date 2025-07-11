@@ -60,10 +60,7 @@
       class="col-md-6 col-xl-4"
     >
       <!--begin::Card-->
-      <div
-        :class="['card', 'border', 'border-2', 'border-gray-300', 'border-hover', { 'cursor-pointer': isUserAdmin }]"
-        @click="handleProjectClick(project)"
-      >
+      <div class="card border border-2 border-gray-300 border-hover">
         <!--begin::Card header-->
         <div class="card-header border-0 pt-9">
           <!--begin::Card Title-->
@@ -163,21 +160,42 @@
           </div>
           <!--end::Users-->
 
-          <!--begin::Remove Assignment Button-->
-          <div v-if="isEmployeeView && (project as any).assignmentId && isUserAdmin" class="d-flex justify-content-end">
+          <!--begin::Actions-->
+          <div class="d-flex justify-content-between">
+            <!--begin::View Project-->
             <button
+              @click.stop="handleProjectClick(project)"
+              class="btn btn-sm btn-light-primary me-2 flex-grow-1"
+              type="button"
+              :disabled="!isUserAdmin"
+            >
+              <i class="ki-duotone ki-eye fs-6 me-1">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+              </i>
+              View Details
+            </button>
+            <!--end::View Project-->
+
+            <!--begin::Remove Assignment-->
+            <button
+              v-if="isEmployeeView && (project as any).assignmentId && isUserAdmin"
               @click.stop="handleRemoveAssignment(project)"
               class="btn btn-sm btn-light-danger"
               type="button"
             >
-              <i class="ki-duotone ki-cross fs-2">
+              <i class="ki-duotone ki-trash fs-6">
                 <span class="path1"></span>
                 <span class="path2"></span>
+                <span class="path3"></span>
+                <span class="path4"></span>
+                <span class="path5"></span>
               </i>
-              Remove Assignment
             </button>
+            <!--end::Remove Assignment-->
           </div>
-          <!--end::Remove Assignment Button-->
+          <!--end::Actions-->
         </div>
         <!--end::Card body-->
       </div>
@@ -590,6 +608,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.border-hover:hover {
+  border-color: var(--bs-primary) !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(62, 151, 255, 0.1);
+}
+
 .cursor-pointer {
   cursor: pointer;
 }

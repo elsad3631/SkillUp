@@ -216,6 +216,17 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
+                :to="`/projects/${route.params.id}/employee`"
+                class="nav-link text-active-primary me-6"
+                active-class="active"
+              >
+                Employee
+              </router-link>
+            </li>
+            <!--end::Nav item-->
+            <!--begin::Nav item-->
+            <li class="nav-item">
+              <router-link
                 :to="`/projects/${route.params.id}/settings`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"

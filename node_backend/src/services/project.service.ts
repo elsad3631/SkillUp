@@ -167,6 +167,7 @@ export const projectService = {
     return userProjects.map((assignment: any) => ({
       ...assignment.project,
       // Aggiungi info specifiche dell'assignment
+      assignmentId: assignment.id, // ID dell'assignment per la rimozione
       roleOnProject: assignment.roleOnProject,
       assignmentStartDate: assignment.assignmentStartDate,
       assignmentEndDate: assignment.assignmentEndDate,

@@ -37,11 +37,11 @@
           class="form-select form-select-white form-select-sm fw-bold w-125px"
         >
           <option value="">All Status</option>
-          <option value="Active">Active</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-          <option value="On Hold">On Hold</option>
+          <option value="PLANNING">Planning</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="ON_HOLD">On Hold</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="CANCELLED">Cancelled</option>
         </select>
         <!--end::Select-->
       </div>
@@ -59,19 +59,129 @@
       :key="project.id"
       class="col-md-6 col-xl-4"
     >
-      <KTCard
-        :status="(project as any).assignmentStatus || project.status"
-        :status-data-badge-color="getStatusBadge((project as any).assignmentStatus || project.status || '')"
-        :progress="calculateProgress(project)"
-        :icon="getProjectIcon(index)"
-        :title="project.name || 'Progetto senza nome'"
-        :date="formatDate((project as any).assignmentStartDate || (project as any).startDate || project.start_date)"
-        :start-date="formatDate((project as any).assignmentStartDate || (project as any).startDate || project.start_date)"
-        :end-date="formatDate((project as any).assignmentEndDate || (project as any).endDate || project.end_date)"
-        :users="getProjectUsers(project)"
-        :description="getProjectDescription(project)"
-      ></KTCard>
+      <!--begin::Card-->
+      <div
+        :class="['card', 'border', 'border-2', 'border-gray-300', 'border-hover', { 'cursor-pointer': isUserAdmin }]"
+        @click="handleProjectClick(project)"
+      >
+        <!--begin::Card header-->
+        <div class="card-header border-0 pt-9">
+          <!--begin::Card Title-->
+          <div class="card-title m-0">
+            <!--begin::Avatar-->
+            <div class="symbol symbol-50px w-50px bg-light">
+              <img :src="getProjectIcon(index)" alt="image" class="p-3" />
+            </div>
+            <!--end::Avatar-->
+          </div>
+          <!--end::Card Title-->
 
+          <!--begin::Card toolbar-->
+          <div class="card-toolbar">
+            <span
+              :class="getStatusBadge((project as any).assignmentStatus || project.status || '')"
+              class="badge fw-bold me-auto px-4 py-3"
+            >
+              {{ (project as any).assignmentStatus || project.status }}
+            </span>
+          </div>
+          <!--end::Card toolbar-->
+        </div>
+        <!--end::Card header-->
+
+        <!--begin::Card body-->
+        <div class="card-body p-9">
+          <!--begin::Name-->
+          <div class="fs-3 fw-bold text-dark">
+            {{ project.name || 'Progetto senza nome' }}
+          </div>
+          <!--end::Name-->
+
+          <!--begin::Description-->
+          <p class="text-gray-400 fw-semobold fs-5 mt-1 mb-7">
+            {{ getProjectDescription(project) }}
+          </p>
+          <!--end::Description-->
+
+          <!--begin::Info-->
+          <div class="d-flex flex-wrap mb-5">
+            <!--begin::Start Date-->
+            <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-7 mb-3">
+              <div class="fs-6 text-gray-800 fw-bold">
+                {{ formatDate((project as any).assignmentStartDate || (project as any).startDate || project.start_date) }}
+              </div>
+              <div class="fw-semobold text-gray-400">Start Date</div>
+            </div>
+            <!--end::Start Date-->
+
+            <!--begin::End Date-->
+            <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-7 mb-3">
+              <div class="fs-6 text-gray-800 fw-bold">
+                {{ formatDate((project as any).assignmentEndDate || (project as any).endDate || project.end_date) }}
+              </div>
+              <div class="fw-semobold text-gray-400">End Date</div>
+            </div>
+            <!--end::End Date-->
+          </div>
+          <!--end::Info-->
+
+          <!--begin::Progress-->
+          <div
+            class="h-4px w-100 bg-light mb-5"
+            data-bs-toggle="tooltip"
+            :title="`This project ${calculateProgress(project)}% completed`"
+          >
+            <div
+              class="bg-primary rounded h-4px"
+              role="progressbar"
+              :style="{ width: calculateProgress(project) + '%' }"
+              :aria-valuenow="calculateProgress(project)"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+          <!--end::Progress-->
+
+          <!--begin::Users-->
+          <div v-if="getProjectUsers(project).length > 0" class="symbol-group symbol-hover mb-5">
+            <template v-for="(user, userIndex) in getProjectUsers(project)" :key="userIndex">
+              <div
+                class="symbol symbol-35px symbol-circle"
+                data-bs-toggle="tooltip"
+                :title="user.name"
+              >
+                <img v-if="user.src" alt="Pic" :src="user.src" />
+                <span
+                  v-else
+                  class="symbol-label fw-bold"
+                  :class="`bg-${user.state} text-inverse-${user.state}`"
+                >
+                  {{ user.initials }}
+                </span>
+              </div>
+            </template>
+          </div>
+          <!--end::Users-->
+
+          <!--begin::Remove Assignment Button-->
+          <div v-if="isEmployeeView && (project as any).assignmentId && isUserAdmin" class="d-flex justify-content-end">
+            <button
+              @click.stop="handleRemoveAssignment(project)"
+              class="btn btn-sm btn-light-danger"
+              type="button"
+            >
+              <i class="ki-duotone ki-cross fs-2">
+                <span class="path1"></span>
+                <span class="path2"></span>
+              </i>
+              Remove Assignment
+            </button>
+          </div>
+          <!--end::Remove Assignment Button-->
+        </div>
+        <!--end::Card body-->
+      </div>
+      <!--end::Card-->
     </div>
     <!--end::Col-->
     
@@ -169,11 +279,13 @@
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
 import { defineComponent, ref, onMounted, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import KTCard from "@/components/cards/Card1.vue";
 import AddProjectAssignmentModal from "@/components/employee/AddProjectAssignmentModal.vue";
-import { getUserProjects, getEmployeeProjects } from "@/core/services/businessServices/Project";
+import { getUserProjects, getEmployeeProjects, removeProjectAssignment } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
+import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export default defineComponent({
   name: "profile-projects",
@@ -183,6 +295,8 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
+    const { currentUser } = useCurrentUser();
     const projects = ref<Project[]>([]);
     const allProjects = ref<Project[]>([]); // Lista completa senza filtri
     const selectedStatus = ref<string>(""); // Status filtro selezionato
@@ -210,6 +324,11 @@ export default defineComponent({
 
     // Determina se siamo in modalità employee view o account view
     const isEmployeeView = computed(() => !!employeeId.value);
+
+    // Controlla se l'utente corrente è admin
+    const isUserAdmin = computed(() => {
+      return currentUser.value?.roles?.includes('admin') || false;
+    });
 
     // ID dei progetti già assegnati
     const assignedProjectIds = computed(() => 
@@ -243,6 +362,71 @@ export default defineComponent({
     // Handler per quando vengono assegnati nuovi progetti
     const handleAssignmentCreated = () => {
       loadProjects();
+    };
+
+    // Funzione per gestire il click del progetto (solo per admin)
+    const handleProjectClick = (project: any) => {
+      if (isUserAdmin.value && project.id) {
+        // Apri la pagina di dettaglio del progetto in una nuova scheda
+        const url = router.resolve(`/projects/${project.id}/overview`).href;
+        window.open(url, '_blank');
+      }
+    };
+
+    // Funzione per rimuovere l'assignment del progetto
+    const handleRemoveAssignment = async (project: any) => {
+      if (!project.assignmentId) {
+        console.error("Assignment ID not found");
+        return;
+      }
+
+      try {
+        const result = await Swal.fire({
+          title: 'Conferma rimozione',
+          text: `Sei sicuro di voler rimuovere l'assegnazione del progetto "${project.name}"?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Sì, rimuovi',
+          cancelButtonText: 'Annulla'
+        });
+
+        if (result.isConfirmed) {
+          const success = await removeProjectAssignment(project.assignmentId);
+          
+          if (success) {
+            // Rimuovi il progetto dalla lista locale
+            projects.value = projects.value.filter(p => p.id !== project.id);
+            allProjects.value = allProjects.value.filter(p => p.id !== project.id);
+            
+            // Mostra messaggio di successo
+            await Swal.fire({
+              title: 'Rimosso!',
+              text: 'L\'assegnazione del progetto è stata rimossa con successo.',
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          } else {
+            // Mostra messaggio di errore
+            await Swal.fire({
+              title: 'Errore!',
+              text: 'Si è verificato un errore durante la rimozione dell\'assegnazione.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error removing assignment:", err);
+        await Swal.fire({
+          title: 'Errore!',
+          text: 'Si è verificato un errore imprevisto.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
     };
 
     // Funzione per filtrare i progetti
@@ -312,13 +496,18 @@ export default defineComponent({
     // Funzione per mappare lo status ai badge
     const getStatusBadge = (status: string) => {
       const statusMap: Record<string, string> = {
-        "Completed": "badge-light-success",
-        "In Progress": "badge-light-primary",
+        "PLANNING": "badge-light-info",
+        "IN_PROGRESS": "badge-light-primary",
+        "ON_HOLD": "badge-light-warning",
+        "COMPLETED": "badge-light-success",
+        "CANCELLED": "badge-light-danger",
+        // Backwards compatibility per assignment status
         "Active": "badge-light-success",
         "Pending": "badge-light-warning",
-        "On Hold": "badge-light-secondary",
+        "Completed": "badge-light-success",
+        "In Progress": "badge-light-primary",
+        "On Hold": "badge-light-warning",
         "Overdue": "badge-light-danger",
-        "Cancelled": "badge-light-dark",
       };
       return statusMap[status] || "badge-light";
     };
@@ -364,7 +553,12 @@ export default defineComponent({
       return description || "Nessuna descrizione disponibile";
     };
 
-    onMounted(() => {
+    onMounted(async () => {
+      // Inizializza l'utente corrente per controllare i ruoli
+      const { fetchCurrentUser } = useCurrentUser();
+      await fetchCurrentUser();
+      
+      // Carica i progetti
       loadProjects();
     });
 
@@ -387,7 +581,21 @@ export default defineComponent({
       loadProjects,
       handleAssignmentCreated,
       filterProjects,
+      handleProjectClick,
+      handleRemoveAssignment,
+      isUserAdmin,
     };
   },
 });
 </script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-pointer:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+</style>

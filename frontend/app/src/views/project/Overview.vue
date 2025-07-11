@@ -350,20 +350,27 @@ export default defineComponent({
     };
 
     const getStatusBadgeClass = (status: string) => {
-      switch (status?.toLowerCase()) {
-        case 'active': return 'badge-light-success';
-        case 'completed': return 'badge-light-primary';
-        case 'on hold': return 'badge-light-warning';
-        case 'cancelled': return 'badge-light-danger';
+      switch (status?.toUpperCase()) {
+        case 'PLANNING': return 'badge-light-info';
+        case 'IN_PROGRESS': return 'badge-light-primary';
+        case 'ON_HOLD': return 'badge-light-warning';
+        case 'COMPLETED': return 'badge-light-success';
+        case 'CANCELLED': return 'badge-light-danger';
+        // Backwards compatibility
+        case 'ACTIVE': return 'badge-light-success';
+        case 'COMPLETED': return 'badge-light-success';
+        case 'ON HOLD': return 'badge-light-warning';
+        case 'CANCELLED': return 'badge-light-danger';
         default: return 'badge-light-secondary';
       }
     };
 
     const getPriorityBadgeClass = (priority: string) => {
-      switch (priority?.toLowerCase()) {
-        case 'high': return 'badge-light-danger';
-        case 'medium': return 'badge-light-warning';
-        case 'low': return 'badge-light-success';
+      switch (priority?.toUpperCase()) {
+        case 'CRITICAL': return 'badge-light-danger';
+        case 'HIGH': return 'badge-light-warning';
+        case 'MEDIUM': return 'badge-light-primary';
+        case 'LOW': return 'badge-light-success';
         default: return 'badge-light-secondary';
       }
     };

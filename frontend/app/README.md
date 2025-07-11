@@ -44,3 +44,9 @@ npm run build
 ```sh
 npm run lint
 ```
+
+### Avviare Azurite eseguendo il comando seguente
+
+```sh
+azurite --silent --location c:\azurite --debug c:\azurite\debug.log
+```

@@ -60,7 +60,7 @@
       class="col-md-6 col-xl-4"
     >
       <!--begin::Card-->
-      <div class="card border border-2 border-gray-300 border-hover">
+      <div class="card border border-2 border-gray-300 border-hover cursor-pointer" @click="handleEditAssignment(project)">
         <!--begin::Card header-->
         <div class="card-header border-0 pt-9">
           <!--begin::Card Title-->
@@ -122,22 +122,28 @@
           </div>
           <!--end::Info-->
 
-          <!--begin::Progress-->
-          <div
-            class="h-4px w-100 bg-light mb-5"
-            data-bs-toggle="tooltip"
-            :title="`This project ${calculateProgress(project)}% completed`"
-          >
+          <!--begin::Allocation-->
+          <div v-if="(project as any).allocationPercentage" class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-semobold text-gray-600">Allocazione</span>
+              <span class="fw-bold text-primary">{{ (project as any).allocationPercentage }}%</span>
+            </div>
             <div
-              class="bg-primary rounded h-4px"
-              role="progressbar"
-              :style="{ width: calculateProgress(project) + '%' }"
-              :aria-valuenow="calculateProgress(project)"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            ></div>
+              class="h-4px w-100 bg-light"
+              data-bs-toggle="tooltip"
+              :title="`Allocazione: ${(project as any).allocationPercentage}%`"
+            >
+              <div
+                class="bg-primary rounded h-4px"
+                role="progressbar"
+                :style="{ width: (project as any).allocationPercentage + '%' }"
+                :aria-valuenow="(project as any).allocationPercentage"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
           </div>
-          <!--end::Progress-->
+          <!--end::Allocation-->
 
           <!--begin::Users-->
           <div v-if="getProjectUsers(project).length > 0" class="symbol-group symbol-hover mb-5">
@@ -292,6 +298,24 @@
       @assignment-created="handleAssignmentCreated"
     />
     <!--end::Assign Projects Modal-->
+
+    <!--begin::Edit Assignment Modal-->
+    <EditAssignmentModal
+      :assignment="selectedAssignment"
+      @assignment-updated="handleAssignmentUpdated"
+    />
+    <!--end::Edit Assignment Modal-->
+
+    <!--begin::Hidden button to trigger modal-->
+    <button
+      id="hidden-edit-modal-trigger"
+      type="button"
+      class="d-none"
+      data-bs-toggle="modal"
+      data-bs-target="#kt_modal_edit_assignment"
+    >
+    </button>
+    <!--end::Hidden button to trigger modal-->
 </template>
 
 <script lang="ts">
@@ -300,6 +324,7 @@ import { defineComponent, ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import KTCard from "@/components/cards/Card1.vue";
 import AddProjectAssignmentModal from "@/components/employee/AddProjectAssignmentModal.vue";
+import EditAssignmentModal from "@/components/project/EditAssignmentModal.vue";
 import { getUserProjects, getEmployeeProjects, removeProjectAssignment } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
@@ -310,6 +335,7 @@ export default defineComponent({
   components: {
     KTCard,
     AddProjectAssignmentModal,
+    EditAssignmentModal,
   },
   setup() {
     const route = useRoute();
@@ -320,6 +346,7 @@ export default defineComponent({
     const selectedStatus = ref<string>(""); // Status filtro selezionato
     const isLoading = ref(true);
     const error = ref<string | null>(null);
+    const selectedAssignment = ref<any>(null);
 
     // Icone predefinite per i progetti
     const projectIcons = [
@@ -380,6 +407,44 @@ export default defineComponent({
     // Handler per quando vengono assegnati nuovi progetti
     const handleAssignmentCreated = () => {
       loadProjects();
+    };
+
+    // Handler per modifica assegnazione
+    const handleEditAssignment = (project: any) => {
+      // Crea un oggetto assignment dal progetto
+      const assignment = {
+        id: project.assignmentId,
+        applicationUserId: employeeId.value,
+        projectId: project.id,
+        roleOnProject: project.roleOnProject,
+        assignmentStartDate: project.assignmentStartDate,
+        assignmentEndDate: project.assignmentEndDate,
+        allocationPercentage: project.allocationPercentage,
+        status: project.assignmentStatus,
+        feedbackReceived: project.feedbackReceived,
+        applicationUser: {
+          id: employeeId.value,
+          firstName: currentUser.value?.firstName,
+          lastName: currentUser.value?.lastName,
+          email: currentUser.value?.email,
+          department: currentUser.value?.department,
+          avatar: currentUser.value?.avatar,
+        },
+        project: project,
+      };
+      
+      selectedAssignment.value = assignment;
+      // Apri la modale usando un pulsante nascosto
+      const hiddenButton = document.getElementById('hidden-edit-modal-trigger');
+      if (hiddenButton) {
+        hiddenButton.click();
+      }
+    };
+
+    // Handler per aggiornamento assegnazione
+    const handleAssignmentUpdated = async () => {
+      await loadProjects();
+      selectedAssignment.value = null;
     };
 
     // Funzione per gestire il click del progetto (solo per admin)
@@ -533,8 +598,28 @@ export default defineComponent({
     // Funzione per formattare la data
     const formatDate = (date: Date | string | undefined) => {
       if (!date) return "";
-      const d = typeof date === 'string' ? new Date(date) : date;
-      return d.toLocaleDateString("it-IT", {
+      
+      let dateObj: Date;
+      
+      if (typeof date === 'string') {
+        // Se è già una stringa ISO completa, usala direttamente
+        if (date.includes('T') || date.includes('Z')) {
+          dateObj = new Date(date);
+        } else {
+          // Se è solo una data (YYYY-MM-DD), aggiungi l'ora locale
+          dateObj = new Date(date + 'T00:00:00');
+        }
+      } else {
+        // Se è già un oggetto Date
+        dateObj = new Date(date);
+      }
+      
+      // Verifica che la data sia valida
+      if (isNaN(dateObj.getTime())) {
+        return 'Invalid Date';
+      }
+      
+      return dateObj.toLocaleDateString("it-IT", {
         year: "numeric",
         month: "short",
         day: "numeric"
@@ -556,16 +641,25 @@ export default defineComponent({
       
       // Aggiungi informazioni dell'assignment se disponibili
       if (project.roleOnProject) {
-        description += description ? `\n\nRuolo: ${project.roleOnProject}` : `Ruolo: ${project.roleOnProject}`;
+        description += description ? `\n\n${project.roleOnProject}` : `${project.roleOnProject}`;
       }
       
-      if (project.allocationPercentage) {
-        description += `\nAllocazione: ${project.allocationPercentage}%`;
-      }
-
       if (project.assignmentEndDate) {
-        const endDate = new Date(project.assignmentEndDate);
-        description += `\nScadenza assignment: ${endDate.toLocaleDateString("it-IT")}`;
+        let endDate: Date;
+        
+        if (typeof project.assignmentEndDate === 'string') {
+          // Se è già una stringa ISO completa, usala direttamente
+          if (project.assignmentEndDate.includes('T') || project.assignmentEndDate.includes('Z')) {
+            endDate = new Date(project.assignmentEndDate);
+          } else {
+            // Se è solo una data (YYYY-MM-DD), aggiungi l'ora locale
+            endDate = new Date(project.assignmentEndDate + 'T00:00:00');
+          }
+        } else {
+          // Se è già un oggetto Date
+          endDate = new Date(project.assignmentEndDate);
+        }
+        
       }
       
       return description || "Nessuna descrizione disponibile";
@@ -588,6 +682,7 @@ export default defineComponent({
       isEmployeeView,
       assignedProjectIds,
       selectedStatus,
+      selectedAssignment,
       getAssetPath,
       calculateProgress,
       getProjectIcon,
@@ -601,6 +696,8 @@ export default defineComponent({
       filterProjects,
       handleProjectClick,
       handleRemoveAssignment,
+      handleEditAssignment,
+      handleAssignmentUpdated,
       isUserAdmin,
     };
   },

@@ -102,6 +102,22 @@ const removeProjectAssignment = (assignmentId: string): Promise<boolean> => {
     });
 };
 
+const updateProjectAssignment = (assignmentId: string, assignmentData: {
+  roleOnProject?: string;
+  assignmentStartDate?: string;
+  assignmentEndDate?: string;
+  allocationPercentage?: number;
+  status?: string;
+  feedbackReceived?: string;
+}): Promise<any | undefined> => {
+  return ApiService.put(`appointments/${assignmentId}`, assignmentData)
+    .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 export {
   getProjects,
   getProject,
@@ -111,5 +127,6 @@ export {
   getUserProjects,
   getEmployeeProjects,
   assignProjectToEmployee,
-  removeProjectAssignment
+  removeProjectAssignment,
+  updateProjectAssignment
 }; 

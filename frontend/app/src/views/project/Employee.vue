@@ -55,7 +55,7 @@
         class="col-md-6 col-xl-4"
       >
         <!--begin::Card-->
-        <div class="card border border-2 border-gray-300 border-hover">
+        <div class="card border border-2 border-gray-300 border-hover cursor-pointer" @click="handleEditAssignment(assignment)">
           <!--begin::Card header-->
           <div class="card-header border-0 pt-9">
             <!--begin::Card Title-->
@@ -106,36 +106,42 @@
             <div class="d-flex flex-wrap mb-5">
               <!--begin::Allocation-->
               <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-7 mb-3">
-                <div class="fs-6 text-gray-800 fw-bold">{{ assignment.allocationPercentage }}%</div>
-                <div class="fw-semobold text-gray-400">Allocation</div>
+                <div class="fs-6 text-gray-800 fw-bold">{{ formatDate(assignment.assignmentStartDate) }}</div>
+                <div class="fw-semobold text-gray-400">Start Date</div>
               </div>
               <!--end::Allocation-->
 
               <!--begin::Start Date-->
               <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-7 mb-3">
-                <div class="fs-6 text-gray-800 fw-bold">{{ formatDate(assignment.assignmentStartDate) }}</div>
-                <div class="fw-semobold text-gray-400">Start Date</div>
+                <div class="fs-6 text-gray-800 fw-bold">{{ formatDate(assignment.assignmentEndDate) }}</div>
+                <div class="fw-semobold text-gray-400">End Date</div>
               </div>
               <!--end::Start Date-->
             </div>
             <!--end::Info-->
 
-            <!--begin::Progress-->
-            <div
-              class="h-4px w-100 bg-light mb-5"
-              data-bs-toggle="tooltip"
-              :title="`${assignment.allocationPercentage}% allocation`"
-            >
+            <!--begin::Allocation-->
+            <div v-if="assignment.allocationPercentage" class="mb-5">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semobold text-gray-600">Allocazione</span>
+                <span class="fw-bold text-primary">{{ assignment.allocationPercentage }}%</span>
+              </div>
               <div
-                class="bg-primary rounded h-4px"
-                role="progressbar"
-                :style="{ width: assignment.allocationPercentage + '%' }"
-                :aria-valuenow="assignment.allocationPercentage"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
+                class="h-4px w-100 bg-light"
+                data-bs-toggle="tooltip"
+                :title="`Allocazione: ${assignment.allocationPercentage}%`"
+              >
+                <div
+                  class="bg-primary rounded h-4px"
+                  role="progressbar"
+                  :style="{ width: assignment.allocationPercentage + '%' }"
+                  :aria-valuenow="assignment.allocationPercentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
             </div>
-            <!--end::Progress-->
+            <!--end::Allocation-->
 
             <!--begin::Department-->
             <div v-if="assignment.applicationUser?.department" class="symbol-group symbol-hover mb-5">
@@ -162,7 +168,7 @@
             <div class="d-flex justify-content-between">
               <!--begin::View Employee-->
               <button
-                @click="viewEmployeeDetails(assignment.applicationUser.id)"
+                @click.stop="viewEmployeeDetails(assignment.applicationUser.id)"
                 class="btn btn-sm btn-light-primary me-2 flex-grow-1"
                 type="button"
               >
@@ -177,7 +183,7 @@
 
               <!--begin::Remove Assignment-->
               <button
-                @click="handleRemoveAssignment(assignment)"
+                @click.stop="handleRemoveAssignment(assignment)"
                 class="btn btn-sm btn-light-danger"
                 type="button"
               >
@@ -244,24 +250,46 @@
     @assignment-created="handleAssignmentCreated"
   />
   <!--end::Assign Employee Modal-->
+
+  <!--begin::Edit Assignment Modal-->
+  <EditAssignmentModal
+    :assignment="selectedAssignment"
+    @assignment-updated="handleAssignmentUpdated"
+  />
+  <!--end::Edit Assignment Modal-->
+
+  <!--begin::Hidden button to trigger modal-->
+  <button
+    id="hidden-edit-modal-trigger"
+    type="button"
+    class="d-none"
+    data-bs-toggle="modal"
+    data-bs-target="#kt_modal_edit_assignment"
+  >
+  </button>
+  <!--end::Hidden button to trigger modal-->
 </template>
 
 <script lang="ts">
 import { defineComponent, inject, ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { getAssetPath } from "@/core/helpers/assets";
+import { removeProjectAssignment } from "@/core/services/businessServices/Project";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import AssignEmployeeToProjectModal from "@/components/project/AssignEmployeeToProjectModal.vue";
+import EditAssignmentModal from "@/components/project/EditAssignmentModal.vue";
 export default defineComponent({
   name: "project-employee",
   components: {
     AssignEmployeeToProjectModal,
+    EditAssignmentModal,
   },
   setup() {
     const router = useRouter();
     const project = inject<any>('project');
     const refreshProject = inject<any>('refreshProject');
     const projectEmployees = ref<any[]>([]);
+    const selectedAssignment = ref<any>(null);
 
     // Computed properties
     const assignedEmployeeIds = computed(() => 
@@ -278,7 +306,28 @@ export default defineComponent({
     // Formatta data
     const formatDate = (date: Date | string | undefined) => {
       if (!date) return 'N/A';
-      return new Date(date).toLocaleDateString("it-IT", {
+      
+      let dateObj: Date;
+      
+      if (typeof date === 'string') {
+        // Se è già una stringa ISO completa, usala direttamente
+        if (date.includes('T') || date.includes('Z')) {
+          dateObj = new Date(date);
+        } else {
+          // Se è solo una data (YYYY-MM-DD), aggiungi l'ora locale
+          dateObj = new Date(date + 'T00:00:00');
+        }
+      } else {
+        // Se è già un oggetto Date
+        dateObj = new Date(date);
+      }
+      
+      // Verifica che la data sia valida
+      if (isNaN(dateObj.getTime())) {
+        return 'Invalid Date';
+      }
+      
+      return dateObj.toLocaleDateString("it-IT", {
         year: "numeric",
         month: "short",
         day: "numeric"
@@ -348,13 +397,10 @@ export default defineComponent({
         });
 
         if (result.isConfirmed) {
-          // Chiama API per rimuovere assignment
-          const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-          const response = await fetch(`${API_URL}/api/appointments/${assignment.id}`, {
-            method: 'DELETE',
-          });
+          // Usa il servizio per rimuovere assignment
+          const success = await removeProjectAssignment(assignment.id);
 
-          if (response.ok) {
+          if (success) {
             // Rimuovi dalla lista locale
             projectEmployees.value = projectEmployees.value.filter(emp => emp.id !== assignment.id);
             
@@ -395,6 +441,25 @@ export default defineComponent({
       }
     };
 
+    // Handler per modifica assegnazione
+    const handleEditAssignment = (assignment: any) => {
+      selectedAssignment.value = assignment;
+      // Apri la modale usando un pulsante nascosto
+      const hiddenButton = document.getElementById('hidden-edit-modal-trigger');
+      if (hiddenButton) {
+        hiddenButton.click();
+      }
+    };
+
+    // Handler per aggiornamento assegnazione
+    const handleAssignmentUpdated = async () => {
+      if (refreshProject) {
+        await refreshProject();
+        loadProjectEmployees();
+      }
+      selectedAssignment.value = null;
+    };
+
     // Carica employee quando il progetto è disponibile
     onMounted(() => {
       loadProjectEmployees();
@@ -411,6 +476,7 @@ export default defineComponent({
       project,
       projectEmployees,
       assignedEmployeeIds,
+      selectedAssignment,
       formatDate,
       getEmployeeName,
       getInitials,
@@ -419,6 +485,8 @@ export default defineComponent({
       viewEmployeeDetails,
       handleRemoveAssignment,
       handleAssignmentCreated,
+      handleEditAssignment,
+      handleAssignmentUpdated,
     };
   },
 });

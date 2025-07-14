@@ -32,11 +32,19 @@
         <!--end::Card title-->
 
         <!--begin::Action-->
-        <router-link
-          v-if="project && project.id"
-          :to="`/projects/${project.id}/settings`"
-          class="btn btn-primary align-self-center"
-          >Edit Project</router-link>
+        <div v-if="project && project.id" class="d-flex gap-2">
+          <router-link
+            :to="`/projects/${project.id}/documents`"
+            class="btn btn-light align-self-center"
+            >
+            <KTIcon icon-name="folder" icon-class="fs-2" />
+            Documents
+          </router-link>
+          <router-link
+            :to="`/projects/${project.id}/settings`"
+            class="btn btn-primary align-self-center"
+            >Edit Project</router-link>
+        </div>
         <!--end::Action-->
       </div>
       <!--begin::Card header-->
@@ -330,6 +338,7 @@ import KTListWidget1 from "@/components/widgets/lists/Widget1.vue";
 import KTListWidget5 from "@/components/widgets/lists/Widget5.vue";
 import KTTableWidget5 from "@/components/widgets/tables/Widget5.vue";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
+import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 
 export default defineComponent({
   name: "project-overview",
@@ -339,6 +348,7 @@ export default defineComponent({
     KTListWidget1,
     KTListWidget5,
     KTTableWidget5,
+    KTIcon,
   },
   setup() {
     const project = inject<any>('project');

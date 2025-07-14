@@ -444,6 +444,15 @@ const routes: Array<RouteRecordRaw> = [
             },
           },
           {
+            path: "documents",
+            name: "employee-documents",
+            component: () => import("@/views/employee/Documents.vue"),
+            meta: {
+              pageTitle: "Employee Documents",
+              breadcrumbs: ["Home", "Employees", "Documents"],
+            },
+          },
+          {
             path: "settings",
             name: "employee-settings",
             component: () => import("@/views/employee/Settings.vue"),
@@ -484,6 +493,15 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               pageTitle: "Project Employee",
               breadcrumbs: ["Home", "Projects", "Employee"],
+            },
+          },
+          {
+            path: "documents",
+            name: "project-documents",
+            component: () => import("@/views/project/Documents.vue"),
+            meta: {
+              pageTitle: "Project Documents",
+              breadcrumbs: ["Home", "Projects", "Documents"],
             },
           },
           {

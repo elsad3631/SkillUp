@@ -299,6 +299,17 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
+                :to="documentsUrl"
+                class="nav-link text-active-primary me-6"
+                active-class="active"
+              >
+                Documents
+              </router-link>
+            </li>
+            <!--end::Nav item-->
+            <!--begin::Nav item-->
+            <li class="nav-item">
+              <router-link
                 :to="settingsUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
@@ -602,6 +613,12 @@ export default defineComponent({
         : '/crafted/account/settings';
     });
 
+    const documentsUrl = computed(() => {
+      return isEmployeeView.value 
+        ? `/employees/${route.params.id}/documents`
+        : '/crafted/account/documents';
+    });
+
     return {
       getAssetPath,
       route,
@@ -623,6 +640,7 @@ export default defineComponent({
       currentAvatarUrl,
       overviewUrl,
       projectsUrl,
+      documentsUrl,
       settingsUrl,
     };
   },

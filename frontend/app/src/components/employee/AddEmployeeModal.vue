@@ -3,14 +3,38 @@
     <div class="modal-dialog modal-dialog-centered mw-900px">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Add New User</h2>
+          <h2>Aggiungi Nuovo Utente</h2>
           <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
             <KTIcon icon-name="cross" icon-class="fs-1" />
           </div>
         </div>
 
         <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
-          <form @submit.prevent="onSubmit" class="form">
+          <!-- Tabs -->
+          <ul class="nav nav-tabs mb-5" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" :class="{active: activeTab==='manual'}" @click="activeTab='manual'" type="button" role="tab">Manuale</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" :class="{active: activeTab==='cv'}" @click="activeTab='cv'" type="button" role="tab">Da CV</button>
+            </li>
+          </ul>
+
+          <div v-if="activeTab==='cv'">
+            <div class="mb-4">
+              <label class="form-label">Carica CV (.pdf, .docx)</label>
+              <input type="file" class="form-control" accept=".pdf,.docx" @change="onFileChange" />
+              <div class="form-text mt-2">
+                <strong>Nota:</strong> Caricando il CV, l'utente verrà creato automaticamente nel sistema con le credenziali temporanee.
+              </div>
+            </div>
+            <button class="btn btn-primary" :disabled="cvLoading || !cvFile" @click="extractFromCV">
+              <span v-if="cvLoading" class="spinner-border spinner-border-sm me-2"></span>
+              Crea utente da CV
+            </button>
+          </div>
+
+          <form v-if="activeTab==='manual'" @submit.prevent="onSubmit" class="form">
             <!-- Account Information -->
             <div class="card mb-6">
               <div class="card-header">
@@ -357,6 +381,7 @@ import { defineComponent, ref, reactive } from "vue";
 import { createEmployee } from "@/core/services/businessServices/Employee";
 import type { Employee } from "@/core/models/Employee";
 import Swal from "sweetalert2/dist/sweetalert2.js";
+import axios from "axios";
 
 export default defineComponent({
   name: "AddEmployeeModal",
@@ -370,6 +395,11 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const loading = ref(false);
+    const activeTab = ref<'manual'|'cv'>('manual');
+    const cvFile = ref<File|null>(null);
+    const cvLoading = ref(false);
+    const cvPrompt = ref('');
+    const skillsList = ref('');
 
     const form = reactive({
       username: "mario.rossi",
@@ -458,6 +488,90 @@ export default defineComponent({
           .split(',')
           .map(tech => tech.trim())
           .filter(tech => tech.length > 0);
+      }
+    };
+
+    const onFileChange = (e: Event) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files && files.length > 0) {
+        cvFile.value = files[0];
+      } else {
+        cvFile.value = null;
+      }
+    };
+
+    const extractFromCV = async () => {
+      if (!cvFile.value) return;
+      cvLoading.value = true;
+      try {
+        const data = new FormData();
+        data.append('cv', cvFile.value);
+        const res = await axios.post('http://localhost:3000/api/employees/from-cv', data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        const result = res.data;
+        
+        if (result.success) {
+          // L'utente è stato creato automaticamente nel database
+          emit("employee-created", result.user);
+          
+          // Mostra messaggio di successo con le credenziali temporanee
+          await Swal.fire({
+            icon: 'success',
+            title: 'Utente creato con successo!',
+            html: `
+              <p><strong>L'utente è stato creato automaticamente dal CV.</strong></p>
+              <br>
+              <p><strong>Credenziali di accesso:</strong></p>
+              <p>Username: <code>${result.user.username}</code></p>
+              <p>Password temporanea: <code>${result.user.temporaryPassword}</code></p>
+              <br>
+              <p><em>Comunicare queste credenziali all'utente per il primo accesso.</em></p>
+            `,
+            confirmButtonText: 'Ho preso nota delle credenziali',
+            allowOutsideClick: false,
+          });
+          
+          // Chiudi il modal
+          if (props.closeModal) props.closeModal();
+          
+          // Reset del form e ritorna al tab manuale per eventuali future operazioni
+          activeTab.value = 'manual';
+          cvFile.value = null;
+          
+          // Reset form
+          Object.assign(form, {
+            username: "",
+            email: "",
+            password: "",
+            roles: ["employee"],
+            firstName: "",
+            lastName: "",
+            phone: "",
+            dateOfBirth: "",
+            placeOfBirth: "",
+            address: "",
+            currentRole: "",
+            department: "",
+            isAvailable: true,
+            hardSkills: [],
+            softSkills: [],
+            experiences: [],
+            cvData: { fileName: "", storageUrl: "" },
+          });
+        } else {
+          throw new Error(result.message || 'Errore nella creazione utente');
+        }
+      } catch (err: any) {
+        console.error('Errore estrazione CV:', err);
+        const errorMessage = err.response?.data?.message || err.message || 'Estrazione dati dal CV fallita.';
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Errore', 
+          text: errorMessage 
+        });
+      } finally {
+        cvLoading.value = false;
       }
     };
 
@@ -583,6 +697,13 @@ export default defineComponent({
       addExperience,
       removeExperience,
       updateTechnologies,
+      activeTab,
+      cvFile,
+      cvLoading,
+      cvPrompt,
+      skillsList,
+      onFileChange,
+      extractFromCV,
     };
   },
 });

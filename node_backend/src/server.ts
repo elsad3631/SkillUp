@@ -32,6 +32,7 @@ app.use(cors({
 
 // Qui verranno importate e usate le route dei microservizi
 // esempio: app.use('/api/employees', employeeRoutes);
+
 // app.use('/api/employees', employeeRoutes); // Removed - replaced by ApplicationUser
 app.use('/api/applicationusers', applicationUserRoutes); // New unified route
 app.use('/api/projects', projectRoutes);
@@ -40,6 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/experiences', experienceRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/project-skills', projectSkillRoutes);
+app.use('/api/employees', cvDataRoutes); // For /from-cv endpoint (moved before cvdata)
 app.use('/api/cvdata', cvDataRoutes);
 app.use('/api/skill-trainings', skillTrainingRoutes);
 app.use('/api/auth', authRoutes);

@@ -8,5 +8,6 @@ router.get('/:id', cvDataController.getById);
 router.post('/', cvDataController.create);
 router.put('/:id', cvDataController.update);
 router.delete('/:id', cvDataController.remove);
+router.post('/from-cv', cvDataController.extractFromCV);
 
 export default router; 

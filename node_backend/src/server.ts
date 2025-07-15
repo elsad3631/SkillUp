@@ -10,7 +10,7 @@ import userRoutes from './routes/user.routes';
 import experienceRoutes from './routes/experience.routes';
 import skillRoutes from './routes/skill.routes';
 import projectSkillRoutes from './routes/projectSkill.routes';
-import cvDataRoutes from './routes/cvdata.routes';
+
 import skillTrainingRoutes from './routes/skill-training.routes';
 import authRoutes from './routes/auth.routes';
 import assetRoutes from './routes/asset.routes';
@@ -41,8 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/experiences', experienceRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/project-skills', projectSkillRoutes);
-app.use('/api/employees', cvDataRoutes); // For /from-cv endpoint (moved before cvdata)
-app.use('/api/cvdata', cvDataRoutes);
+
 app.use('/api/skill-trainings', skillTrainingRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);

@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ApplicationUser {
+  id                 String              @id @default(uuid())
+  username           String              @unique
+  email              String              @unique
+  passwordHash       String
+  roles              String[]
+  avatar             String?
+  firstName          String?
+  lastName           String?
+  dateOfBirth        DateTime?
+  placeOfBirth       String?
+  address            String?
+  phone              String?
+  currentRole        String?
+  department         String?
+  isAvailable        Boolean             @default(true)
+  cvData             CVData?
+  hardSkills         EmployeeSkill[]     @relation("HardSkills")
+  softSkills         EmployeeSkill[]     @relation("SoftSkills")
+  experiences        Experience[]
+  projectAssignments ProjectAssignment[]
+}
+
+model CVData {
+  id                String           @id @default(uuid())
+  fileName          String
+  storageUrl        String
+  uploadDate        DateTime
+  parsedVersion     Int?
+  applicationUserId String?          @unique
+  applicationUser   ApplicationUser? @relation(fields: [applicationUserId], references: [id])
+}
+
+model Experience {
+  id                String          @id @default(uuid())
+  jobTitle          String
+  companyName       String
+  startDate         DateTime
+  endDate           DateTime?
+  description       String?
+  technologiesUsed  String[]
+  applicationUserId String
+  applicationUser   ApplicationUser @relation(fields: [applicationUserId], references: [id])
+}
+
+model EmployeeSkill {
+  id                    String           @id @default(uuid())
+  name                  String
+  proficiencyLevel      Int?
+  lastUsed              DateTime?
+  certification         String?
+  applicationUserHardId String?
+  applicationUserSoftId String?
+  applicationUserHard   ApplicationUser? @relation("HardSkills", fields: [applicationUserHardId], references: [id])
+  applicationUserSoft   ApplicationUser? @relation("SoftSkills", fields: [applicationUserSoftId], references: [id])
+}
+
+model Project {
+  id                 String              @id @default(uuid())
+  name               String
+  description        String?
+  startDate          DateTime?
+  endDate            DateTime?
+  status             String
+  managerId          String?
+  budget             Float?
+  priority           String?
+  assignments        ProjectAssignment[]
+  requiredHardSkills ProjectSkill[]      @relation("ProjectHardSkills")
+  requiredSoftSkills ProjectSkill[]      @relation("ProjectSoftSkills")
+}
+
+model ProjectSkill {
+  id                  String   @id @default(uuid())
+  name                String
+  minProficiencyLevel Int?
+  proficiencyLevel    Int? // For soft skills (like EmployeeSkill)
+  certification       String? // For both hard and soft skills
+  isMandatory         Boolean?
+  projectHardId       String?
+  projectSoftId       String?
+  projectHard         Project? @relation("ProjectHardSkills", fields: [projectHardId], references: [id], onDelete: Cascade)
+  projectSoft         Project? @relation("ProjectSoftSkills", fields: [projectSoftId], references: [id], onDelete: Cascade)
+}
+
+model ProjectAssignment {
+  id                   String          @id @default(uuid())
+  applicationUserId    String
+  projectId            String
+  roleOnProject        String
+  assignmentStartDate  DateTime
+  assignmentEndDate    DateTime?
+  allocationPercentage Int
+  status               String
+  feedbackReceived     String?
+  applicationUser      ApplicationUser @relation(fields: [applicationUserId], references: [id])
+  project              Project         @relation(fields: [projectId], references: [id])
+}
+
+model SkillTraining {
+  id                     String   @id @default(uuid())
+  title                  String
+  description            String?
+  provider               String?
+  url                    String?
+  estimatedDurationHours Int
+  skillsDeveloped        String[]
+  level                  String?
+  cost                   Float?
+}
+
+model Asset {
+  id     Int     @id @default(autoincrement())
+  name   String
+  type   String
+  enable Boolean @default(true)
+} 

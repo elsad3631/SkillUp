@@ -506,14 +506,14 @@ export default defineComponent({
       try {
         const data = new FormData();
         data.append('cv', cvFile.value);
-        const res = await axios.post('http://localhost:3000/api/employees/from-cv', data, {
+        const res = await axios.post('http://localhost:7071/api/ExtractCVData', data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         const result = res.data;
         
         if (result.success) {
           // L'utente è stato creato automaticamente nel database
-          emit("employee-created", result.user);
+          emit("employee-created", result.data);
           
           // Mostra messaggio di successo con le credenziali temporanee
           await Swal.fire({
@@ -523,8 +523,8 @@ export default defineComponent({
               <p><strong>L'utente è stato creato automaticamente dal CV.</strong></p>
               <br>
               <p><strong>Credenziali di accesso:</strong></p>
-              <p>Username: <code>${result.user.username}</code></p>
-              <p>Password temporanea: <code>${result.user.temporaryPassword}</code></p>
+              <p>Username: <code>${result.data.username}</code></p>
+              <p>Password temporanea: <code>${result.data.temporaryPassword}</code></p>
               <br>
               <p><em>Comunicare queste credenziali all'utente per il primo accesso.</em></p>
             `,

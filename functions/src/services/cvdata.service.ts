@@ -2,44 +2,33 @@ import { PrismaClient } from '@prisma/client';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import axios from 'axios';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import bcrypt from 'bcrypt';
 import { applicationUserService } from './applicationuser.service';
+
 const prisma = new PrismaClient();
 
 export const cvDataService = {
-  async getAll() {
-    return prisma.cVData.findMany();
-  },
-  async getById(id: string) {
-    return prisma.cVData.findUnique({ where: { id } });
-  },
-  async create(data: any) {
-    return prisma.cVData.create({ data });
-  },
-  async update(id: string, data: any) {
-    return prisma.cVData.update({ where: { id }, data });
-  },
-  async remove(id: string) {
-    return prisma.cVData.delete({ where: { id } });
-  },
-  async extractFromCV(file: Express.Multer.File) {
+  async extractFromCV(fileBuffer: Buffer, originalName: string) {
     let cvText = '';
-    const ext = file.originalname.split('.').pop()?.toLowerCase();
+    const ext = originalName.split('.').pop()?.toLowerCase();
+    
     if (ext === 'pdf') {
-      const data = await pdfParse(file.buffer);
+      const data = await pdfParse(fileBuffer);
       cvText = data.text;
     } else if (ext === 'docx') {
-      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      const result = await mammoth.extractRawText({ buffer: fileBuffer });
       cvText = result.value;
     } else {
       throw new Error('Unsupported file type');
     }
+
     // Carica la lista di skills da un file JSON
     const skillsListPath = path.join(__dirname, '../../skills-list.json');
     const skillsListArr = JSON.parse(fs.readFileSync(skillsListPath, 'utf-8'));
     const skillsList = skillsListArr.join(', ');
+
     // Prompt fisso
     const prompt = `Sei un assistente AI esperto nell'analisi di curriculum vitae.
 Ti fornirò il testo di un curriculum e dovrai estrarre le seguenti informazioni in formato JSON.
@@ -111,10 +100,9 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
 }}\`\`\`
 \`\`\`{cvText}\`\`\`
 `;
+
     const finalPrompt = prompt.replace('{skillsList}', skillsList).replace('{cvText}', cvText);
-    // Salva il prompt usato per audit/debug
-    const promptAuditPath = path.join(__dirname, '../../prompt-used.json');
-    fs.writeFileSync(promptAuditPath, JSON.stringify({ prompt: finalPrompt }), 'utf-8');
+
     // Chiamata Azure OpenAI - valori hardcoded per test
     const endpoint = 'https://intentopenaisrv.openai.azure.com/';
     const key = '2a0a03ad296d4b94bc516c0ae744432f';
@@ -137,6 +125,7 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
         }
       }
     );
+
     // Parsing della risposta
     let extracted;
     try {
@@ -165,9 +154,7 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
       console.error('Raw content was:', response.data.choices[0].message.content);
       throw new Error(`OpenAI response is not valid JSON: ${(e as Error).message}`);
     }
-    // Normalizzazione (es: date ISO)
-    // ...eventuali normalizzazioni qui...
-    
+
     // Genera automaticamente username e password per creare l'ApplicationUser
     const email = extracted.email;
     if (!email) {
@@ -206,7 +193,6 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
     const temporaryPassword = generatePassword();
     const passwordHash = await bcrypt.hash(temporaryPassword, 10);
     
-    // Prepara i dati per la creazione dell'ApplicationUser
     // Funzione helper per convertire le date in modo sicuro
     const safeParseDate = (dateStr: any): Date | undefined => {
       if (!dateStr || dateStr === null) return undefined;
@@ -260,8 +246,8 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
       softSkills: processedSoftSkills,
       experiences: processedExperiences,
       cvData: {
-        fileName: file.originalname,
-        storageUrl: `cv_uploads/${finalUsername}_${Date.now()}_${file.originalname}`,
+        fileName: originalName,
+        storageUrl: `cv_uploads/${finalUsername}_${Date.now()}_${originalName}`,
       }
     };
     
@@ -292,5 +278,5 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
       },
       extractedData: extracted // Dati originali estratti dal CV per riferimento
     };
-  },
+  }
 }; 

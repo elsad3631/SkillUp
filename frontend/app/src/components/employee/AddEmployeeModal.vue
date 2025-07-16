@@ -634,7 +634,7 @@ export default defineComponent({
         if (processedCvData) applicationUserData.cvData = processedCvData;
 
         // Call ApplicationUser API
-        const response = await fetch('/api/applicationusers', {
+        const response = await fetch('/api/applicationuser', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

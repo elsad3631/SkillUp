@@ -41,12 +41,20 @@
             <div
               class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative"
             >
+              <!-- Loading indicator -->
+              <div v-if="imageLoading" class="position-absolute top-50 start-50 translate-middle">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              
               <img 
                 :src="currentAvatarUrl" 
                 :alt="`${employee?.firstName || ''} ${employee?.lastName || ''} avatar`"
                 @error="handleImageError"
                 @load="handleImageLoad"
                 :class="{ 'opacity-50': imageLoading }"
+                style="object-fit: cover;"
               />
               <div
                 class="position-absolute translate-middle bottom-0 start-100 mb-6 bg-success rounded-circle border border-4 border-white h-20px w-20px"
@@ -361,7 +369,7 @@ export default defineComponent({
     const { currentUser, fetchCurrentUser } = useCurrentUser();
 
     // Get avatar functions from composable
-    const { getAvatarDisplayUrl, uploadAvatar, deleteCurrentAvatar, ...avatarComposable } = useAvatar();
+    const { getAvatarDisplayUrl, uploadAvatar, deleteCurrentAvatar, clearAvatarCacheForUrl, ...avatarComposable } = useAvatar();
 
     const avatarInput = ref<HTMLInputElement | null>(null);
 
@@ -373,10 +381,13 @@ export default defineComponent({
         if (isEmployeeView.value && id) {
           // Employee mode: fetch specific employee
           const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-          const response = await fetch(`${API_URL}/applicationusers/${id}`);
+          const response = await fetch(`${API_URL}/applicationuser/${id}`);
           if (response.ok) {
             const newEmployeeData = await response.json();
             employee.value = newEmployeeData;
+            
+            // Force avatar refresh by updating timestamp
+            avatarTimestamp.value = Date.now();
           } else {
             console.error('❌ Failed to refresh employee data:', response.status);
             error.value = 'Failed to load employee data. Please try again.';
@@ -385,6 +396,9 @@ export default defineComponent({
           // Account mode: fetch current user
           await fetchCurrentUser();
           employee.value = currentUser.value;
+          
+          // Force avatar refresh by updating timestamp
+          avatarTimestamp.value = Date.now();
         }
       } catch (err) {
         console.error('❌ Failed to refresh user:', err);
@@ -458,10 +472,8 @@ export default defineComponent({
     const handleImageError = () => {
       imageError.value = true;
       imageLoading.value = false;
-      // Se l'immagine non si carica, forza l'uso dell'immagine di default
-      if (employee.value) {
-        employee.value.avatar = '';
-      }
+      // Se l'immagine non si carica, mostra l'immagine di default
+      currentAvatarUrl.value = getAssetPath('media/avatars/blank.png');
     };
 
     const handleImageLoad = () => {
@@ -489,15 +501,28 @@ export default defineComponent({
       }
       
       // Add timestamp for cache busting
-      return `${displayUrl}${avatarTimestamp.value ? `?t=${avatarTimestamp.value}` : ''}`;
+      const finalUrl = `${displayUrl}${avatarTimestamp.value ? `?t=${avatarTimestamp.value}` : ''}`;
+      return finalUrl;
     };
 
     // Computed property for avatar URL
     const currentAvatarUrl = ref(getAssetPath('media/avatars/blank.png'));
 
-    // Watch employee avatar changes
-    watch(() => employee.value?.avatar, async (newAvatar) => {
-      currentAvatarUrl.value = await getAvatarUrl(newAvatar);
+    // Watch employee avatar changes with better error handling
+    watch(() => employee.value?.avatar, async (newAvatar, oldAvatar) => {
+      // Reset error state when avatar changes
+      if (newAvatar !== oldAvatar) {
+        imageError.value = false;
+        imageLoading.value = true; // Set loading when avatar changes
+      }
+      
+      try {
+        currentAvatarUrl.value = await getAvatarUrl(newAvatar);
+      } catch (error) {
+        console.error('Error getting avatar URL:', error);
+        currentAvatarUrl.value = getAssetPath('media/avatars/blank.png');
+        imageLoading.value = false;
+      }
     }, { immediate: true });
 
     // Avatar upload handler (immediate save)
@@ -508,6 +533,11 @@ export default defineComponent({
       const file = input.files[0];
       
       try {
+        // Clear cache for old avatar URL if exists
+        if (employee.value?.avatar) {
+          clearAvatarCacheForUrl(employee.value.avatar);
+        }
+        
         await uploadAvatar(employee.value.id, file);
         
         // Update avatar timestamp for instant refresh
@@ -548,6 +578,11 @@ export default defineComponent({
       if (!employee.value?.id) return;
       
       try {
+        // Clear cache for current avatar URL if exists
+        if (employee.value?.avatar) {
+          clearAvatarCacheForUrl(employee.value.avatar);
+        }
+        
         await deleteCurrentAvatar(employee.value.id);
         
         // Reset error state

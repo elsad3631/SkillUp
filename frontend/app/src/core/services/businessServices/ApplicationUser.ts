@@ -23,8 +23,8 @@ export interface ApplicationUser {
 
 const getApplicationUsers = (filterRequest?: string): Promise<Array<ApplicationUser> | undefined> => {
   const endpoint = filterRequest
-    ? `applicationusers?filter=${encodeURIComponent(filterRequest)}`
-    : `applicationusers`;
+    ? `applicationuser?filter=${encodeURIComponent(filterRequest)}`
+    : `applicationuser`;
 
   return ApiService.get(endpoint)
     .then(({ data }) => data as ApplicationUser[])
@@ -35,7 +35,7 @@ const getApplicationUsers = (filterRequest?: string): Promise<Array<ApplicationU
 };
 
 const getApplicationUserById = (id: string): Promise<ApplicationUser | undefined> => {
-  return ApiService.get(`applicationusers/${id}`)
+  return ApiService.get(`applicationuser/${id}`)
     .then(({ data }) => data as ApplicationUser)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -44,7 +44,7 @@ const getApplicationUserById = (id: string): Promise<ApplicationUser | undefined
 };
 
 const getApplicationUsersByRole = (role: string): Promise<Array<ApplicationUser> | undefined> => {
-  return ApiService.get(`applicationusers/role/${role}`)
+  return ApiService.get(`applicationuser/role/${role}`)
     .then(({ data }) => data as ApplicationUser[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -53,7 +53,7 @@ const getApplicationUsersByRole = (role: string): Promise<Array<ApplicationUser>
 };
 
 const getAvailableApplicationUsers = (): Promise<Array<ApplicationUser> | undefined> => {
-  return ApiService.get("applicationusers/available")
+  return ApiService.get("applicationuser/filter/available")
     .then(({ data }) => data as ApplicationUser[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -62,7 +62,7 @@ const getAvailableApplicationUsers = (): Promise<Array<ApplicationUser> | undefi
 };
 
 const createApplicationUser = (applicationUser: Partial<ApplicationUser>): Promise<ApplicationUser | undefined> => {
-  return ApiService.post("applicationusers", applicationUser)
+  return ApiService.post("applicationuser", applicationUser)
     .then(({ data }) => data as ApplicationUser)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -71,7 +71,7 @@ const createApplicationUser = (applicationUser: Partial<ApplicationUser>): Promi
 };
 
 const updateApplicationUser = (id: string, applicationUser: Partial<ApplicationUser>): Promise<ApplicationUser | undefined> => {
-  return ApiService.put(`applicationusers/${id}`, applicationUser)
+  return ApiService.put(`applicationuser/${id}`, applicationUser)
     .then(({ data }) => data as ApplicationUser)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -80,7 +80,7 @@ const updateApplicationUser = (id: string, applicationUser: Partial<ApplicationU
 };
 
 const deleteApplicationUser = (id: string): Promise<boolean> => {
-  return ApiService.delete(`applicationusers/${id}`)
+  return ApiService.delete(`applicationuser/${id}`)
     .then(() => true)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -101,7 +101,7 @@ const searchApplicationUsers = (params: {
   if (params.department) queryParams.append('department', params.department);
   if (params.isAvailable !== undefined) queryParams.append('isAvailable', params.isAvailable.toString());
 
-  return ApiService.get(`applicationusers/search?${queryParams.toString()}`)
+  return ApiService.get(`applicationuser/admin/search?${queryParams.toString()}`)
     .then(({ data }) => data as ApplicationUser[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);

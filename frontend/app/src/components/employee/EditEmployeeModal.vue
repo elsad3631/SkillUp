@@ -796,7 +796,7 @@ export default defineComponent({
         }
 
         // Call ApplicationUser API
-        const response = await fetch(`/api/applicationusers/${props.employee.id}`, {
+        const response = await fetch(`/api/applicationuser/${props.employee.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

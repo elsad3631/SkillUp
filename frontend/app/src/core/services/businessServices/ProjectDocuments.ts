@@ -197,7 +197,7 @@ class ProjectDocumentsService {
    */
   getFileDownloadUrl(fileName: string): string {
     const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-    return `${API_URL}/blob-storage/download/${encodeURIComponent(fileName)}`;
+    return `${API_URL}/blobstorage/download/${encodeURIComponent(fileName)}`;
   }
   
   /**

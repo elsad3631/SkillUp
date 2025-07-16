@@ -4,6 +4,7 @@
     id="kt_modal_create_folder"
     tabindex="-1"
     aria-hidden="true"
+    @hidden.bs.modal="handleModalHidden"
   >
     <!--begin::Modal dialog-->
     <div class="modal-dialog modal-dialog-centered mw-650px">
@@ -127,6 +128,7 @@
 import { defineComponent, ref, nextTick } from "vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
+import { Modal } from "bootstrap";
 
 export default defineComponent({
   name: "CreateFolderModal",
@@ -212,10 +214,15 @@ export default defineComponent({
         hasError.value = false;
         errorMessage.value = '';
         
+        // Remove focus from input to prevent accessibility warning
+        if (folderNameInput.value) {
+          folderNameInput.value.blur();
+        }
+        
         // Close modal
         const modal = document.getElementById('kt_modal_create_folder');
         if (modal) {
-          const bootstrapModal = (window as any).bootstrap.Modal.getInstance(modal);
+          const bootstrapModal = Modal.getInstance(modal);
           if (bootstrapModal) {
             bootstrapModal.hide();
           }
@@ -250,6 +257,13 @@ export default defineComponent({
       });
     };
 
+    // Handle modal hidden event to clean up focus
+    const handleModalHidden = () => {
+      if (folderNameInput.value) {
+        folderNameInput.value.blur();
+      }
+    };
+
     return {
       folderName,
       isLoading,
@@ -261,6 +275,7 @@ export default defineComponent({
       handleSubmit,
       resetForm,
       focusInput,
+      handleModalHidden,
     };
   },
 });

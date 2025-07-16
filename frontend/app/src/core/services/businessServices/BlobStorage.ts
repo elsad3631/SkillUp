@@ -54,7 +54,7 @@ export interface BulkDeleteResponse {
  * Initialize the blob storage container
  */
 const initializeContainer = (): Promise<{ message: string } | undefined> => {
-  return ApiService.post('blob-storage/container/init', {})
+  return ApiService.post('blobstorage/container/init', {})
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -71,7 +71,7 @@ const uploadFile = (file: File, prefix?: string, customName?: string): Promise<F
   if (prefix) formData.append('prefix', prefix);
   if (customName) formData.append('customName', customName);
 
-  return ApiService.vueInstance.axios.post('blob-storage/upload', formData, {
+  return ApiService.vueInstance.axios.post('blobstorage/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -91,7 +91,7 @@ const uploadMultipleFiles = (files: File[], prefix?: string): Promise<{ message:
   files.forEach(file => formData.append('files', file));
   if (prefix) formData.append('prefix', prefix);
 
-  return ApiService.vueInstance.axios.post('blob-storage/upload/multiple', formData, {
+  return ApiService.vueInstance.axios.post('blobstorage/upload/multiple', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -107,7 +107,7 @@ const uploadMultipleFiles = (files: File[], prefix?: string): Promise<{ message:
  * Download a file
  */
 const downloadFile = (fileName: string): Promise<Blob | undefined> => {
-  return ApiService.vueInstance.axios.get(`blob-storage/download/${encodeURIComponent(fileName)}`, {
+  return ApiService.vueInstance.axios.get(`blobstorage/download/${encodeURIComponent(fileName)}`, {
     responseType: 'blob',
   })
     .then(({ data }) => data as Blob)
@@ -121,7 +121,7 @@ const downloadFile = (fileName: string): Promise<Blob | undefined> => {
  * Get file information
  */
 const getFileInfo = (fileName: string): Promise<FileInfo | undefined> => {
-  return ApiService.get(`blob-storage/info/${encodeURIComponent(fileName)}`)
+  return ApiService.get(`blobstorage/info/${encodeURIComponent(fileName)}`)
     .then(({ data }) => data as FileInfo)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -133,7 +133,7 @@ const getFileInfo = (fileName: string): Promise<FileInfo | undefined> => {
  * Check if file exists
  */
 const fileExists = (fileName: string): Promise<{ fileName: string; exists: boolean } | undefined> => {
-  return ApiService.get(`blob-storage/exists/${encodeURIComponent(fileName)}`)
+  return ApiService.get(`blobstorage/exists/${encodeURIComponent(fileName)}`)
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -145,7 +145,7 @@ const fileExists = (fileName: string): Promise<{ fileName: string; exists: boole
  * Delete a file
  */
 const deleteFile = (fileName: string): Promise<boolean> => {
-  return ApiService.delete(`blob-storage/${encodeURIComponent(fileName)}`)
+  return ApiService.delete(`blobstorage/${encodeURIComponent(fileName)}`)
     .then(() => true)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -157,7 +157,7 @@ const deleteFile = (fileName: string): Promise<boolean> => {
  * Copy a file
  */
 const copyFile = (sourceFileName: string, destinationFileName: string): Promise<{ message: string; sourceFileName: string; destinationFileName: string; destinationUrl: string } | undefined> => {
-  return ApiService.post('blob-storage/copy', {
+  return ApiService.post('blobstorage/copy', {
     sourceFileName,
     destinationFileName,
   })
@@ -177,7 +177,7 @@ const listFiles = (prefix?: string, limit = 100, offset = 0): Promise<FileListRe
   params.append('limit', limit.toString());
   params.append('offset', offset.toString());
 
-  return ApiService.get(`blob-storage/list?${params.toString()}`)
+  return ApiService.get(`blobstorage/list?${params.toString()}`)
     .then(({ data }) => data as FileListResponse)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -192,7 +192,7 @@ const generateSasUrl = (fileName: string, expiresInHours = 1): Promise<{ fileNam
   const params = new URLSearchParams();
   params.append('expiresInHours', expiresInHours.toString());
 
-  return ApiService.get(`blob-storage/sas/${encodeURIComponent(fileName)}?${params.toString()}`)
+  return ApiService.get(`blobstorage/sas/${encodeURIComponent(fileName)}?${params.toString()}`)
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -204,7 +204,7 @@ const generateSasUrl = (fileName: string, expiresInHours = 1): Promise<{ fileNam
  * Bulk delete files
  */
 const bulkDeleteFiles = (fileNames: string[]): Promise<BulkDeleteResponse | undefined> => {
-  return ApiService.post('blob-storage/bulk/delete', { fileNames })
+  return ApiService.post('blobstorage/bulk/delete', { fileNames })
     .then(({ data }) => data as BulkDeleteResponse)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -225,7 +225,7 @@ const getStorageStats = (prefix?: string): Promise<{
 } | undefined> => {
   const params = prefix ? `?prefix=${encodeURIComponent(prefix)}` : '';
   
-  return ApiService.get(`blob-storage/stats${params}`)
+  return ApiService.get(`blobstorage/stats${params}`)
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);

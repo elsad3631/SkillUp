@@ -119,6 +119,7 @@ import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
+import { Modal } from "bootstrap";
 
 export default defineComponent({
     name: "employees-listing",
@@ -173,7 +174,7 @@ export default defineComponent({
         const fetchEmployees = async () => {
             loading.value = true;
             try {
-                const response = await fetch('/api/applicationusers/role/employee');
+                const response = await fetch('/api/applicationuser/role/employee');
                 const result = await response.json();
                 if (result) {
                     tableData.value = result;
@@ -203,7 +204,7 @@ export default defineComponent({
             // Trigger modal opening
             const modal = document.getElementById('kt_modal_edit_employee');
             if (modal) {
-                const bootstrapModal = new (window as any).bootstrap.Modal(modal);
+                const bootstrapModal = new Modal(modal);
                 bootstrapModal.show();
             }
         };
@@ -212,7 +213,7 @@ export default defineComponent({
             editModalLoading.value = true;
             try {
                 // Recupera i dati aggiornati dal backend
-                const response = await fetch(`/api/applicationusers/${employee.id}`);
+                const response = await fetch(`/api/applicationuser/${employee.id}`);
                 if (response.ok) {
                     const freshEmployee = await response.json();
                     selectedEmployee.value = freshEmployee;
@@ -240,7 +241,7 @@ export default defineComponent({
                 let allSuccess = true;
                 for (const id of selectedIds.value) {
                     try {
-                        const response = await fetch(`/api/applicationusers/${id}`, { method: 'DELETE' });
+                        const response = await fetch(`/api/applicationuser/${id}`, { method: 'DELETE' });
                         if (!response.ok) allSuccess = false;
                     } catch (error) {
                         allSuccess = false;
@@ -269,7 +270,7 @@ export default defineComponent({
             });
             if (confirm.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/applicationusers/${id}`, { method: 'DELETE' });
+                    const response = await fetch(`/api/applicationuser/${id}`, { method: 'DELETE' });
                     if (response.ok) {
                         tableData.value = tableData.value.filter(e => e.id !== id);
                         initEmployees.value = initEmployees.value.filter(e => e.id !== id);

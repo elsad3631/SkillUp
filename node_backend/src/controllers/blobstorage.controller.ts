@@ -118,23 +118,22 @@ export const blobStorageController = {
 
   // Serve avatar images (proxy endpoint for public access)
   serveAvatar: asyncHandler(async (req: Request, res: Response) => {
-    const { fileName } = req.params;
+    // For wildcard routes, the full path is in req.params[0]
+    const fileName = req.params[0];
 
     if (!fileName) {
+      console.log('❌ No fileName provided');
       return res.status(400).json({ message: 'File name is required' });
     }
 
-    // Extract just the filename if a full path is provided
-    const actualFileName = fileName.includes('/') ? fileName.split('/').pop() : fileName;
+    // Handle new path structure: avatars/employees/id/filename
+    // Use the full path as provided
+    const avatarPath = fileName;
     
-    if (!actualFileName) {
-      return res.status(400).json({ message: 'Invalid file name' });
-    }
-
-    // Check if file exists in avatars directory
-    const avatarPath = `avatars/${actualFileName}`;
     const exists = await blobStorageService.fileExists(avatarPath);
+    
     if (!exists) {
+      console.log('❌ Avatar not found at path:', avatarPath);
       return res.status(404).json({ message: 'Avatar not found' });
     }
 
@@ -152,7 +151,7 @@ export const blobStorageController = {
 
       res.send(fileBuffer);
     } catch (error) {
-      console.error('Error serving avatar:', error);
+      console.error('❌ Error serving avatar:', error);
       res.status(500).json({ message: 'Error serving avatar image' });
     }
   }),

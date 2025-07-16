@@ -203,7 +203,7 @@
             <div class="col-lg-6">
               <label class="col-form-label fw-semobold fs-6">CV URL</label>
               <input
-                type="url"
+                type="text"
                 name="cvData.storageUrl"
                 class="form-control form-control-lg form-control-solid"
                 placeholder="https://example.com/cv.pdf"
@@ -931,7 +931,7 @@ export default defineComponent({
             };
 
             const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-            const response = await fetch(`${API_URL}/applicationusers/${route.params.id}`, {
+            const response = await fetch(`${API_URL}/applicationuser/${route.params.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(employeeData)

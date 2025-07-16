@@ -67,7 +67,7 @@ const getUserProjects = (): Promise<Array<Project> | undefined> => {
 
 // Nuove funzioni per le assegnazioni di progetti
 const getEmployeeProjects = (employeeId: string): Promise<Array<Project> | undefined> => {
-  return ApiService.get(`applicationusers/${employeeId}/projects`)
+  return ApiService.get(`applicationuser/${employeeId}/projects`)
     .then(({ data }) => data as Project[])
     .catch(({ response }) => {
       console.error("Error getting employee projects:", response);

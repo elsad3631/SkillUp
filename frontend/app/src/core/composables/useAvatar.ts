@@ -10,6 +10,9 @@ export function useAvatar() {
   const uploadProgress = ref(0);
   const error = ref<string | null>(null);
   const success = ref<string | null>(null);
+  
+  // Cache for avatar URLs to avoid duplicate calls
+  const avatarUrlCache = new Map<string, string>();
 
   // Supported file types for avatars
   const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -42,7 +45,9 @@ export function useAvatar() {
   const generateAvatarFileName = (employeeId: string, file: File): string => {
     const extension = file.name.split('.').pop() || 'jpg';
     const timestamp = Date.now();
-    return `avatars/employee_${employeeId}_${timestamp}.${extension}`;
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const baseName = file.name.replace(/\.[^/.]+$/, "");
+    return `avatars/employees/${employeeId}/${timestamp}_${randomSuffix}_${baseName}.${extension}`;
   };
 
   /**
@@ -53,24 +58,25 @@ export function useAvatar() {
       const urlObj = new URL(url);
       const pathname = urlObj.pathname;
       
-      // For Azure Storage URLs like: http://127.0.0.1:10000/devstoreaccount1/skillup/avatars/filename.jpg
-      // pathname will be: /devstoreaccount1/skillup/avatars/filename.jpg
+      // For Azure Storage URLs like: http://127.0.0.1:10000/devstoreaccount1/skillup/avatars/employees/id/filename.jpg
+      // pathname will be: /devstoreaccount1/skillup/avatars/employees/id/filename.jpg
       const parts = pathname.split('/').filter(part => part.length > 0);
       
       if (parts.length >= 3) {
         // Skip account name (devstoreaccount1) and container name (skillup)
         const fileName = parts.slice(2).join('/');
-        return fileName;
+        // Decode URL-encoded characters
+        return decodeURIComponent(fileName);
       }
       
       // Fallback: just the last part
       const fileName = parts[parts.length - 1] || '';
-      return fileName;
+      return decodeURIComponent(fileName);
     } catch (error) {
       console.error('Error extracting filename from URL:', url, error);
       // Fallback: assume the filename is the last part of the URL
       const fileName = url.split('/').pop() || '';
-      return fileName;
+      return decodeURIComponent(fileName);
     }
   };
 
@@ -83,15 +89,13 @@ export function useAvatar() {
       const fileName = extractFileNameFromUrl(blobStorageUrl);
       
       // If it's already a proxy URL or relative URL, return as is
-      if (blobStorageUrl.includes('/api/blob-storage/avatar/') || !blobStorageUrl.includes('http')) {
+      if (blobStorageUrl.includes('/api/blobstorage/avatar/') || !blobStorageUrl.includes('http')) {
         return blobStorageUrl;
       }
       
-      // If we have the avatars/ prefix, remove it since our endpoint expects just the filename
-      const actualFileName = fileName.startsWith('avatars/') ? fileName.replace('avatars/', '') : fileName;
-      
-      // Convert to our proxy endpoint
-      const proxyUrl = `/api/blob-storage/avatar/${actualFileName}`;
+      // Handle new path structure: avatars/employees/id/filename
+      // Keep the full path for the proxy endpoint
+      const proxyUrl = `/api/blobstorage/avatar/${fileName}`;
       return proxyUrl;
     } catch (error) {
       console.error('Error converting to proxy URL:', error);
@@ -105,29 +109,31 @@ export function useAvatar() {
   const getAvatarDisplayUrl = async (avatarUrl: string | null | undefined): Promise<string | null> => {
     if (!avatarUrl) return null;
     
+    // Check cache first
+    if (avatarUrlCache.has(avatarUrl)) {
+      return avatarUrlCache.get(avatarUrl)!;
+    }
+    
+    let result: string | null = null;
+    
     // If it's a blob storage URL, convert it to proxy URL
     if (avatarUrl.includes('127.0.0.1:10000') || avatarUrl.includes('blob.core.windows.net')) {
       const proxyUrl = convertToProxyUrl(avatarUrl);
       
-      // Check if file exists before returning URL
-      const fileName = extractFileNameFromUrl(avatarUrl);
-      if (fileName) {
-        try {
-          const existsResult = await fileExists(fileName);
-          if (!existsResult?.exists) {
-            return null;
-          }
-        } catch (error) {
-          console.error('Error checking file existence:', error);
-          return null;
-        }
-      }
-      
-      return proxyUrl;
+      // Don't check file existence here to avoid duplicate calls
+      // The browser will handle 404 errors gracefully
+      result = proxyUrl;
+    } else {
+      // If it's already a proxy URL or relative URL, return as is
+      result = avatarUrl;
     }
     
-    // If it's already a proxy URL or relative URL, return as is
-    return avatarUrl;
+    // Cache the result
+    if (result) {
+      avatarUrlCache.set(avatarUrl, result);
+    }
+    
+    return result;
   };
 
   /**
@@ -153,7 +159,7 @@ export function useAvatar() {
 
       // Upload file to blob storage only
       uploadProgress.value = 50;
-      const uploadResult = await uploadFile(file, 'avatars', fileName);
+      const uploadResult = await uploadFile(file, undefined, fileName);
       
       if (!uploadResult) {
         error.value = 'Failed to upload avatar to storage';
@@ -183,7 +189,7 @@ export function useAvatar() {
   const saveAvatarToDatabase = async (employeeId: string, avatarUrl: string): Promise<boolean> => {
     try {
       // Get current employee data
-      const response = await fetch(`/api/applicationusers/${employeeId}`);
+      const response = await fetch(`/api/applicationuser/${employeeId}`);
       if (!response.ok) {
         error.value = 'Employee not found';
         return false;
@@ -193,18 +199,46 @@ export function useAvatar() {
       // Delete existing avatar file if present
       if (employee.avatar && employee.avatar !== avatarUrl) {
         const oldFileName = extractFileNameFromUrl(employee.avatar);
+        
         if (oldFileName) {
           try {
+            // List files in the employee's avatar directory to see what's actually there
+            const prefix = `avatars/employees/${employeeId}/`;
+            
+            const listResponse = await fetch(`/api/blobstorage/list?prefix=${encodeURIComponent(prefix)}`);
+            let listData: any = null;
+            if (listResponse.ok) {
+              listData = await listResponse.json();
+            }
+            
             // Verifica se il file esiste prima di tentare di eliminarlo
             const existsResult = await fileExists(oldFileName);
-            if (existsResult?.exists) {
-              await deleteFile(oldFileName);
+            
+            if (existsResult && existsResult.exists) {
+              const deleteResult = await deleteFile(oldFileName);
+            } else {
+              
+              // Try to find the file by listing all files and matching by pattern
+              if (listData && listData.files && listData.files.length > 0) {
+                const matchingFiles = listData.files.filter((file: any) => 
+                  file.name.includes(employeeId) && file.name.includes('.jpg')
+                );
+                
+                if (matchingFiles.length > 0) {
+                  const actualFileName = matchingFiles[0].name;
+                  const deleteResult = await deleteFile(actualFileName);
+                }
+              }
             }
           } catch (err) {
             // Ignora gli errori di eliminazione del vecchio file
-            console.log('Previous avatar file not found or already deleted');
+            console.log('⚠️ Error checking/deleting previous avatar file:', err);
           }
+        } else {
+          console.log('⚠️ Could not extract filename from old avatar URL');
         }
+      } else {
+        console.log('ℹ️ No existing avatar to delete or same URL');
       }
 
       // Update employee record with new avatar URL
@@ -213,7 +247,7 @@ export function useAvatar() {
         avatar: avatarUrl 
       };
       
-      const updateResponse = await fetch(`/api/applicationusers/${employeeId}`, {
+      const updateResponse = await fetch(`/api/applicationuser/${employeeId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -228,13 +262,6 @@ export function useAvatar() {
       
       const updatedEmployee = await updateResponse.json();
       
-      // Verify the avatar was actually saved
-      if (updatedEmployee.avatar === avatarUrl) {
-        // console.log('✅ Avatar URL correctly saved in database');
-      } else {
-        console.warn('⚠️ Avatar URL mismatch! Expected:', avatarUrl, 'Got:', updatedEmployee.avatar);
-      }
-
       success.value = 'Avatar saved successfully';
       
       // Emit custom event for avatar update
@@ -275,9 +302,10 @@ export function useAvatar() {
       error.value = null;
 
       // Get current employee data
-      const response = await fetch(`/api/applicationusers/${employeeId}`);
+      const response = await fetch(`/api/applicationuser/${employeeId}`);
       if (!response.ok) {
         error.value = 'Employee not found';
+        console.log('❌ Employee not found');
         return false;
       }
       const employee = await response.json();
@@ -285,9 +313,9 @@ export function useAvatar() {
       // Update employee record to remove avatar URL first
       const updateData = { 
         ...employee,
-        avatar: undefined 
+        avatar: null 
       };
-      const updateResponse = await fetch(`/api/applicationusers/${employeeId}`, {
+      const updateResponse = await fetch(`/api/applicationuser/${employeeId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -295,6 +323,7 @@ export function useAvatar() {
       
       if (!updateResponse.ok) {
         error.value = 'Failed to update employee record';
+        console.log('❌ Failed to update employee record:', updateResponse.status);
         return false;
       }
 
@@ -311,7 +340,7 @@ export function useAvatar() {
           await deleteFile(fileName);
         } catch (err) {
           // Ignore file deletion errors - the file might not exist
-          console.log('Avatar file not found or already deleted');
+          console.log('⚠️ Avatar file not found or already deleted');
         }
       }
 
@@ -326,6 +355,7 @@ export function useAvatar() {
 
     } catch (err: any) {
       error.value = err.message || 'Failed to delete avatar';
+      console.log('❌ Error during avatar deletion:', err);
       return false;
     } finally {
       isDeleting.value = false;
@@ -394,6 +424,20 @@ export function useAvatar() {
     success.value = null;
   };
 
+  /**
+   * Clear avatar URL cache
+   */
+  const clearAvatarCache = (): void => {
+    avatarUrlCache.clear();
+  };
+
+  /**
+   * Clear avatar URL cache for specific URL
+   */
+  const clearAvatarCacheForUrl = (avatarUrl: string): void => {
+    avatarUrlCache.delete(avatarUrl);
+  };
+
   // Computed properties
   const isProcessing = computed(() => isUploading.value || isDeleting.value);
   const hasError = computed(() => !!error.value);
@@ -423,6 +467,8 @@ export function useAvatar() {
     handleFileChange,
     formatFileSize,
     clearMessages,
+    clearAvatarCache,
+    clearAvatarCacheForUrl,
 
     // Constants
     SUPPORTED_TYPES,

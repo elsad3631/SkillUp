@@ -17,8 +17,8 @@ router.post('/upload/multiple',
   blobStorageController.uploadMultipleFiles
 );
 
-// Avatar serving route (public access proxy)
-router.get('/avatar/:fileName', blobStorageController.serveAvatar);
+// Avatar serving route (public access proxy) - supports multi-level paths
+router.get('/avatar/*', blobStorageController.serveAvatar);
 
 // File download and info routes
 router.get('/download/:fileName', blobStorageController.downloadFile);

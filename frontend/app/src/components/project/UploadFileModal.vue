@@ -4,6 +4,7 @@
     id="kt_modal_upload_file"
     tabindex="-1"
     aria-hidden="true"
+    @hidden.bs.modal="handleModalHidden"
   >
     <!--begin::Modal dialog-->
     <div class="modal-dialog modal-dialog-centered mw-650px">
@@ -187,6 +188,7 @@
 import { defineComponent, ref, computed } from "vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
+import { Modal } from "bootstrap";
 
 export default defineComponent({
   name: "UploadFileModal",
@@ -282,10 +284,15 @@ export default defineComponent({
         selectedFiles.value = [];
         uploadProgress.value = 0;
         
+        // Remove focus from any focused element to prevent accessibility warning
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        
         // Close modal
         const modal = document.getElementById('kt_modal_upload_file');
         if (modal) {
-          const bootstrapModal = (window as any).bootstrap.Modal.getInstance(modal);
+          const bootstrapModal = Modal.getInstance(modal);
           if (bootstrapModal) {
             bootstrapModal.hide();
           }
@@ -348,6 +355,13 @@ export default defineComponent({
       isDragOver.value = false;
     };
 
+    // Handle modal hidden event to clean up focus
+    const handleModalHidden = () => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    };
+
     return {
       selectedFiles,
       isUploading,
@@ -366,6 +380,7 @@ export default defineComponent({
       getFileIcon,
       formatFileSize,
       resetForm,
+      handleModalHidden,
     };
   },
 });

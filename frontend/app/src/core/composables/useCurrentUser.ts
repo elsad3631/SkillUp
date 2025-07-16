@@ -94,7 +94,7 @@ export function useCurrentUser() {
 
     try {
       const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${API_URL}/applicationusers/${currentUser.value.id}`, {
+      const response = await fetch(`${API_URL}/applicationuser/${currentUser.value.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

@@ -40,6 +40,7 @@
                         <span class="me-2">{{ selectedIds.length }}</span>Selected
                     </div>
                     <button type="button" class="btn btn-danger" @click="deleteFewProjects()">
+                        <KTIcon icon-name="trash" icon-class="fs-2" />
                         Delete Selected
                     </button>
                 </div>
@@ -51,47 +52,84 @@
             <Loading v-if="loading" />
             <Datatable v-else @on-sort="sort" @on-items-select="onItemSelect" :data="tableData" :header="tableHeader"
                 :enable-items-per-page-dropdown="true" :checkbox-enabled="true" checkbox-label="id">
-                <template v-slot:name="{ row: project }">
-                    <router-link :to="`/projects/${project.id}/overview`" class="text-gray-600 text-hover-primary mb-1">
-                        {{ project.name }}
-                    </router-link>
-                    <div class="text-muted fw-semobold text-muted d-block fs-7">
-                        {{ project.description }}
+                <template v-slot:project="{ row: project }">
+                    <div class="d-flex align-items-center">
+                      
+                        <div class="d-flex flex-column">
+                            <router-link :to="`/projects/${project.id}/overview`" class="text-gray-800 text-hover-primary fw-bold mb-1">
+                                {{ project.name }}
+                            </router-link>
+                            <div class="text-muted fw-semibold d-block fs-7">
+                                {{ project.description }}
+                            </div>
+                        </div>
                     </div>
                 </template>
 
                 <template v-slot:status="{ row: project }">
-                    <span :class="getStatusBadgeClass(project.status)" class="badge">
-                        {{ project.status }}
-                    </span>
+                    <div class="d-flex flex-column align-items-start">
+                        <span :class="getStatusBadgeClass(project.status)" class="badge">
+                            <KTIcon :icon-name="getStatusIcon(project.status)" icon-class="fs-7 me-1" />
+                            {{ project.status }}
+                        </span>
+                    </div>
                 </template>
 
                 <template v-slot:priority="{ row: project }">
-                    <span :class="getPriorityBadgeClass(project.priority)" class="badge">
-                        {{ project.priority || 'N/A' }}
-                    </span>
+                    <div class="d-flex flex-column align-items-start">
+                        <span :class="getPriorityBadgeClass(project.priority)" class="badge mb-1">
+                            <KTIcon :icon-name="getPriorityIcon(project.priority)" icon-class="fs-7 me-1" />
+                            {{ project.priority || 'N/A' }}
+                        </span>
+                    </div>
                 </template>
 
                 <template v-slot:budget="{ row: project }">
-                    <span class="fw-bold">
-                        {{ project.budget ? `$${project.budget.toLocaleString()}` : 'N/A' }}
-                    </span>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="fw-bold text-gray-800">
+                            <KTIcon icon-name="dollar" icon-class="fs-7 me-1" />
+                            {{ project.budget ? `$${project.budget.toLocaleString()}` : 'N/A' }}
+                        </span>
+                        <span v-if="project.budget" class="text-muted fs-8">
+                            <KTIcon icon-name="chart-line" icon-class="fs-7 me-1" />
+                            Budget allocated
+                        </span>
+                    </div>
                 </template>
 
-                <template v-slot:dates="{ row: project }">
+                <template v-slot:timeline="{ row: project }">
                     <div class="d-flex flex-column">
-                        <span class="text-muted fs-7">Start: {{ formatDate(project.startDate) }}</span>
-                        <span class="text-muted fs-7">End: {{ formatDate(project.endDate) }}</span>
+                        <div class="d-flex align-items-center mb-1">
+                            <KTIcon icon-name="calendar" icon-class="fs-7 me-1 text-success" />
+                            <span class="text-muted fs-8">Start: {{ formatDate(project.startDate) }}</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <KTIcon icon-name="calendar" icon-class="fs-7 me-1 text-danger" />
+                            <span class="text-muted fs-8">End: {{ formatDate(project.endDate) }}</span>
+                        </div>
+                        <div v-if="project.startDate && project.endDate" class="mt-1">
+                            <div class="progress h-6px w-100">
+                                <div class="progress-bar" :style="{ width: getProgressPercentage(project.startDate, project.endDate) + '%' }"></div>
+                            </div>
+                        </div>
                     </div>
                 </template>
 
                 <template v-slot:actions="{ row: project }">
-                    <router-link :to="`/projects/${project.id}/overview`" class="btn btn-sm btn-light-primary me-2">
-                        Details
-                    </router-link>
-                    <button @click="deleteSingleProject(project.id)" class="btn btn-sm btn-danger">
-                        Delete
-                    </button>
+                    <div class="d-flex gap-2">
+                        <router-link :to="`/projects/${project.id}/overview`" class="btn btn-sm btn-light-primary">
+                            <KTIcon icon-name="eye" icon-class="fs-7" />
+                            View
+                        </router-link>
+                        <router-link :to="`/projects/${project.id}/settings`" class="btn btn-sm btn-light-warning">
+                            <KTIcon icon-name="pencil" icon-class="fs-7" />
+                            Edit
+                        </router-link>
+                        <button @click="deleteSingleProject(project.id)" class="btn btn-sm btn-light-danger">
+                            <KTIcon icon-name="trash" icon-class="fs-7" />
+                            Delete
+                        </button>
+                    </div>
                 </template>
             </Datatable>
         </div>
@@ -124,7 +162,7 @@ export default defineComponent({
         const tableHeader = ref([
             {
                 columnName: "Project",
-                columnLabel: "name",
+                columnLabel: "project",
                 sortEnabled: true,
                 columnWidth: 300,
             },
@@ -132,13 +170,13 @@ export default defineComponent({
                 columnName: "Status",
                 columnLabel: "status",
                 sortEnabled: true,
-                columnWidth: 120,
+                columnWidth: 150,
             },
             {
                 columnName: "Priority",
                 columnLabel: "priority",
                 sortEnabled: true,
-                columnWidth: 120,
+                columnWidth: 150,
             },
             {
                 columnName: "Budget",
@@ -148,7 +186,7 @@ export default defineComponent({
             },
             {
                 columnName: "Timeline",
-                columnLabel: "dates",
+                columnLabel: "timeline",
                 sortEnabled: true,
                 columnWidth: 200,
             },
@@ -156,7 +194,7 @@ export default defineComponent({
                 columnName: "Actions",
                 columnLabel: "actions",
                 sortEnabled: false,
-                columnWidth: 150,
+                columnWidth: 200,
             },
         ]);
 
@@ -182,7 +220,10 @@ export default defineComponent({
             Swal.fire('Success', 'Project has been created.', 'success');
         };
 
-
+        const editProject = (project: Project) => {
+            // TODO: Implement edit functionality
+            console.log('Edit project:', project);
+        };
 
         const deleteFewProjects = async () => {
             if (selectedIds.value.length === 0) return;
@@ -272,6 +313,16 @@ export default defineComponent({
             }
         };
 
+        const getStatusIcon = (status: string) => {
+            switch (status?.toLowerCase()) {
+                case 'active': return 'check-circle';
+                case 'completed': return 'shield-tick';
+                case 'on hold': return 'pause-circle';
+                case 'cancelled': return 'cross-circle';
+                default: return 'minus-circle';
+            }
+        };
+
         const getPriorityBadgeClass = (priority: string) => {
             switch (priority?.toLowerCase()) {
                 case 'high': return 'badge-light-danger';
@@ -281,15 +332,49 @@ export default defineComponent({
             }
         };
 
+        const getPriorityIcon = (priority: string) => {
+            switch (priority?.toLowerCase()) {
+                case 'high': return 'arrow-up';
+                case 'medium': return 'minus';
+                case 'low': return 'arrow-down';
+                default: return 'minus';
+            }
+        };
+
         const formatDate = (date: Date | string | undefined) => {
             if (!date) return 'N/A';
             return new Date(date).toLocaleDateString();
         };
 
+        const getDaysRemaining = (endDate: Date | string | undefined) => {
+            if (!endDate) return 'No end date';
+            const end = new Date(endDate);
+            const now = new Date();
+            const diffTime = end.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) return 'Overdue';
+            if (diffDays === 0) return 'Due today';
+            if (diffDays === 1) return 'Due tomorrow';
+            return `${diffDays} days left`;
+        };
+
+        const getProgressPercentage = (startDate: Date | string | undefined, endDate: Date | string | undefined) => {
+            if (!startDate || !endDate) return 0;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const now = new Date();
+            
+            const totalDuration = end.getTime() - start.getTime();
+            const elapsed = now.getTime() - start.getTime();
+            
+            const percentage = (elapsed / totalDuration) * 100;
+            return Math.min(Math.max(percentage, 0), 100);
+        };
+
         const closeModal = (modalId: string) => {
             const modal = document.getElementById(modalId);
             if (modal) {
-                // Trova un elemento con data-bs-dismiss="modal" e simula il click
                 const dismissBtn = modal.querySelector('[data-bs-dismiss="modal"]') as HTMLElement;
                 if (dismissBtn) {
                     dismissBtn.click();
@@ -313,9 +398,14 @@ export default defineComponent({
             deleteFewProjects,
             deleteSingleProject,
             onProjectCreated,
+            editProject,
             getStatusBadgeClass,
+            getStatusIcon,
             getPriorityBadgeClass,
+            getPriorityIcon,
             formatDate,
+            getDaysRemaining,
+            getProgressPercentage,
             closeModal,
             loading,
         };

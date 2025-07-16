@@ -484,9 +484,9 @@ export default defineComponent({
               status: projectDetails.value.status,
               priority: projectDetails.value.priority,
               budget: projectDetails.value.budget ? parseFloat(projectDetails.value.budget.toString()) : null,
-              managerId: projectDetails.value.managerId || null,
-              startDate: projectDetails.value.startDate ? new Date(projectDetails.value.startDate) : null,
-              endDate: projectDetails.value.endDate ? new Date(projectDetails.value.endDate) : null,
+              manager_id: projectDetails.value.managerId || null,
+              start_date: projectDetails.value.startDate ? new Date(projectDetails.value.startDate) : null,
+              end_date: projectDetails.value.endDate ? new Date(projectDetails.value.endDate) : null,
               requiredSoftSkills: projectDetails.value.requiredSoftSkills,
               requiredHardSkills: projectDetails.value.requiredHardSkills,
             };

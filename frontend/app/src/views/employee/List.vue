@@ -7,7 +7,7 @@
                 <div class="d-flex align-items-center position-relative my-1">
                     <KTIcon icon-name="magnifier" icon-class="fs-1 position-absolute ms-6" />
                     <input type="text" v-model="search" @input="searchItems()"
-                        class="form-control form-control-solid w-250px ps-15" placeholder="Search Customers" />
+                        class="form-control form-control-solid w-250px ps-15" placeholder="Search Employees" />
                 </div>
                 <!--end::Search-->
             </div>
@@ -16,10 +16,10 @@
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
                 <div v-if="selectedIds.length === 0" class="d-flex justify-content-end"
-                    data-kt-customer-table-toolbar="base">
+                    data-kt-employee-table-toolbar="base">
                     <!--begin::Export-->
                     <button type="button" class="btn btn-light-primary me-3" data-bs-toggle="modal"
-                        data-bs-target="#kt_customers_export_modal">
+                        data-bs-target="#kt_employees_export_modal">
                         <KTIcon icon-name="exit-up" icon-class="fs-2" />
                         Export
                     </button>
@@ -35,22 +35,12 @@
                 <!--end::Toolbar-->
                 <!--begin::Group actions-->
                 <div v-else class="d-flex justify-content-end align-items-center"
-                    data-kt-customer-table-toolbar="selected">
+                    data-kt-employee-table-toolbar="selected">
                     <div class="fw-bold me-5">
                         <span class="me-2">{{ selectedIds.length }}</span>Selected
                     </div>
                     <button type="button" class="btn btn-danger" @click="deleteFewEmployees()">
-                        Delete Selected
-                    </button>
-                </div>
-                <!--end::Group actions-->
-                <!--begin::Group actions-->
-                <div class="d-flex justify-content-end align-items-center d-none"
-                    data-kt-customer-table-toolbar="selected">
-                    <div class="fw-bold me-5">
-                        <span class="me-2" data-kt-customer-table-select="selected_count"></span>Selected
-                    </div>
-                    <button type="button" class="btn btn-danger" data-kt-customer-table-select="delete_selected">
+                        <KTIcon icon-name="trash" icon-class="fs-2" />
                         Delete Selected
                     </button>
                 </div>
@@ -62,31 +52,86 @@
             <Loading v-if="loading" />
             <Datatable v-else @on-sort="sort" @on-items-select="onItemSelect" :data="tableData" :header="tableHeader"
                 :enable-items-per-page-dropdown="true" :checkbox-enabled="true" checkbox-label="id">
-                <template v-slot:name="{ row: employee }">
-                    {{ employee.firstName }} {{ employee.lastName }}
+                <template v-slot:employee="{ row: employee }">
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-50px me-5">
+                            <div class="symbol-label bg-light-success d-flex align-items-center justify-content-center" style="font-size: 1.2rem; font-weight: 600; color: #fff;">
+                                {{ getInitials(employee.firstName, employee.lastName) }}
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <router-link :to="`/employees/${employee.id}/overview`" class="text-gray-800 text-hover-primary fw-bold mb-1">
+                                {{ employee.firstName }} {{ employee.lastName }}
+                            </router-link>
+
+                        </div>
+                    </div>
                 </template>
 
-                <template v-slot:email="{ row: employee }">
-                    <a href="#" class="text-gray-600 text-hover-primary mb-1" @click.prevent="openEditModal(employee)" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_employee">
-                        {{ employee.email }}
-                    </a>
+                <template v-slot:contact="{ row: employee }">
+                    <div class="d-flex flex-column align-items-start">
+                        <div class="d-flex align-items-center mb-1">
+                            <KTIcon icon-name="sms" icon-class="fs-7 me-1 text-primary" />
+                            <span class="text-muted fs-8">{{ employee.email }}</span>
+                        </div>
+                        <div v-if="employee.phone" class="d-flex align-items-center">
+                            <KTIcon icon-name="phone" icon-class="fs-7 me-1 text-success" />
+                            <span class="text-muted fs-8">{{ employee.phone }}</span>
+                        </div>
+                        <div v-if="employee.address" class="d-flex align-items-center mt-1">
+                            <KTIcon icon-name="location" icon-class="fs-7 me-1 text-warning" />
+                            <span class="text-muted fs-8">{{ employee.address }}</span>
+                        </div>
+                    </div>
                 </template>
 
                 <template v-slot:role="{ row: employee }">
-                    {{ employee.currentRole }}
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="badge badge-light-primary">
+                            <KTIcon icon-name="shield-tick" icon-class="fs-7 me-1" />
+                            {{ employee.currentRole }}
+                        </span>
+                    </div>
                 </template>
 
                 <template v-slot:department="{ row: employee }">
-                    {{ employee.department }}
+                    <div class="d-flex flex-column align-items-start">
+                        <span v-if="employee.department" class="badge badge-light-info">
+                            <KTIcon icon-name="building" icon-class="fs-7 me-1" />
+                            {{ employee.department }}
+                        </span>
+                        <span v-else class="text-muted fs-8">N/A</span>
+                    </div>
+                </template>
+
+                <template v-slot:status="{ row: employee }">
+                    <div class="d-flex flex-column align-items-start">
+                        <span v-if="employee.is_available" class="badge badge-light-success">
+                            <KTIcon icon-name="check-circle" icon-class="fs-7 me-1" />
+                            Available
+                        </span>
+                        <span v-else class="badge badge-light-warning">
+                            <KTIcon icon-name="pause-circle" icon-class="fs-7 me-1" />
+                            Busy
+                        </span>
+                    </div>
                 </template>
 
                 <template v-slot:actions="{ row: employee }">
-                    <router-link :to="`/employees/${employee.id}/overview`" class="btn btn-sm btn-light-primary me-2">
-                        Details
-                    </router-link>
-                    <button @click="deleteSingleEmployee(employee.id)" class="btn btn-sm btn-danger">
-                        Delete
-                    </button>
+                    <div class="d-flex gap-2">
+                        <router-link :to="`/employees/${employee.id}/overview`" class="btn btn-sm btn-light-primary">
+                            <KTIcon icon-name="eye" icon-class="fs-7" />
+                            View
+                        </router-link>
+                        <router-link :to="`/employees/${employee.id}/settings`" class="btn btn-sm btn-light-warning">
+                            <KTIcon icon-name="pencil" icon-class="fs-7" />
+                            Edit
+                        </router-link>
+                        <button @click="deleteSingleEmployee(employee.id)" class="btn btn-sm btn-light-danger">
+                            <KTIcon icon-name="trash" icon-class="fs-7" />
+                            Delete
+                        </button>
+                    </div>
                 </template>
             </Datatable>
         </div>
@@ -111,8 +156,6 @@ import { defineComponent, onMounted, ref } from "vue";
 import Datatable from "@/components/kt-datatable/KTDataTable.vue";
 import { MenuComponent } from "@/assets/ts/components";
 import arraySort from "array-sort";
-// Updated to use ApplicationUser services
-// import { getEmployees, deleteEmployee, getEmployee } from "@/core/services/businessServices/Employee";
 import type { Employee } from "@/core/models/Employee";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
@@ -132,34 +175,40 @@ export default defineComponent({
     setup() {
         const tableHeader = ref([
             {
-                columnName: "Name",
-                columnLabel: "name",
+                columnName: "Employee",
+                columnLabel: "employee",
                 sortEnabled: true,
-                columnWidth: 200,
+                columnWidth: 280,
             },
             {
-                columnName: "Email",
-                columnLabel: "email",
+                columnName: "Contact",
+                columnLabel: "contact",
                 sortEnabled: true,
-                columnWidth: 200,
+                columnWidth: 220,
             },
             {
                 columnName: "Role",
                 columnLabel: "role",
                 sortEnabled: true,
-                columnWidth: 180,
+                columnWidth: 120,
             },
             {
                 columnName: "Department",
                 columnLabel: "department",
                 sortEnabled: true,
-                columnWidth: 180,
+                columnWidth: 140,
+            },
+            {
+                columnName: "Status",
+                columnLabel: "status",
+                sortEnabled: true,
+                columnWidth: 120,
             },
             {
                 columnName: "Actions",
                 columnLabel: "actions",
                 sortEnabled: false,
-                columnWidth: 150,
+                columnWidth: 160,
             },
         ]);
 
@@ -201,7 +250,6 @@ export default defineComponent({
 
         const editEmployee = (employee: Employee) => {
             selectedEmployee.value = employee;
-            // Trigger modal opening
             const modal = document.getElementById('kt_modal_edit_employee');
             if (modal) {
                 const bootstrapModal = new Modal(modal);
@@ -212,16 +260,15 @@ export default defineComponent({
         const openEditModal = async (employee: Employee) => {
             editModalLoading.value = true;
             try {
-                // Recupera i dati aggiornati dal backend
                 const response = await fetch(`/api/applicationuser/${employee.id}`);
                 if (response.ok) {
                     const freshEmployee = await response.json();
                     selectedEmployee.value = freshEmployee;
                 } else {
-                    selectedEmployee.value = employee; // fallback
+                    selectedEmployee.value = employee;
                 }
             } catch (error) {
-                selectedEmployee.value = employee; // fallback
+                selectedEmployee.value = employee;
             }
             editModalLoading.value = false;
         };
@@ -298,7 +345,9 @@ export default defineComponent({
                     emp.last_name?.toLowerCase().includes(query) ||
                     emp.email?.toLowerCase().includes(query) ||
                     emp.current_role?.toLowerCase().includes(query) ||
-                    emp.department?.toLowerCase().includes(query)
+                    emp.department?.toLowerCase().includes(query) ||
+                    emp.phone?.toLowerCase().includes(query) ||
+                    emp.address?.toLowerCase().includes(query)
                 );
             });
         };
@@ -314,10 +363,32 @@ export default defineComponent({
             selectedIds.value = selectedItems;
         };
 
+        const formatDate = (date: Date | string | undefined) => {
+            if (!date) return 'N/A';
+            return new Date(date).toLocaleDateString();
+        };
+
+        const getAge = (dateOfBirth: Date | string | undefined) => {
+            if (!dateOfBirth) return 'N/A';
+            const birthDate = new Date(dateOfBirth);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        };
+
+        const getInitials = (firstName: string = '', lastName: string = ''): string => {
+            const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+            const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+            return first + last;
+        };
+
         const closeModal = (modalId: string) => {
             const modal = document.getElementById(modalId);
             if (modal) {
-                // Trova un elemento con data-bs-dismiss="modal" e simula il click
                 const dismissBtn = modal.querySelector('[data-bs-dismiss="modal"]') as HTMLElement;
                 if (dismissBtn) {
                     dismissBtn.click();
@@ -346,8 +417,11 @@ export default defineComponent({
             onEmployeeUpdated,
             openEditModal,
             closeModal,
+            formatDate,
+            getAge,
             loading,
             editModalLoading,
+            getInitials,
         };
     },
 });

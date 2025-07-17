@@ -21,20 +21,23 @@ export interface Notification {
 // Log type
 export interface UserActivityLog {
   id: string;
-  code: string;
-  state: string;
-  message: string;
-  time: string;
+  code?: string;
+  state?: string;
+  message?: string;
+  time?: string;
   date?: string;
   userId?: string;
   action?: string;
   entityType?: string;
   status?: string;
   createdAt?: string;
+  timestamp?: string;
+  description?: string;
 }
 
 // NOTIFICATIONS
 export const getNotifications = (limit?: number): Promise<Notification[] | undefined> => {
+  ApiService.setHeader();
   let endpoint = "notification";
   if (limit) endpoint += `?limit=${limit}`;
   return ApiService.get(endpoint)
@@ -46,6 +49,7 @@ export const getNotifications = (limit?: number): Promise<Notification[] | undef
 };
 
 export const getNotificationsByRecipient = (recipientId: string, limit?: number): Promise<Notification[] | undefined> => {
+  ApiService.setHeader();
   let endpoint = `notification/recipient/${recipientId}`;
   if (limit) endpoint += `?limit=${limit}`;
   return ApiService.get(endpoint)
@@ -57,6 +61,7 @@ export const getNotificationsByRecipient = (recipientId: string, limit?: number)
 };
 
 export const getUnreadNotificationsByRecipient = (recipientId: string, limit?: number): Promise<Notification[] | undefined> => {
+  ApiService.setHeader();
   let endpoint = `notification/unread/${recipientId}`;
   if (limit) endpoint += `?limit=${limit}`;
   return ApiService.get(endpoint)
@@ -67,8 +72,39 @@ export const getUnreadNotificationsByRecipient = (recipientId: string, limit?: n
     });
 };
 
+export const markNotificationAsRead = (notificationId: string): Promise<boolean> => {
+  ApiService.setHeader();
+  return ApiService.put(`notification/${notificationId}/read`, {})
+    .then(() => true)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return false;
+    });
+};
+
+export const markAllNotificationsAsRead = (recipientId: string): Promise<boolean> => {
+  ApiService.setHeader();
+  return ApiService.put(`notification/recipient/${recipientId}/read-all`, {})
+    .then(() => true)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return false;
+    });
+};
+
+export const deleteNotification = (notificationId: string): Promise<boolean> => {
+  ApiService.setHeader();
+  return ApiService.delete(`notification/${notificationId}`)
+    .then(() => true)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return false;
+    });
+};
+
 // LOGS
 export const getLogs = (limit?: number): Promise<UserActivityLog[] | undefined> => {
+  ApiService.setHeader();
   let endpoint = "userActivityLog";
   if (limit) endpoint += `?limit=${limit}`;
   return ApiService.get(endpoint)
@@ -80,6 +116,7 @@ export const getLogs = (limit?: number): Promise<UserActivityLog[] | undefined> 
 };
 
 export const getLogsByUser = (userId: string, limit?: number): Promise<UserActivityLog[] | undefined> => {
+  ApiService.setHeader();
   let endpoint = `userActivityLog/user/${userId}`;
   if (limit) endpoint += `?limit=${limit}`;
   return ApiService.get(endpoint)

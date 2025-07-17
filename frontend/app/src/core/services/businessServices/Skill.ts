@@ -13,6 +13,7 @@ export interface Skill {
 }
 
 const updateSkill = (id: string, formData: Partial<Skill>): Promise<Skill | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`skills/${id}`, formData)
     .then(({ data }) => data as Skill)
     .catch(({ response }) => {
@@ -22,6 +23,7 @@ const updateSkill = (id: string, formData: Partial<Skill>): Promise<Skill | unde
 };
 
 const deleteSkill = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`skills/${id}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -31,6 +33,7 @@ const deleteSkill = (id: string): Promise<boolean> => {
 };
 
 const createSkill = (formData: Partial<Skill>): Promise<Skill | undefined> => {
+  ApiService.setHeader();
   return ApiService.post('skills', formData)
     .then(({ data }) => data as Skill)
     .catch(({ response }) => {

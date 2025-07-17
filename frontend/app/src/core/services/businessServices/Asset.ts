@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/auth";
 const store = useAuthStore();
 
 const getAssets = (): Promise<any[] | undefined> => {
+  ApiService.setHeader();
   return ApiService.get("assets")
     .then(({ data }) => data as any[])
     .catch(({ response }) => {
@@ -13,6 +14,7 @@ const getAssets = (): Promise<any[] | undefined> => {
 };
 
 const createAsset = (formData: any): Promise<any | undefined> => {
+  ApiService.setHeader();
   return ApiService.post("assets", formData)
     .then(({ data }) => data as any)
     .catch(({ response }) => {
@@ -22,6 +24,7 @@ const createAsset = (formData: any): Promise<any | undefined> => {
 };
 
 const updateAsset = (id: number, formData: any): Promise<any | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`assets/${id}`, formData)
     .then(({ data }) => data as any)
     .catch(({ response }) => {
@@ -31,6 +34,7 @@ const updateAsset = (id: number, formData: any): Promise<any | undefined> => {
 };
 
 const deleteAsset = (id: number): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`assets/${id}`)
     .then(() => true)
     .catch(({ response }) => {

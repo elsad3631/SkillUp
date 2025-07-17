@@ -5,6 +5,7 @@ import type { Project } from "@/core/models/Project";
 const store = useAuthStore();
 
 const getProjects = (filterRequest?: string): Promise<Array<Project> | undefined> => {
+  ApiService.setHeader();
   const endpoint = filterRequest
     ? `projects?filter=${encodeURIComponent(filterRequest)}`
     : `projects`;
@@ -18,6 +19,7 @@ const getProjects = (filterRequest?: string): Promise<Array<Project> | undefined
 };
 
 const getProject = (id: string): Promise<Project | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`projects/${id}`)
     .then(({ data }) => data as Project)
     .catch(({ response }) => {
@@ -27,6 +29,7 @@ const getProject = (id: string): Promise<Project | undefined> => {
 };
 
 const createProject = (formData: any): Promise<Project | undefined> => {
+  ApiService.setHeader();
   return ApiService.post(`projects`, formData)
     .then(({ data }) => data as Project)
     .catch(({ response }) => {
@@ -36,6 +39,7 @@ const createProject = (formData: any): Promise<Project | undefined> => {
 };
 
 const updateProject = (id: string, formData: any): Promise<Project | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`projects/${id}`, formData)
     .then(({ data }) => data as Project)
     .catch(({ response }) => {
@@ -45,6 +49,7 @@ const updateProject = (id: string, formData: any): Promise<Project | undefined> 
 };
 
 const deleteProject = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`projects/${id}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -67,6 +72,7 @@ const getUserProjects = (): Promise<Array<Project> | undefined> => {
 
 // Nuove funzioni per le assegnazioni di progetti
 const getEmployeeProjects = (employeeId: string): Promise<Array<Project> | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`applicationuser/${employeeId}/projects`)
     .then(({ data }) => data as Project[])
     .catch(({ response }) => {
@@ -85,6 +91,7 @@ const assignProjectToEmployee = (assignmentData: {
   allocationPercentage: number;
   status: string;
 }): Promise<any | undefined> => {
+  ApiService.setHeader();
   return ApiService.post(`appointments`, assignmentData)
     .then(({ data }) => data)
     .catch(({ response }) => {
@@ -94,6 +101,7 @@ const assignProjectToEmployee = (assignmentData: {
 };
 
 const removeProjectAssignment = (assignmentId: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`appointments/${assignmentId}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -110,6 +118,7 @@ const updateProjectAssignment = (assignmentId: string, assignmentData: {
   status?: string;
   feedbackReceived?: string;
 }): Promise<any | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`appointments/${assignmentId}`, assignmentData)
     .then(({ data }) => data)
     .catch(({ response }) => {

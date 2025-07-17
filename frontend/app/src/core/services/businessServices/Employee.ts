@@ -5,6 +5,7 @@ import type { Employee } from "@/core/models/Employee";
 const store = useAuthStore();
 
 const getEmployees = (filterRequest?: string): Promise<Array<Employee> | undefined> => {
+  ApiService.setHeader();
   const endpoint = filterRequest
     ? `employees?filter=${encodeURIComponent(filterRequest)}`
     : `employees`;
@@ -18,6 +19,7 @@ const getEmployees = (filterRequest?: string): Promise<Array<Employee> | undefin
 };
 
 const getEmployee = (id: string): Promise<Employee | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`employees/${id}`)
     .then(({ data }) => data as Employee)
     .catch(({ response }) => {
@@ -27,6 +29,7 @@ const getEmployee = (id: string): Promise<Employee | undefined> => {
 };
 
 const createEmployee = (formData: Employee): Promise<Employee | undefined> => {
+  ApiService.setHeader();
   return ApiService.post(`employees`, formData)
     .then(({ data }) => data as Employee)
     .catch(({ response }) => {
@@ -36,6 +39,7 @@ const createEmployee = (formData: Employee): Promise<Employee | undefined> => {
 };
 
 const updateEmployee = (id: string, formData: Employee): Promise<Employee | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`employees/${id}`, formData)
     .then(({ data }) => data as Employee)
     .catch(({ response }) => {
@@ -45,6 +49,7 @@ const updateEmployee = (id: string, formData: Employee): Promise<Employee | unde
 };
 
 const deleteEmployee = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`employees/${id}`)
     .then(() => true)
     .catch(({ response }) => {

@@ -382,6 +382,7 @@ import { createEmployee } from "@/core/services/businessServices/Employee";
 import type { Employee } from "@/core/models/Employee";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import axios from "axios";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
   name: "AddEmployeeModal",
@@ -400,6 +401,7 @@ export default defineComponent({
     const cvLoading = ref(false);
     const cvPrompt = ref('');
     const skillsList = ref('');
+    const { currentUser } = useCurrentUser();
 
     const form = reactive({
       username: "mario.rossi",
@@ -503,76 +505,108 @@ export default defineComponent({
     const extractFromCV = async () => {
       if (!cvFile.value) return;
       cvLoading.value = true;
+      
       try {
+        // Mostra messaggio di operazione in corso
+        const loadingAlert = Swal.fire({
+          icon: 'info',
+          title: 'Elaborazione CV in corso...',
+          html: `
+            <div class="text-center">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+              </div>
+              <p><strong>Stiamo elaborando il tuo CV...</strong></p>
+              <p class="text-muted">Questa operazione può richiedere alcuni minuti.</p>
+              <p class="text-muted">Riceverai una notifica quando l'elaborazione sarà completata.</p>
+            </div>
+          `,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+
         const data = new FormData();
         data.append('cv', cvFile.value);
-        const res = await axios.post('http://localhost:7071/api/ExtractCVData', data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        const result = res.data;
         
-        if (result.success) {
-          // L'utente è stato creato automaticamente nel database
-          emit("employee-created", result.data);
+        // Invia la richiesta in background senza attendere la risposta
+        axios.post('http://localhost:7071/api/ExtractCVData', data, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'x-user-id': currentUser.value?.id || 'system'
+          },
+        }).then((res) => {
+          const result = res.data;
           
-          // Mostra messaggio di successo con le credenziali temporanee
-          await Swal.fire({
-            icon: 'success',
-            title: 'Utente creato con successo!',
-            html: `
-              <p><strong>L'utente è stato creato automaticamente dal CV.</strong></p>
-              <br>
-              <p><strong>Credenziali di accesso:</strong></p>
-              <p>Username: <code>${result.data.username}</code></p>
-              <p>Password temporanea: <code>${result.data.temporaryPassword}</code></p>
-              <br>
-              <p><em>Comunicare queste credenziali all'utente per il primo accesso.</em></p>
-            `,
-            confirmButtonText: 'Ho preso nota delle credenziali',
-            allowOutsideClick: false,
-          });
+          if (result.success) {
+            // Emetti evento per aggiornare la lista se necessario
+            emit("employee-created", result.user);
+          }
           
-          // Chiudi il modal
-          if (props.closeModal) props.closeModal();
+          // Log per debug (opzionale)
+          console.log('CV processing response:', result);
           
-          // Reset del form e ritorna al tab manuale per eventuali future operazioni
-          activeTab.value = 'manual';
-          cvFile.value = null;
-          
-          // Reset form
-          Object.assign(form, {
-            username: "",
-            email: "",
-            password: "",
-            roles: ["employee"],
-            firstName: "",
-            lastName: "",
-            phone: "",
-            dateOfBirth: "",
-            placeOfBirth: "",
-            address: "",
-            currentRole: "",
-            department: "",
-            isAvailable: true,
-            hardSkills: [],
-            softSkills: [],
-            experiences: [],
-            cvData: { fileName: "", storageUrl: "" },
-          });
-        } else {
-          throw new Error(result.message || 'Errore nella creazione utente');
-        }
-      } catch (err: any) {
-        console.error('Errore estrazione CV:', err);
-        const errorMessage = err.response?.data?.message || err.message || 'Estrazione dati dal CV fallita.';
-        Swal.fire({ 
-          icon: 'error', 
-          title: 'Errore', 
-          text: errorMessage 
+        }).catch((err: any) => {
+          // Log dell'errore per debug
+          console.error('Errore estrazione CV:', err);
         });
+        
+        // Chiudi il loading e mostra messaggio di conferma
+        await loadingAlert;
+        
+        await Swal.fire({
+          icon: 'success',
+          title: 'Richiesta inviata!',
+          html: `
+            <p><strong>Il CV è stato inviato per l'elaborazione.</strong></p>
+            <br>
+            <p>Riceverai una notifica quando l'elaborazione sarà completata.</p>
+            <br>
+            <p class="text-info">
+              <i class="fas fa-info-circle"></i>
+              <strong>Nota:</strong> L'elaborazione avviene in background e può richiedere alcuni minuti.
+            </p>
+          `,
+          confirmButtonText: 'Ho capito',
+        });
+        
+        // Reset del form e chiudi modal
+        resetForm();
+        if (props.closeModal) props.closeModal();
+        
+      } catch (err: any) {
+        // Log dell'errore per debug
+        console.error('Errore invio CV:', err);
       } finally {
         cvLoading.value = false;
       }
+    };
+
+    const resetForm = () => {
+      // Reset del form e ritorna al tab manuale per eventuali future operazioni
+      activeTab.value = 'manual';
+      cvFile.value = null;
+      
+      // Reset form
+      Object.assign(form, {
+        username: "",
+        email: "",
+        password: "",
+        roles: ["employee"],
+        firstName: "",
+        lastName: "",
+        phone: "",
+        dateOfBirth: "",
+        placeOfBirth: "",
+        address: "",
+        currentRole: "",
+        department: "",
+        isAvailable: true,
+        hardSkills: [],
+        softSkills: [],
+        experiences: [],
+        cvData: { fileName: "", storageUrl: "" },
+      });
     };
 
     const onSubmit = async () => {
@@ -704,6 +738,7 @@ export default defineComponent({
       skillsList,
       onFileChange,
       extractFromCV,
+      resetForm,
     };
   },
 });

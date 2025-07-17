@@ -16,6 +16,7 @@ export interface Experience {
 }
 
 const getExperiences = (filterRequest?: string): Promise<Array<Experience> | undefined> => {
+  ApiService.setHeader();
   const endpoint = filterRequest
     ? `experiences?filter=${encodeURIComponent(filterRequest)}`
     : `experiences`;
@@ -29,6 +30,7 @@ const getExperiences = (filterRequest?: string): Promise<Array<Experience> | und
 };
 
 const getExperience = (id: string): Promise<Experience | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`experiences/${id}`)
     .then(({ data }) => data as Experience)
     .catch(({ response }) => {
@@ -38,6 +40,7 @@ const getExperience = (id: string): Promise<Experience | undefined> => {
 };
 
 const createExperience = (formData: Partial<Experience>): Promise<Experience | undefined> => {
+  ApiService.setHeader();
   return ApiService.post(`experiences`, formData)
     .then(({ data }) => data as Experience)
     .catch(({ response }) => {
@@ -47,6 +50,7 @@ const createExperience = (formData: Partial<Experience>): Promise<Experience | u
 };
 
 const updateExperience = (id: string, formData: Partial<Experience>): Promise<Experience | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`experiences/${id}`, formData)
     .then(({ data }) => data as Experience)
     .catch(({ response }) => {
@@ -56,6 +60,7 @@ const updateExperience = (id: string, formData: Partial<Experience>): Promise<Ex
 };
 
 const deleteExperience = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`experiences/${id}`)
     .then(() => true)
     .catch(({ response }) => {

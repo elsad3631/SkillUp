@@ -3,6 +3,7 @@ import type { AxiosResponse } from "axios";
 import axios from "axios";
 import VueAxios from "vue-axios";
 import JwtService from "@/core/services/JwtService";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 /**
  * @description service to call HTTP request via Axios
@@ -27,11 +28,15 @@ class ApiService {
    * @description set the default HTTP request headers
    */
   public static setHeader(): void {
+    const { currentUser } = useCurrentUser();
     ApiService.vueInstance.axios.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${JwtService.getToken()}`;
     ApiService.vueInstance.axios.defaults.headers.common["Accept"] =
       "application/json";
+      ApiService.vueInstance.axios.defaults.headers.common[
+        "x-user-id"
+      ] = `${currentUser.value?.id}`;
   }
 
   /**

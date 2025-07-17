@@ -22,6 +22,7 @@ export const useAuthStore = defineStore("auth", () => {
     errors.value = {};
     if (token) {
       JwtService.saveToken(token);
+      localStorage.setItem('currentUser', JSON.stringify(authUser));
     }
     // Set the authorization header for future requests
     ApiService.setHeader();
@@ -43,6 +44,7 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = {} as User;
     errors.value = [];
     JwtService.destroyToken();
+    localStorage.removeItem('currentUser');
   }
 
   function login(credentials: { email: string; password: string }) {

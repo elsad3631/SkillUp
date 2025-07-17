@@ -54,6 +54,7 @@ export interface BulkDeleteResponse {
  * Initialize the blob storage container
  */
 const initializeContainer = (): Promise<{ message: string } | undefined> => {
+  ApiService.setHeader();
   return ApiService.post('blobstorage/container/init', {})
     .then(({ data }) => data)
     .catch(({ response }) => {
@@ -66,6 +67,7 @@ const initializeContainer = (): Promise<{ message: string } | undefined> => {
  * Upload a single file
  */
 const uploadFile = (file: File, prefix?: string, customName?: string): Promise<FileUploadResponse | undefined> => {
+  ApiService.setHeader();
   const formData = new FormData();
   formData.append('file', file);
   if (prefix) formData.append('prefix', prefix);
@@ -87,6 +89,7 @@ const uploadFile = (file: File, prefix?: string, customName?: string): Promise<F
  * Upload multiple files
  */
 const uploadMultipleFiles = (files: File[], prefix?: string): Promise<{ message: string; files: FileUploadResponse[]; count: number } | undefined> => {
+  ApiService.setHeader();
   const formData = new FormData();
   files.forEach(file => formData.append('files', file));
   if (prefix) formData.append('prefix', prefix);
@@ -107,6 +110,7 @@ const uploadMultipleFiles = (files: File[], prefix?: string): Promise<{ message:
  * Download a file
  */
 const downloadFile = (fileName: string): Promise<Blob | undefined> => {
+  ApiService.setHeader();
   return ApiService.vueInstance.axios.get(`blobstorage/download/${encodeURIComponent(fileName)}`, {
     responseType: 'blob',
   })
@@ -121,6 +125,7 @@ const downloadFile = (fileName: string): Promise<Blob | undefined> => {
  * Get file information
  */
 const getFileInfo = (fileName: string): Promise<FileInfo | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`blobstorage/info/${encodeURIComponent(fileName)}`)
     .then(({ data }) => data as FileInfo)
     .catch(({ response }) => {
@@ -133,6 +138,7 @@ const getFileInfo = (fileName: string): Promise<FileInfo | undefined> => {
  * Check if file exists
  */
 const fileExists = (fileName: string): Promise<{ fileName: string; exists: boolean } | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`blobstorage/exists/${encodeURIComponent(fileName)}`)
     .then(({ data }) => data)
     .catch(({ response }) => {
@@ -145,6 +151,7 @@ const fileExists = (fileName: string): Promise<{ fileName: string; exists: boole
  * Delete a file
  */
 const deleteFile = (fileName: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`blobstorage/${encodeURIComponent(fileName)}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -157,6 +164,7 @@ const deleteFile = (fileName: string): Promise<boolean> => {
  * Copy a file
  */
 const copyFile = (sourceFileName: string, destinationFileName: string): Promise<{ message: string; sourceFileName: string; destinationFileName: string; destinationUrl: string } | undefined> => {
+  ApiService.setHeader();
   return ApiService.post('blobstorage/copy', {
     sourceFileName,
     destinationFileName,
@@ -172,6 +180,7 @@ const copyFile = (sourceFileName: string, destinationFileName: string): Promise<
  * List files with optional filtering and pagination
  */
 const listFiles = (prefix?: string, limit = 100, offset = 0): Promise<FileListResponse | undefined> => {
+  ApiService.setHeader();
   const params = new URLSearchParams();
   if (prefix) params.append('prefix', prefix);
   params.append('limit', limit.toString());
@@ -189,6 +198,7 @@ const listFiles = (prefix?: string, limit = 100, offset = 0): Promise<FileListRe
  * Generate SAS URL for a file
  */
 const generateSasUrl = (fileName: string, expiresInHours = 1): Promise<{ fileName: string; sasUrl: string; expiresInHours: number } | undefined> => {
+  ApiService.setHeader();
   const params = new URLSearchParams();
   params.append('expiresInHours', expiresInHours.toString());
 
@@ -204,6 +214,7 @@ const generateSasUrl = (fileName: string, expiresInHours = 1): Promise<{ fileNam
  * Bulk delete files
  */
 const bulkDeleteFiles = (fileNames: string[]): Promise<BulkDeleteResponse | undefined> => {
+  ApiService.setHeader();
   return ApiService.post('blobstorage/bulk/delete', { fileNames })
     .then(({ data }) => data as BulkDeleteResponse)
     .catch(({ response }) => {
@@ -223,6 +234,7 @@ const getStorageStats = (prefix?: string): Promise<{
   oldestFile: { name: string; lastModified: string } | null;
   newestFile: { name: string; lastModified: string } | null;
 } | undefined> => {
+  ApiService.setHeader();
   const params = prefix ? `?prefix=${encodeURIComponent(prefix)}` : '';
   
   return ApiService.get(`blobstorage/stats${params}`)

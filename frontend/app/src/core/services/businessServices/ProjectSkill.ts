@@ -16,6 +16,7 @@ export interface ProjectSkill {
 
 // Hard Skills Functions
 const updateHardSkill = (id: string, formData: Partial<ProjectSkill>): Promise<ProjectSkill | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`project-skills/${id}`, formData)
     .then(({ data }) => data as ProjectSkill)
     .catch(({ response }) => {
@@ -25,6 +26,7 @@ const updateHardSkill = (id: string, formData: Partial<ProjectSkill>): Promise<P
 };
 
 const deleteHardSkill = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`project-skills/${id}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -34,6 +36,7 @@ const deleteHardSkill = (id: string): Promise<boolean> => {
 };
 
 const createHardSkill = (formData: Partial<ProjectSkill>): Promise<ProjectSkill | undefined> => {
+  ApiService.setHeader();
   return ApiService.post('project-skills/hard', formData)
     .then(({ data }) => data as ProjectSkill)
     .catch(({ response }) => {
@@ -43,6 +46,7 @@ const createHardSkill = (formData: Partial<ProjectSkill>): Promise<ProjectSkill 
 };
 
 const getHardSkillsByProjectId = (projectId: string): Promise<ProjectSkill[]> => {
+  ApiService.setHeader();
   return ApiService.get(`project-skills/hard/${projectId}`)
     .then(({ data }) => data as ProjectSkill[])
     .catch(({ response }) => {
@@ -53,6 +57,7 @@ const getHardSkillsByProjectId = (projectId: string): Promise<ProjectSkill[]> =>
 
 // Soft Skills Functions
 const updateSoftSkill = (id: string, formData: Partial<ProjectSkill>): Promise<ProjectSkill | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`project-skills/${id}`, formData)
     .then(({ data }) => data as ProjectSkill)
     .catch(({ response }) => {
@@ -62,6 +67,7 @@ const updateSoftSkill = (id: string, formData: Partial<ProjectSkill>): Promise<P
 };
 
 const deleteSoftSkill = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`project-skills/${id}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -71,6 +77,7 @@ const deleteSoftSkill = (id: string): Promise<boolean> => {
 };
 
 const createSoftSkill = (formData: Partial<ProjectSkill>): Promise<ProjectSkill | undefined> => {
+  ApiService.setHeader();
   return ApiService.post('project-skills/soft', formData)
     .then(({ data }) => data as ProjectSkill)
     .catch(({ response }) => {
@@ -80,6 +87,7 @@ const createSoftSkill = (formData: Partial<ProjectSkill>): Promise<ProjectSkill 
 };
 
 const getSoftSkillsByProjectId = (projectId: string): Promise<ProjectSkill[]> => {
+  ApiService.setHeader();
   return ApiService.get(`project-skills/soft/${projectId}`)
     .then(({ data }) => data as ProjectSkill[])
     .catch(({ response }) => {

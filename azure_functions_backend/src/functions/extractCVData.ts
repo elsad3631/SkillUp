@@ -5,6 +5,9 @@ import { cvDataService } from '../services/cvdata.services';
 export async function extractCVData(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
 
+  // Declare cvFile outside try block to access in catch
+  let cvFile: File | null = null;
+
   try {
     if (request.method !== 'POST') {
       return {
@@ -24,7 +27,7 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
 
     // Parse the form data
     const formData = await request.formData();
-    const cvFile = formData.get('cv') as unknown as File;
+    cvFile = formData.get('cv') as unknown as File;
 
     if (!cvFile) {
       return {
@@ -77,4 +80,4 @@ app.http('extractCVData', {
   authLevel: 'anonymous',
   route: 'ExtractCVData',
   handler: extractCVData
-}); 
+});

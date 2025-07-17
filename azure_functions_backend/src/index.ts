@@ -7,6 +7,8 @@ import './functions/asset';
 import './functions/auth';
 import './functions/blobstorage';
 import './functions/extractCVData';
+import './functions/notification';
+import './functions/userActivityLog';
 import './functions/project';
 import './functions/projectSkill';
 import './functions/skillTraining';

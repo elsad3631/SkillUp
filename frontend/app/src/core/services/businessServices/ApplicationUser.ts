@@ -22,6 +22,7 @@ export interface ApplicationUser {
 }
 
 const getApplicationUsers = (filterRequest?: string): Promise<Array<ApplicationUser> | undefined> => {
+  ApiService.setHeader();
   const endpoint = filterRequest
     ? `applicationuser?filter=${encodeURIComponent(filterRequest)}`
     : `applicationuser`;
@@ -35,6 +36,7 @@ const getApplicationUsers = (filterRequest?: string): Promise<Array<ApplicationU
 };
 
 const getApplicationUserById = (id: string): Promise<ApplicationUser | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`applicationuser/${id}`)
     .then(({ data }) => data as ApplicationUser)
     .catch(({ response }) => {
@@ -44,6 +46,7 @@ const getApplicationUserById = (id: string): Promise<ApplicationUser | undefined
 };
 
 const getApplicationUsersByRole = (role: string): Promise<Array<ApplicationUser> | undefined> => {
+  ApiService.setHeader();
   return ApiService.get(`applicationuser/role/${role}`)
     .then(({ data }) => data as ApplicationUser[])
     .catch(({ response }) => {
@@ -53,6 +56,7 @@ const getApplicationUsersByRole = (role: string): Promise<Array<ApplicationUser>
 };
 
 const getAvailableApplicationUsers = (): Promise<Array<ApplicationUser> | undefined> => {
+  ApiService.setHeader();
   return ApiService.get("applicationuser/filter/available")
     .then(({ data }) => data as ApplicationUser[])
     .catch(({ response }) => {
@@ -62,6 +66,7 @@ const getAvailableApplicationUsers = (): Promise<Array<ApplicationUser> | undefi
 };
 
 const createApplicationUser = (applicationUser: Partial<ApplicationUser>): Promise<ApplicationUser | undefined> => {
+  ApiService.setHeader();
   return ApiService.post("applicationuser", applicationUser)
     .then(({ data }) => data as ApplicationUser)
     .catch(({ response }) => {
@@ -71,6 +76,7 @@ const createApplicationUser = (applicationUser: Partial<ApplicationUser>): Promi
 };
 
 const updateApplicationUser = (id: string, applicationUser: Partial<ApplicationUser>): Promise<ApplicationUser | undefined> => {
+  ApiService.setHeader();
   return ApiService.put(`applicationuser/${id}`, applicationUser)
     .then(({ data }) => data as ApplicationUser)
     .catch(({ response }) => {
@@ -80,6 +86,7 @@ const updateApplicationUser = (id: string, applicationUser: Partial<ApplicationU
 };
 
 const deleteApplicationUser = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
   return ApiService.delete(`applicationuser/${id}`)
     .then(() => true)
     .catch(({ response }) => {
@@ -94,6 +101,7 @@ const searchApplicationUsers = (params: {
   department?: string;
   isAvailable?: boolean;
 }): Promise<Array<ApplicationUser> | undefined> => {
+  ApiService.setHeader();
   const queryParams = new URLSearchParams();
   
   if (params.query) queryParams.append('query', params.query);

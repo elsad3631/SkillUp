@@ -106,7 +106,7 @@
 
                 <template v-slot:status="{ row: employee }">
                     <div class="d-flex flex-column align-items-start">
-                        <span v-if="employee.is_available" class="badge badge-light-success">
+                        <span v-if="employee.isAvailable" class="badge badge-light-success">
                             <KTIcon icon-name="check-circle" icon-class="fs-7 me-1" />
                             Available
                         </span>
@@ -141,7 +141,7 @@
     <AddEmployeeModal @employee-created="onEmployeeCreated" :close-modal="() => closeModal('kt_modal_add_employee')" />
     <EditEmployeeModal 
       v-if="selectedEmployee"
-      :employee="selectedEmployee" 
+      :employee="convertApplicationUserToEmployee(selectedEmployee)" 
       @employee-updated="onEmployeeUpdated" 
       :close-modal="() => closeModal('kt_modal_edit_employee')"
     >
@@ -156,13 +156,20 @@ import { defineComponent, onMounted, ref } from "vue";
 import Datatable from "@/components/kt-datatable/KTDataTable.vue";
 import { MenuComponent } from "@/assets/ts/components";
 import arraySort from "array-sort";
-import type { Employee } from "@/core/models/Employee";
+
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
+import { 
+    getApplicationUsersByRole, 
+    getApplicationUserById, 
+    deleteApplicationUser,
+    type ApplicationUser 
+} from "@/core/services/businessServices/ApplicationUser";
+import type { Employee } from "@/core/models/Employee";
 
 export default defineComponent({
     name: "employees-listing",
@@ -212,19 +219,18 @@ export default defineComponent({
             },
         ]);
 
-        const tableData = ref<Employee[]>([]);
-        const initEmployees = ref<Employee[]>([]);
+        const tableData = ref<ApplicationUser[]>([]);
+        const initEmployees = ref<ApplicationUser[]>([]);
         const selectedIds = ref<string[]>([]);
         const search = ref<string>("");
-        const selectedEmployee = ref<Employee | null>(null);
+        const selectedEmployee = ref<ApplicationUser | null>(null);
         const loading = ref(false);
         const editModalLoading = ref(false);
 
         const fetchEmployees = async () => {
             loading.value = true;
             try {
-                const response = await fetch('/api/applicationuser/role/employee');
-                const result = await response.json();
+                const result = await getApplicationUsersByRole('employee');
                 if (result) {
                     tableData.value = result;
                     initEmployees.value = [...result];
@@ -236,19 +242,21 @@ export default defineComponent({
         };
 
         const onEmployeeCreated = (employee: Employee) => {
-            tableData.value.push(employee);
-            initEmployees.value.push(employee);
+            const appUser = convertEmployeeToApplicationUser(employee);
+            tableData.value.push(appUser);
+            initEmployees.value.push(appUser);
         };
 
         const onEmployeeUpdated = (updatedEmployee: Employee) => {
-            const index = tableData.value.findIndex(e => e.id === updatedEmployee.id);
+            const appUser = convertEmployeeToApplicationUser(updatedEmployee);
+            const index = tableData.value.findIndex(e => e.id === appUser.id);
             if (index !== -1) {
-                tableData.value[index] = updatedEmployee;
-                initEmployees.value[index] = updatedEmployee;
+                tableData.value[index] = appUser;
+                initEmployees.value[index] = appUser;
             }
         };
 
-        const editEmployee = (employee: Employee) => {
+        const editEmployee = (employee: ApplicationUser) => {
             selectedEmployee.value = employee;
             const modal = document.getElementById('kt_modal_edit_employee');
             if (modal) {
@@ -257,12 +265,11 @@ export default defineComponent({
             }
         };
 
-        const openEditModal = async (employee: Employee) => {
+        const openEditModal = async (employee: ApplicationUser) => {
             editModalLoading.value = true;
             try {
-                const response = await fetch(`/api/applicationuser/${employee.id}`);
-                if (response.ok) {
-                    const freshEmployee = await response.json();
+                const freshEmployee = await getApplicationUserById(employee.id);
+                if (freshEmployee) {
                     selectedEmployee.value = freshEmployee;
                 } else {
                     selectedEmployee.value = employee;
@@ -288,8 +295,8 @@ export default defineComponent({
                 let allSuccess = true;
                 for (const id of selectedIds.value) {
                     try {
-                        const response = await fetch(`/api/applicationuser/${id}`, { method: 'DELETE' });
-                        if (!response.ok) allSuccess = false;
+                        const success = await deleteApplicationUser(id);
+                        if (!success) allSuccess = false;
                     } catch (error) {
                         allSuccess = false;
                     }
@@ -317,8 +324,8 @@ export default defineComponent({
             });
             if (confirm.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/applicationuser/${id}`, { method: 'DELETE' });
-                    if (response.ok) {
+                    const success = await deleteApplicationUser(id);
+                    if (success) {
                         tableData.value = tableData.value.filter(e => e.id !== id);
                         initEmployees.value = initEmployees.value.filter(e => e.id !== id);
                         Swal.fire('Deleted!', 'User has been deleted.', 'success');
@@ -341,10 +348,10 @@ export default defineComponent({
 
             tableData.value = initEmployees.value.filter(emp => {
                 return (
-                    emp.first_name?.toLowerCase().includes(query) ||
-                    emp.last_name?.toLowerCase().includes(query) ||
+                    emp.firstName?.toLowerCase().includes(query) ||
+                    emp.lastName?.toLowerCase().includes(query) ||
                     emp.email?.toLowerCase().includes(query) ||
-                    emp.current_role?.toLowerCase().includes(query) ||
+                    emp.currentRole?.toLowerCase().includes(query) ||
                     emp.department?.toLowerCase().includes(query) ||
                     emp.phone?.toLowerCase().includes(query) ||
                     emp.address?.toLowerCase().includes(query)
@@ -386,6 +393,45 @@ export default defineComponent({
             return first + last;
         };
 
+        const convertApplicationUserToEmployee = (appUser: ApplicationUser): Employee => {
+            return {
+                id: appUser.id,
+                first_name: appUser.firstName || '',
+                last_name: appUser.lastName || '',
+                email: appUser.email,
+                phone: appUser.phone || '',
+                address: appUser.address || '',
+                avatar: appUser.avatar || '',
+                current_role: appUser.currentRole || '',
+                department: appUser.department || '',
+                is_available: appUser.isAvailable,
+                date_of_birth: appUser.dateOfBirth,
+                place_of_birth: appUser.placeOfBirth,
+                user_id: appUser.id,
+                creation_date: new Date(),
+                update_date: new Date(),
+            } as Employee;
+        };
+
+        const convertEmployeeToApplicationUser = (employee: Employee): ApplicationUser => {
+            return {
+                id: employee.id,
+                username: employee.user_id || employee.id,
+                email: employee.email,
+                roles: ['employee'],
+                avatar: employee.avatar,
+                firstName: employee.first_name,
+                lastName: employee.last_name,
+                dateOfBirth: employee.date_of_birth,
+                placeOfBirth: employee.place_of_birth,
+                address: employee.address,
+                phone: employee.phone,
+                currentRole: employee.current_role,
+                department: employee.department,
+                isAvailable: employee.is_available,
+            } as ApplicationUser;
+        };
+
         const closeModal = (modalId: string) => {
             const modal = document.getElementById(modalId);
             if (modal) {
@@ -422,6 +468,8 @@ export default defineComponent({
             loading,
             editModalLoading,
             getInitials,
+            convertApplicationUserToEmployee,
+            convertEmployeeToApplicationUser,
         };
     },
 });

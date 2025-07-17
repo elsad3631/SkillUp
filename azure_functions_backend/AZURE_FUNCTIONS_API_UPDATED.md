@@ -347,3 +347,372 @@ AZURE_STORAGE_ACCOUNT_NAME=your_storage_account_name
 AZURE_STORAGE_ACCOUNT_KEY=your_storage_account_key
 AZURE_STORAGE_CONTAINER_NAME=skillup-files
 ``` 
+
+## ✅ User Activity Log Functions - Complete Set
+
+### GET `/api/userActivityLog`
+- **Function**: `userActivityLog`
+- **Description**: Get all activity logs
+- **Response**: `[logs]`
+
+### GET `/api/userActivityLog/{id}`
+- **Function**: `userActivityLog`
+- **Description**: Get log by ID
+- **Response**: `log object`
+
+### GET `/api/userActivityLog/user/{userId}`
+- **Function**: `userActivityLog`
+- **Description**: Get logs by user ID
+- **Query**: `?limit=50`
+- **Response**: `[logs]`
+
+### GET `/api/userActivityLog/action/{action}`
+- **Function**: `userActivityLog`
+- **Description**: Get logs by action type
+- **Query**: `?limit=50`
+- **Response**: `[logs]`
+
+### GET `/api/userActivityLog/entity/{entityType}`
+- **Function**: `userActivityLog`
+- **Description**: Get logs by entity type
+- **Query**: `?limit=50`
+- **Response**: `[logs]`
+
+### GET `/api/userActivityLog/status/{status}`
+- **Function**: `userActivityLog`
+- **Description**: Get logs by status
+- **Query**: `?limit=50`
+- **Response**: `[logs]`
+
+### GET `/api/userActivityLog/date-range`
+- **Function**: `userActivityLog`
+- **Description**: Get logs by date range
+- **Query**: `?startDate=2024-01-01&endDate=2024-12-31&limit=100`
+- **Response**: `[logs]`
+
+### GET `/api/userActivityLog/stats`
+- **Function**: `userActivityLog`
+- **Description**: Get log statistics
+- **Response**: `{ total, success, failed, pending, today }`
+
+### POST `/api/userActivityLog`
+- **Function**: `userActivityLog`
+- **Description**: Create new log
+- **Body**: `{ userId, action, entityType, entityId?, description, ipAddress?, userAgent?, status, errorMessage?, metadata? }`
+- **Response**: `log object`
+
+### POST `/api/userActivityLog/success`
+- **Function**: `userActivityLog`
+- **Description**: Log successful action
+- **Body**: `{ userId, action, entityType, entityId?, description, ipAddress?, userAgent?, metadata? }`
+- **Response**: `log object`
+
+### POST `/api/userActivityLog/error`
+- **Function**: `userActivityLog`
+- **Description**: Log failed action
+- **Body**: `{ userId, action, entityType, entityId?, description, errorMessage, ipAddress?, userAgent?, metadata? }`
+- **Response**: `log object`
+
+### POST `/api/userActivityLog/pending`
+- **Function**: `userActivityLog`
+- **Description**: Log pending action
+- **Body**: `{ userId, action, entityType, entityId?, description, ipAddress?, userAgent?, metadata? }`
+- **Response**: `log object`
+
+### PUT `/api/userActivityLog/{id}`
+- **Function**: `userActivityLog`
+- **Description**: Update log
+- **Body**: `{ status?, errorMessage?, metadata? }`
+- **Response**: `log object`
+
+### DELETE `/api/userActivityLog/{id}`
+- **Function**: `userActivityLog`
+- **Description**: Delete log
+- **Response**: `204 No Content`
+
+### DELETE `/api/userActivityLog/cleanup/{daysOld}`
+- **Function**: `userActivityLog`
+- **Description**: Remove old logs
+- **Response**: `{ deletedCount }`
+
+## ✅ Notification Functions - Complete Set
+
+### GET `/api/notification`
+- **Function**: `notification`
+- **Description**: Get all notifications
+- **Response**: `[notifications]`
+
+### GET `/api/notification/{id}`
+- **Function**: `notification`
+- **Description**: Get notification by ID
+- **Response**: `notification object`
+
+### GET `/api/notification/recipient/{recipientId}`
+- **Function**: `notification`
+- **Description**: Get notifications by recipient ID
+- **Query**: `?limit=50`
+- **Response**: `[notifications]`
+
+### GET `/api/notification/unread/{recipientId}`
+- **Function**: `notification`
+- **Description**: Get unread notifications by recipient ID
+- **Query**: `?limit=50`
+- **Response**: `[notifications]`
+
+### GET `/api/notification/type/{type}`
+- **Function**: `notification`
+- **Description**: Get notifications by type
+- **Query**: `?limit=50`
+- **Response**: `[notifications]`
+
+### GET `/api/notification/priority/{priority}`
+- **Function**: `notification`
+- **Description**: Get notifications by priority
+- **Query**: `?limit=50`
+- **Response**: `[notifications]`
+
+### GET `/api/notification/unread-count/{recipientId}`
+- **Function**: `notification`
+- **Description**: Get unread notification count
+- **Response**: `{ count }`
+
+### GET `/api/notification/stats`
+- **Function**: `notification`
+- **Description**: Get notification statistics
+- **Response**: `{ total, unread, read, today, messages, system }`
+
+### POST `/api/notification`
+- **Function**: `notification`
+- **Description**: Create new notification
+- **Body**: `{ recipientId, senderId?, type, title, message, priority?, actionUrl?, metadata?, expiresAt? }`
+- **Response**: `notification object`
+
+### POST `/api/notification/message`
+- **Function**: `notification`
+- **Description**: Send message notification
+- **Body**: `{ recipientId, senderId, title, message, priority? }`
+- **Response**: `notification object`
+
+### POST `/api/notification/system`
+- **Function**: `notification`
+- **Description**: Send system notification
+- **Body**: `{ recipientId, title, message, type, priority?, actionUrl?, metadata? }`
+- **Response**: `notification object`
+
+### POST `/api/notification/cv-processing-complete`
+- **Function**: `notification`
+- **Description**: Send CV processing complete notification
+- **Body**: `{ recipientId, cvData }`
+- **Response**: `notification object`
+
+### POST `/api/notification/project-assignment`
+- **Function**: `notification`
+- **Description**: Send project assignment notification
+- **Body**: `{ recipientId, projectData }`
+- **Response**: `notification object`
+
+### POST `/api/notification/task-completion`
+- **Function**: `notification`
+- **Description**: Send task completion notification
+- **Body**: `{ recipientId, taskData }`
+- **Response**: `notification object`
+
+### PUT `/api/notification/{id}`
+- **Function**: `notification`
+- **Description**: Update notification
+- **Body**: `{ title?, message?, priority?, actionUrl?, metadata?, expiresAt? }`
+- **Response**: `notification object`
+
+### PUT `/api/notification/mark-read/{id}`
+- **Function**: `notification`
+- **Description**: Mark notification as read
+- **Response**: `notification object`
+
+### PUT `/api/notification/mark-all-read/{recipientId}`
+- **Function**: `notification`
+- **Description**: Mark all notifications as read for recipient
+- **Response**: `{ updatedCount }`
+
+### DELETE `/api/notification/{id}`
+- **Function**: `notification`
+- **Description**: Delete notification
+- **Response**: `204 No Content`
+
+### DELETE `/api/notification/cleanup/expired`
+- **Function**: `notification`
+- **Description**: Remove expired notifications
+- **Response**: `{ deletedCount }`
+
+## 📋 Data Models
+
+### UserActivityLog
+```typescript
+{
+  id: string;
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  description: string;
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: Date;
+  status: string;
+  errorMessage?: string;
+  metadata?: any;
+  user: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    roles: string[];
+  };
+}
+```
+
+### Notification
+```typescript
+{
+  id: string;
+  recipientId: string;
+  senderId?: string;
+  type: string;
+  title: string;
+  message: string;
+  priority: string;
+  isRead: boolean;
+  readAt?: Date;
+  createdAt: Date;
+  expiresAt?: Date;
+  actionUrl?: string;
+  metadata?: any;
+  recipient: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+  sender?: {
+    id: string;
+    username: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+}
+```
+
+## 🔧 Usage Examples
+
+### Logging User Actions
+```javascript
+// Log successful employee creation
+await fetch('/api/userActivityLog/success', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userId: 'user-id',
+    action: 'CREATE_EMPLOYEE',
+    entityType: 'ApplicationUser',
+    entityId: 'new-employee-id',
+    description: 'Created new employee John Doe',
+    ipAddress: '192.168.1.1',
+    userAgent: 'Mozilla/5.0...',
+    metadata: { department: 'IT', role: 'Developer' }
+  })
+});
+
+// Log CV upload
+await fetch('/api/userActivityLog/pending', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    userId: 'user-id',
+    action: 'UPLOAD_CV',
+    entityType: 'CVData',
+    description: 'Started CV processing for resume.pdf',
+    metadata: { fileName: 'resume.pdf', fileSize: 1024000 }
+  })
+});
+```
+
+### Sending Notifications
+```javascript
+// Send message between users
+await fetch('/api/notification/message', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    recipientId: 'recipient-id',
+    senderId: 'sender-id',
+    title: 'New Message',
+    message: 'You have a new message from John',
+    priority: 'MEDIUM'
+  })
+});
+
+// Send CV processing complete notification
+await fetch('/api/notification/cv-processing-complete', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    recipientId: 'user-id',
+    cvData: {
+      id: 'cv-id',
+      fileName: 'resume.pdf'
+    }
+  })
+});
+
+// Send project assignment notification
+await fetch('/api/notification/project-assignment', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    recipientId: 'user-id',
+    projectData: {
+      id: 'project-id',
+      name: 'E-commerce Platform',
+      roleOnProject: 'Frontend Developer'
+    }
+  })
+});
+```
+
+### Admin Monitoring
+```javascript
+// Get all activity logs for admin dashboard
+const logs = await fetch('/api/userActivityLog').then(r => r.json());
+
+// Get logs for specific user
+const userLogs = await fetch('/api/userActivityLog/user/user-id').then(r => r.json());
+
+// Get failed actions
+const failedLogs = await fetch('/api/userActivityLog/status/FAILED').then(r => r.json());
+
+// Get logs for specific date range
+const dateRangeLogs = await fetch('/api/userActivityLog/date-range?startDate=2024-01-01&endDate=2024-01-31').then(r => r.json());
+
+// Get log statistics
+const stats = await fetch('/api/userActivityLog/stats').then(r => r.json());
+```
+
+### Notification Management
+```javascript
+// Get user's notifications
+const notifications = await fetch('/api/notification/recipient/user-id').then(r => r.json());
+
+// Get unread notifications
+const unreadNotifications = await fetch('/api/notification/unread/user-id').then(r => r.json());
+
+// Mark notification as read
+await fetch('/api/notification/mark-read/notification-id', { method: 'PUT' });
+
+// Mark all notifications as read
+await fetch('/api/notification/mark-all-read/user-id', { method: 'PUT' });
+
+// Get unread count for badge
+const { count } = await fetch('/api/notification/unread-count/user-id').then(r => r.json());
+``` 

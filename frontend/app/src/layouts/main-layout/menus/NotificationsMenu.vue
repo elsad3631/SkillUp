@@ -210,144 +210,61 @@
 
 <script lang="ts">
 import { getAssetPath, getIllustrationsPath } from "@/core/helpers/assets";
-import { defineComponent } from "vue";
-
+import { defineComponent, ref, onMounted } from "vue";
+import { getNotifications, getLogs } from "@/core/services/businessServices/Notification";
+import type { Notification, UserActivityLog } from "@/core/services/businessServices/Notification";
 export default defineComponent({
   name: "notifications-menu",
   components: {},
   setup() {
-    const data1 = [
-      {
-        title: "Project Alice",
-        description: "Phase 1 development",
-        time: "1 hr",
-        icon: "technology-2",
-        state: "primary",
-      },
-      {
-        title: "HR Confidential",
-        description: "Confidential staff documents",
-        time: "2 hrs",
-        icon: "information-5",
-        state: "danger",
-      },
-      {
-        title: "Company HR",
-        description: "Corporeate staff profiles",
-        time: "5 hrs",
-        icon: "briefcase",
-        state: "warning",
-      },
-      {
-        title: "Project Redux",
-        description: "New frontend admin theme",
-        time: "2 days",
-        icon: "cloud-change",
-        state: "success",
-      },
-      {
-        title: "Project Breafing",
-        description: "Product launch status update",
-        time: "21 Jan",
-        icon: "map",
-        state: "primary",
-      },
-      {
-        title: "Banner Assets",
-        description: "Collection of banner images",
-        time: "21 Jan",
-        icon: "graph-3",
-        state: "info",
-      },
-      {
-        title: "Icon Assets",
-        description: "Collection of SVG icons",
-        time: "20 March",
-        icon: "color-swatch",
-        state: "warning",
-      },
-    ];
+    // Stato per notifiche e log
+    const notifications = ref<Notification[]>([]);
+    const logs = ref<UserActivityLog[]>([]);
+    const loadingNotifications = ref(false);
+    const loadingLogs = ref(false);
+    const errorNotifications = ref<string | null>(null);
+    const errorLogs = ref<string | null>(null);
 
-    const data2 = [
-      {
-        code: "200 OK",
-        state: "success",
-        message: "New order",
-        time: "Just now",
-      },
-      {
-        code: "500 ERR",
-        state: "danger",
-        message: "New customer",
-        time: "2 hrs",
-      },
-      {
-        code: "200 OK",
-        state: "success",
-        message: "Payment process",
-        time: "5 hrs",
-      },
-      {
-        code: "300 WRN",
-        state: "warning",
-        message: "Search query",
-        time: "2 days",
-      },
-      {
-        code: "200 OK",
-        state: "success",
-        message: "API connection",
-        time: "1 week",
-      },
-      {
-        code: "200 OK",
-        state: "success",
-        message: "Database restore",
-        time: "Mar 5",
-      },
-      {
-        code: "300 WRN",
-        state: "warning",
-        message: "System update",
-        time: "May 15",
-      },
-      {
-        code: "300 WRN",
-        state: "warning",
-        message: "Server OS update",
-        time: "Apr 3",
-      },
-      {
-        code: "300 WRN",
-        state: "warning",
-        message: "API rollback",
-        time: "Jun 30",
-      },
-      {
-        code: "500 ERR",
-        state: "danger",
-        message: "Refund process",
-        time: "Jul 10",
-      },
-      {
-        code: "500 ERR",
-        state: "danger",
-        message: "Withdrawal process",
-        time: "Sep 10",
-      },
-      {
-        code: "500 ERR",
-        state: "danger",
-        message: "Mail tasks",
-        time: "Dec 10",
-      },
-    ];
+    // Carica notifiche e log da backend
+    onMounted(async () => {
+      loadingNotifications.value = true;
+      loadingLogs.value = true;
+      try {
+        const notif = await getNotifications(7); // Limite come esempio
+        notifications.value = notif || [];
+      } catch (e: any) {
+        errorNotifications.value = e?.message || "Errore caricamento notifiche";
+      } finally {
+        loadingNotifications.value = false;
+      }
+      try {
+        const logList = await getLogs(12); // Limite come esempio
+        logs.value = logList || [];
+      } catch (e: any) {
+        errorLogs.value = e?.message || "Errore caricamento log";
+      } finally {
+        loadingLogs.value = false;
+      }
+    });
+
+    // Adatta i dati per la UI esistente
+    const data1 = notifications;
+    const data2 = logs.value.map(log => ({
+      code: log.code,
+      state: log.state,
+      message: log.message,
+      time: log.time || log.date || "",
+    }));
 
     return {
       data1,
       data2,
       getIllustrationsPath,
       getAssetPath,
+      loadingNotifications,
+      loadingLogs,
+      errorNotifications,
+      errorLogs,
     };
   },
 });

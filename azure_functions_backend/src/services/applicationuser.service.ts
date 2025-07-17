@@ -117,7 +117,7 @@ export const applicationUserService = {
       const incomingIds = incoming.filter((s: any) => s.id).map((s: any) => s.id);
 
       // 2. Elimina quelle rimosse
-      const toDelete = currentIds.filter(idVal => !incomingIds.includes(idVal));
+      const toDelete = currentIds.filter((idVal: string) => !incomingIds.includes(idVal));
       if (toDelete.length > 0) {
         await prisma.employeeSkill.deleteMany({ where: { id: { in: toDelete } } });
       }
@@ -164,7 +164,7 @@ export const applicationUserService = {
       const incomingIds = incoming.filter((s: any) => s.id).map((s: any) => s.id);
 
       // 2. Elimina quelle rimosse
-      const toDelete = currentIds.filter(idVal => !incomingIds.includes(idVal));
+      const toDelete = currentIds.filter((idVal: string) => !incomingIds.includes(idVal));
       if (toDelete.length > 0) {
         await prisma.employeeSkill.deleteMany({ where: { id: { in: toDelete } } });
       }
@@ -210,7 +210,7 @@ export const applicationUserService = {
       const incomingIds = incoming.filter((e: any) => e.id).map((e: any) => e.id);
 
       // 2. Elimina quelle rimosse
-      const toDelete = currentIds.filter(idVal => !incomingIds.includes(idVal));
+      const toDelete = currentIds.filter((idVal: string) => !incomingIds.includes(idVal));
       if (toDelete.length > 0) {
         await prisma.experience.deleteMany({ where: { id: { in: toDelete } } });
       }

@@ -6,6 +6,7 @@ import './functions/appointment';
 import './functions/asset';
 import './functions/auth';
 import './functions/blobstorage';
+import './functions/extractCVData';
 import './functions/project';
 import './functions/projectSkill';
 import './functions/skillTraining';

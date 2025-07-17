@@ -28,6 +28,9 @@ model ApplicationUser {
   softSkills         EmployeeSkill[]     @relation("SoftSkills")
   experiences        Experience[]
   projectAssignments ProjectAssignment[]
+  activityLogs       UserActivityLog[]
+  sentNotifications  Notification[] @relation("NotificationSender")
+  receivedNotifications Notification[] @relation("NotificationRecipient")
 }
 
 model CVData {
@@ -123,4 +126,40 @@ model Asset {
   name   String
   type   String
   enable Boolean @default(true)
+}
+
+model UserActivityLog {
+  id          String    @id @default(uuid())
+  userId      String
+  action      String
+  entityType  String
+  entityId    String?
+  description String
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime  @default(now())
+  status      String
+  errorMessage String?
+  metadata    Json?
+  
+  user        ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  recipientId String
+  senderId    String?
+  type        String
+  title       String
+  message     String
+  priority    String    @default("MEDIUM")
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+  actionUrl   String?
+  metadata    Json?
+  
+  recipient   ApplicationUser @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      ApplicationUser? @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
 } 

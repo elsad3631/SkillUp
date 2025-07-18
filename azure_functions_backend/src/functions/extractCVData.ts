@@ -1,5 +1,6 @@
 import { HttpRequest, InvocationContext, HttpResponseInit, app } from "@azure/functions";
 import { cvDataService } from '../services/cvdata.services';
+import { userActivityLogService } from '../services/userActivityLog.service';
 
 // POST /api/ExtractCVData - Extract data from CV and create user
 export async function extractCVData(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -54,8 +55,11 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
       size: cvFile.size
     } as Express.Multer.File;
 
+    // Get the requesting user ID from headers
+    const requestingUserId = request.headers.get('x-user-id');
+
     // Use cvDataService to extract data and create user
-    const result = await cvDataService.extractFromCV(multerFile);
+    const result = await cvDataService.extractFromCV(multerFile, requestingUserId || undefined);
 
     return {
       status: 201,
@@ -64,6 +68,29 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
 
   } catch (error: any) {
     context.log('Extract CV data error:', error);
+    
+    // Log the error activity if we have the requesting user ID
+    const requestingUserId = request.headers.get('x-user-id');
+    if (requestingUserId) {
+      try {
+        await userActivityLogService.logError({
+          userId: requestingUserId,
+          action: 'CREATE_EMPLOYEE_FROM_CV',
+          entityType: 'ApplicationUser',
+          description: 'Failed to create employee from CV',
+          errorMessage: error.message || 'Unknown error occurred',
+          metadata: {
+            cvFileName: cvFile?.name || 'unknown',
+            errorType: error.constructor.name,
+            errorStack: error.stack
+          }
+        });
+      } catch (logError) {
+        context.log('Failed to create error activity log:', logError);
+        // Don't block the error response if logging fails
+      }
+    }
+    
     return {
       status: 500,
       jsonBody: { 

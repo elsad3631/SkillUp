@@ -36,7 +36,7 @@ class ApiService {
       "application/json";
       ApiService.vueInstance.axios.defaults.headers.common[
         "x-user-id"
-      ] = `${currentUser.value?.id}`;
+      ] = `${currentUser.value?.id ?? JSON.parse(localStorage.currentUser)?.id}`;
   }
 
   /**

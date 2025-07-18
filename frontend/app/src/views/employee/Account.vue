@@ -379,17 +379,16 @@ export default defineComponent({
       
       try {
         if (isEmployeeView.value && id) {
-          // Employee mode: fetch specific employee
-          const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
-          const response = await fetch(`${API_URL}/applicationuser/${id}`);
-          if (response.ok) {
-            const newEmployeeData = await response.json();
+          // Employee mode: fetch specific employee using ApiService
+          const { getApplicationUserById } = await import('@/core/services/businessServices/ApplicationUser');
+          const newEmployeeData = await getApplicationUserById(id);
+          if (newEmployeeData) {
             employee.value = newEmployeeData;
             
             // Force avatar refresh by updating timestamp
             avatarTimestamp.value = Date.now();
           } else {
-            console.error('❌ Failed to refresh employee data:', response.status);
+            console.error('❌ Failed to refresh employee data');
             error.value = 'Failed to load employee data. Please try again.';
           }
         } else {

@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcrypt';
 import { applicationUserService } from './applicationuser.service';
+import { userActivityLogService } from './userActivityLog.service';
 const prisma = new PrismaClient();
 
 export const cvDataService = {
@@ -24,7 +25,7 @@ export const cvDataService = {
   async remove(id: string) {
     return prisma.cVData.delete({ where: { id } });
   },
-  async extractFromCV(file: Express.Multer.File) {
+  async extractFromCV(file: Express.Multer.File, requestingUserId?: string) {
     let cvText = '';
     const ext = file.originalname.split('.').pop()?.toLowerCase();
     if (ext === 'pdf') {
@@ -274,6 +275,32 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
 
     // Crea l'ApplicationUser nel database
     const createdUser = await applicationUserService.create(applicationUserData);
+    
+    // Crea un log dell'attività se è stato fornito l'ID dell'utente richiedente
+    if (requestingUserId) {
+      try {
+        await userActivityLogService.logSuccess({
+          userId: requestingUserId,
+          action: 'CREATE_EMPLOYEE_FROM_CV',
+          entityType: 'ApplicationUser',
+          entityId: createdUser.id,
+          description: `Employee created successfully from CV: ${createdUser.firstName} ${createdUser.lastName} (${createdUser.email})`,
+          metadata: {
+            createdUserId: createdUser.id,
+            createdUserEmail: createdUser.email,
+            cvFileName: file.originalname,
+            extractedSkillsCount: {
+              hardSkills: processedHardSkills.length,
+              softSkills: processedSoftSkills.length
+            },
+            extractedExperiencesCount: processedExperiences.length
+          }
+        });
+      } catch (logError) {
+        console.error('❌ Failed to create activity log:', logError);
+        // Non blocchiamo il processo se il logging fallisce
+      }
+    }
     
     // Restituisce un oggetto con successo, i dati dell'utente creato e le credenziali temporanee
     return {

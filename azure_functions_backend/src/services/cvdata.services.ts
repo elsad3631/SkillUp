@@ -112,9 +112,6 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
 \`\`\`{cvText}\`\`\`
 `;
     const finalPrompt = prompt.replace('{skillsList}', skillsList).replace('{cvText}', cvText);
-    // Salva il prompt usato per audit/debug
-    const promptAuditPath = path.join(__dirname, '../../prompt-used.json');
-    fs.writeFileSync(promptAuditPath, JSON.stringify({ prompt: finalPrompt }), 'utf-8');
     // Chiamata Azure OpenAI - valori hardcoded per test
     const endpoint = 'https://intentopenaisrv.openai.azure.com/';
     const key = '2a0a03ad296d4b94bc516c0ae744432f';

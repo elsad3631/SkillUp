@@ -795,20 +795,8 @@ export default defineComponent({
           applicationUserData.passwordHash = form.password;
         }
 
-        // Call ApplicationUser API
-        const response = await fetch(`/api/applicationuser/${props.employee.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(applicationUserData),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to update user');
-        }
-        
-        const result = await response.json();
+        // Call ApplicationUser API using the service
+        const result = await updateEmployee(props.employee.id, applicationUserData);
         emit("employee-updated", result);
         Swal.fire({
           icon: 'success',

@@ -1,4 +1,5 @@
 import ApiService from "@/core/services/ApiService";
+import JwtService from "@/core/services/JwtService";
 import { useAuthStore } from "@/stores/auth";
 import type { Employee } from "@/core/models/Employee";
 
@@ -58,10 +59,31 @@ const deleteEmployee = (id: string): Promise<boolean> => {
     });
 };
 
+const extractCVData = (cvFile: File, userId?: string): Promise<any> => {
+  const data = new FormData();
+  data.append('cv', cvFile);
+  
+  // Use axios directly for this specific case since we need custom headers
+  return ApiService.vueInstance.axios.post('ExtractCVData', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      'Authorization': `Bearer ${JwtService.getToken()}`,
+      'Accept': 'application/json',
+      'x-user-id': userId || ''
+    }
+  })
+    .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      throw new Error(response.data.message || response.data.error);
+    });
+};
+
 export {
   getEmployees,
   getEmployee,
   createEmployee,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
+  extractCVData
 };

@@ -378,10 +378,9 @@
 
 <script lang="ts">
 import { defineComponent, ref, reactive } from "vue";
-import { createEmployee } from "@/core/services/businessServices/Employee";
+import { createEmployee, extractCVData } from "@/core/services/businessServices/Employee";
 import type { Employee } from "@/core/models/Employee";
 import Swal from "sweetalert2/dist/sweetalert2.js";
-import axios from "axios";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
@@ -521,30 +520,13 @@ export default defineComponent({
               <p class="text-muted">Riceverai una notifica quando l'elaborazione sarà completata.</p>
             </div>
           `,
-          showConfirmButton: false,
+          showConfirmButton: true,
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
 
-        const data = new FormData();
-        data.append('cv', cvFile.value);
-        
         // Invia la richiesta in background senza attendere la risposta
-        axios.post('http://localhost:7071/api/ExtractCVData', data, {
-          headers: { 
-            'Content-Type': 'multipart/form-data',
-            'x-user-id': currentUser.value?.id || 'system'
-          },
-        }).then((res) => {
-          const result = res.data;
-          
-          if (result.success) {
-            // Emetti evento per aggiornare la lista se necessario
-            emit("employee-created", result.user);
-          }
-          
-          // Log per debug (opzionale)
-          console.log('CV processing response:', result);
+        extractCVData(cvFile.value, currentUser.value?.id).then((result) => {
           
         }).catch((err: any) => {
           // Log dell'errore per debug
@@ -667,20 +649,8 @@ export default defineComponent({
         if (processedExperiences.length > 0) applicationUserData.experiences = processedExperiences;
         if (processedCvData) applicationUserData.cvData = processedCvData;
 
-        // Call ApplicationUser API
-        const response = await fetch('/api/applicationuser', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(applicationUserData),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to create user');
-        }
-        
-        const result = await response.json();
+        // Call ApplicationUser API using the service
+        const result = await createEmployee(applicationUserData);
         emit("employee-created", result); // Keep same event name for compatibility
         Swal.fire({
           icon: 'success',

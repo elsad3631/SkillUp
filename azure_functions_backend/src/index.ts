@@ -6,6 +6,7 @@ import './functions/appointment';
 import './functions/asset';
 import './functions/auth';
 import './functions/blobstorage';
+import './functions/azureSearch';
 import './functions/extractCVData';
 import './functions/notification';
 import './functions/userActivityLog';

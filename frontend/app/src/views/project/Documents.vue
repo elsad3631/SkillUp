@@ -82,7 +82,7 @@
 
           <!--begin::Create folder button-->
           <button
-            class="btn btn-light btn-sm"
+            class="btn btn-light btn-sm me-2"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_create_folder"
             @click="openCreateFolderModal"
@@ -91,6 +91,18 @@
             New Folder
           </button>
           <!--end::Create folder button-->
+
+          <!--begin::AI Search button-->
+          <button
+            class="btn btn-success btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#kt_modal_ai_search"
+            @click="openAISearchModal"
+          >
+            <KTIcon icon-name="robot" icon-class="fs-2 me-1" />
+            Ask AI
+          </button>
+          <!--end::AI Search button-->
         </div>
         <!--end::Controls-->
       </div>
@@ -256,6 +268,7 @@
       :current-path="currentPath" 
       @files-uploaded="handleFilesUploaded" 
     />
+    <AISearchModal />
     <!--end::Modals-->
   </div>
   <!--end::Documents page-->
@@ -267,6 +280,7 @@ import { useRoute } from "vue-router";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import CreateFolderModal from "@/components/project/CreateFolderModal.vue";
 import UploadFileModal from "@/components/project/UploadFileModal.vue";
+import AISearchModal from "@/components/project/AISearchModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import ProjectDocumentsService, {
   projectDocumentsService,
@@ -281,6 +295,7 @@ export default defineComponent({
     KTIcon,
     CreateFolderModal,
     UploadFileModal,
+    AISearchModal,
   },
   setup() {
     const route = useRoute();
@@ -373,6 +388,10 @@ export default defineComponent({
     };
 
     const openUploadModal = () => {
+      // Reset modal form if needed
+    };
+
+    const openAISearchModal = () => {
       // Reset modal form if needed
     };
 
@@ -620,6 +639,7 @@ export default defineComponent({
       getBreadcrumbPath,
       openCreateFolderModal,
       openUploadModal,
+      openAISearchModal,
       handleFolderCreated,
       handleFilesUploaded,
              confirmDeleteFile,

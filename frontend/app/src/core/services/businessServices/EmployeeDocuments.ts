@@ -124,14 +124,31 @@ class EmployeeDocumentsService {
     employeeId: string, 
     file: File, 
     folderPath = '', 
-    customName?: string
+    customName?: string,
+    employeeInfo?: { id: string; firstName?: string; lastName?: string }
   ): Promise<FileUploadResponse | null> {
     try {
       const fullPath = this.getEmployeePrefix(employeeId) + folderPath;
       const fileName = customName || file.name;
       const fullFileName = fullPath + fileName;
       
-      const result = await uploadFile(file, '', fullFileName);
+      // Prepare metadata
+      const metadata: Record<string, string> = {
+        metadata_storage_name: fileName,
+        metadata_creation_date: new Date().toISOString(),
+        employee_id: employeeId,
+        document_type: 'employee_document'
+      };
+      
+      // Add employee name if available
+      if (employeeInfo) {
+        const employeeName = `${employeeInfo.firstName || ''} ${employeeInfo.lastName || ''}`.trim();
+        if (employeeName) {
+          metadata.employee_name = employeeName;
+        }
+      }
+      
+      const result = await uploadFile(file, '', fullFileName, metadata);
       return result || null;
     } catch (error) {
       console.error('Error uploading employee file:', error);
@@ -145,14 +162,31 @@ class EmployeeDocumentsService {
   async createEmployeeFolder(
     employeeId: string, 
     folderName: string, 
-    parentPath = ''
+    parentPath = '',
+    employeeInfo?: { id: string; firstName?: string; lastName?: string }
   ): Promise<boolean> {
     try {
       // Create a placeholder file in the folder to make it "exist"
       const folderPath = this.getEmployeePrefix(employeeId) + parentPath + folderName + '/';
       const placeholderFile = new File([''], '.folder_placeholder', { type: 'text/plain' });
       
-      const result = await uploadFile(placeholderFile, '', folderPath + '.folder_placeholder');
+      // Prepare metadata
+      const metadata: Record<string, string> = {
+        metadata_storage_name: '.folder_placeholder',
+        metadata_creation_date: new Date().toISOString(),
+        employee_id: employeeId,
+        document_type: 'employee_folder_placeholder'
+      };
+      
+      // Add employee name if available
+      if (employeeInfo) {
+        const employeeName = `${employeeInfo.firstName || ''} ${employeeInfo.lastName || ''}`.trim();
+        if (employeeName) {
+          metadata.employee_name = employeeName;
+        }
+      }
+      
+      const result = await uploadFile(placeholderFile, '', folderPath + '.folder_placeholder', metadata);
       return !!result;
     } catch (error) {
       console.error('Error creating employee folder:', error);

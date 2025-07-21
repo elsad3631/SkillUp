@@ -8,8 +8,8 @@ const store = useAuthStore();
 const getEmployees = (filterRequest?: string): Promise<Array<Employee> | undefined> => {
   ApiService.setHeader();
   const endpoint = filterRequest
-    ? `employees?filter=${encodeURIComponent(filterRequest)}`
-    : `employees`;
+    ? `applicationuser?filter=${encodeURIComponent(filterRequest)}`
+    : `applicationuser`;
 
   return ApiService.get(endpoint)
     .then(({ data }) => data as Employee[])
@@ -21,7 +21,7 @@ const getEmployees = (filterRequest?: string): Promise<Array<Employee> | undefin
 
 const getEmployee = (id: string): Promise<Employee | undefined> => {
   ApiService.setHeader();
-  return ApiService.get(`employees/${id}`)
+  return ApiService.get(`applicationuser/${id}`)
     .then(({ data }) => data as Employee)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -31,7 +31,7 @@ const getEmployee = (id: string): Promise<Employee | undefined> => {
 
 const createEmployee = (formData: Employee): Promise<Employee | undefined> => {
   ApiService.setHeader();
-  return ApiService.post(`employees`, formData)
+  return ApiService.post(`applicationuser`, formData)
     .then(({ data }) => data as Employee)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -41,7 +41,7 @@ const createEmployee = (formData: Employee): Promise<Employee | undefined> => {
 
 const updateEmployee = (id: string, formData: Employee): Promise<Employee | undefined> => {
   ApiService.setHeader();
-  return ApiService.put(`employees/${id}`, formData)
+  return ApiService.put(`applicationuser/${id}`, formData)
     .then(({ data }) => data as Employee)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -51,7 +51,7 @@ const updateEmployee = (id: string, formData: Employee): Promise<Employee | unde
 
 const deleteEmployee = (id: string): Promise<boolean> => {
   ApiService.setHeader();
-  return ApiService.delete(`employees/${id}`)
+  return ApiService.delete(`applicationuser/${id}`)
     .then(() => true)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);

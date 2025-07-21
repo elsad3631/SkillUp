@@ -92,3 +92,11 @@ src/
 prisma/                        # Database schema
 skills-list.json              # Available skills list
 ``` 
+
+DATABASE_URL=postgresql://postgres:123Qwe.,@localhost:5432/SkillUp?schema=public
+AzureBlobStorageConnectionString="AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;"
+AzureBlobStorageContainer=skillup
+OPENAI_ENDPOINT=https://intentopenaisrv.openai.azure.com/
+OPENAI_KEY=2a0a03ad296d4b94bc516c0ae744432f
+OPENAI_DEPLOYMENT=GPT4O
+AzureBlobStorageConnectionString="DefaultEndpointsProtocol=https;AccountName=intentaistorage;AccountKey=OcyVws7RI7V1fKFgpLxfBYjUF/y/Lf9FAZRmIyx2ZiXMZ1vsylYFsMgJBVPpFVsLawxzdXtV41FS+ASt1KdB1g==;EndpointSuffix=core.windows.net"

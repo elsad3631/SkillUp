@@ -378,7 +378,18 @@ export default defineComponent({
 
     const handleFolderCreated = async (data: { name: string; path: string }) => {
       try {
-                 const success = await projectDocumentsService.createProjectFolder(projectId.value, data.name, currentPath.value);
+        // Prepare project info for metadata
+        const projectInfo = project.value ? {
+          id: project.value.id,
+          name: project.value.name
+        } : undefined;
+        
+        const success = await projectDocumentsService.createProjectFolder(
+          projectId.value, 
+          data.name, 
+          currentPath.value, 
+          projectInfo
+        );
         
         if (success) {
           Swal.fire({
@@ -407,9 +418,21 @@ export default defineComponent({
 
     const handleFilesUploaded = async (data: { files: File[]; path: string }) => {
       try {
-                 const uploadPromises = data.files.map(file =>
-           projectDocumentsService.uploadProjectFile(projectId.value, file, currentPath.value)
-         );
+        const uploadPromises = data.files.map(file => {
+          // Prepare project info for metadata
+          const projectInfo = project.value ? {
+            id: project.value.id,
+            name: project.value.name
+          } : undefined;
+          
+          return projectDocumentsService.uploadProjectFile(
+            projectId.value, 
+            file, 
+            currentPath.value, 
+            undefined, 
+            projectInfo
+          );
+        });
         
         const results = await Promise.all(uploadPromises);
         const successCount = results.filter(result => result !== null).length;

@@ -24,6 +24,7 @@ export async function blobstorageUploadFile(request: HttpRequest, context: Invoc
   let mimetype: string;
   let prefix: string | undefined;
   let customName: string | undefined;
+  let metadata: Record<string, string> | undefined;
 
   try {
     if (contentType.includes('multipart/form-data')) {
@@ -41,11 +42,21 @@ export async function blobstorageUploadFile(request: HttpRequest, context: Invoc
       prefix = formData.get('prefix') as string || undefined;
       customName = formData.get('customName') as string || undefined;
       
+      // Extract metadata from form data
+      const metadataStr = formData.get('metadata') as string;
+      if (metadataStr) {
+        try {
+          metadata = JSON.parse(metadataStr);
+        } catch (error) {
+          context.log('Error parsing metadata:', error);
+        }
+      }
+      
       context.log(`Processing multipart file: ${originalname}, type: ${mimetype}, size: ${fileBuffer.length}`);
     } else {
       // Handle JSON with base64
       const body: any = await request.json();
-      const { fileBase64, originalname: origName, mimetype: mimeType, prefix: pref, customName: custom } = body;
+      const { fileBase64, originalname: origName, mimetype: mimeType, prefix: pref, customName: custom, metadata: meta } = body;
       
       if (!fileBase64 || !origName || !mimeType) {
         return { status: 400, jsonBody: { message: 'No file provided or missing required fields' } };
@@ -56,12 +67,13 @@ export async function blobstorageUploadFile(request: HttpRequest, context: Invoc
       mimetype = mimeType;
       prefix = pref;
       customName = custom;
+      metadata = meta;
       
       context.log(`Processing base64 file: ${originalname}, type: ${mimetype}, size: ${fileBuffer.length}`);
     }
 
     const fileName = customName || blobStorageService.generateUniqueFileName(originalname, prefix);
-    const fileUrl = await blobStorageService.uploadFile(fileName, fileBuffer, mimetype);
+    const fileUrl = await blobStorageService.uploadFile(fileName, fileBuffer, mimetype, metadata);
     
     return {
       status: 201,
@@ -113,7 +125,19 @@ export async function blobstorageUploadMultipleFiles(request: HttpRequest, conte
 
         const fileBuffer = Buffer.from(await fileEntry.arrayBuffer());
         const fileName = blobStorageService.generateUniqueFileName(fileEntry.name, prefix);
-        const fileUrl = await blobStorageService.uploadFile(fileName, fileBuffer, fileEntry.type || 'application/octet-stream');
+        
+        // Extract metadata for this specific file (if available)
+        let metadata: Record<string, string> | undefined;
+        const metadataStr = formData.get('metadata') as string;
+        if (metadataStr) {
+          try {
+            metadata = JSON.parse(metadataStr);
+          } catch (error) {
+            context.log('Error parsing metadata:', error);
+          }
+        }
+        
+        const fileUrl = await blobStorageService.uploadFile(fileName, fileBuffer, fileEntry.type || 'application/octet-stream', metadata);
         
         return {
           originalName: fileEntry.name,
@@ -129,7 +153,7 @@ export async function blobstorageUploadMultipleFiles(request: HttpRequest, conte
     } else {
       // Handle JSON with base64
       const body: any = await request.json();
-      const { files: jsonFiles, prefix } = body; // files: [{ fileBase64, originalname, mimetype }]
+      const { files: jsonFiles, prefix, metadata } = body; // files: [{ fileBase64, originalname, mimetype }]
       
       if (!Array.isArray(jsonFiles) || jsonFiles.length === 0) {
         return { status: 400, jsonBody: { message: 'No files provided or invalid format' } };
@@ -138,7 +162,7 @@ export async function blobstorageUploadMultipleFiles(request: HttpRequest, conte
       const uploadPromises = jsonFiles.map(async (file: any) => {
         const buffer = Buffer.from(file.fileBase64, 'base64');
         const fileName = blobStorageService.generateUniqueFileName(file.originalname, prefix);
-        const fileUrl = await blobStorageService.uploadFile(fileName, buffer, file.mimetype);
+        const fileUrl = await blobStorageService.uploadFile(fileName, buffer, file.mimetype, metadata);
         return {
           originalName: file.originalname,
           fileName,
@@ -434,6 +458,7 @@ export async function blobstorageListFiles(request: HttpRequest, context: Invoca
         contentType: blob.properties.contentType,
         lastModified: blob.properties.lastModified,
         etag: blob.properties.etag,
+        metadata: blob.metadata || {},
       })),
       total: files.length,
       limit,

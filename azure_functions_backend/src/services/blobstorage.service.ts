@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = process.env.AzureBlobStorageConnectionString;
+const connectionString = "DefaultEndpointsProtocol=https;AccountName=intentaistorage;AccountKey=OcyVws7RI7V1fKFgpLxfBYjUF/y/Lf9FAZRmIyx2ZiXMZ1vsylYFsMgJBVPpFVsLawxzdXtV41FS+ASt1KdB1g==;EndpointSuffix=core.windows.net"//process.env.AzureBlobStorageConnectionString;
 const containerName = process.env.AzureBlobStorageContainer;
 
 if (!connectionString) {
@@ -27,7 +27,7 @@ class BlobStorageService {
     try {
       // Check if container already exists
       const exists = await this.containerClient.exists();
-      
+      console.log("connectionString", connectionString);
       if (exists) {
         console.log(`✅ Container "${containerName}" already exists with proper access.`);
         return;
@@ -49,7 +49,7 @@ class BlobStorageService {
     }
   }
 
-  async uploadFile(blobName: string, data: Buffer, contentType?: string): Promise<string> {
+  async uploadFile(blobName: string, data: Buffer, contentType?: string, metadata?: Record<string, string>): Promise<string> {
     try {
       // Ensure container exists with public blob access before uploading
       await this.initializeContainer();
@@ -61,6 +61,11 @@ class BlobStorageService {
           blobContentType: contentType || 'application/octet-stream'
         }
       };
+
+      // Add metadata if provided
+      if (metadata) {
+        uploadOptions.metadata = metadata;
+      }
 
       const uploadBlobResponse = await blockBlobClient.upload(data, data.length, uploadOptions);
       
@@ -75,7 +80,7 @@ class BlobStorageService {
     }
   }
 
-  async uploadStream(blobName: string, stream: any, contentType?: string): Promise<string> {
+  async uploadStream(blobName: string, stream: any, contentType?: string, metadata?: Record<string, string>): Promise<string> {
     try {
       // Ensure container exists with public blob access before uploading
       await this.initializeContainer();
@@ -87,6 +92,11 @@ class BlobStorageService {
           blobContentType: contentType || 'application/octet-stream'
         }
       };
+
+      // Add metadata if provided
+      if (metadata) {
+        uploadOptions.metadata = metadata;
+      }
 
       const uploadBlobResponse = await blockBlobClient.uploadStream(stream, undefined, undefined, uploadOptions);
       

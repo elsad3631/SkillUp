@@ -378,7 +378,19 @@ export default defineComponent({
 
     const handleFolderCreated = async (data: { name: string; path: string }) => {
       try {
-        const success = await employeeDocumentsService.createEmployeeFolder(employeeId.value, data.name, currentPath.value);
+        // Prepare employee info for metadata
+        const employeeInfo = employee.value ? {
+          id: employee.value.id,
+          firstName: employee.value.firstName || employee.value.first_name,
+          lastName: employee.value.lastName || employee.value.last_name
+        } : undefined;
+        
+        const success = await employeeDocumentsService.createEmployeeFolder(
+          employeeId.value, 
+          data.name, 
+          currentPath.value, 
+          employeeInfo
+        );
         
         if (success) {
           Swal.fire({
@@ -407,9 +419,22 @@ export default defineComponent({
 
     const handleFilesUploaded = async (data: { files: File[]; path: string }) => {
       try {
-        const uploadPromises = data.files.map(file =>
-          employeeDocumentsService.uploadEmployeeFile(employeeId.value, file, currentPath.value)
-        );
+        const uploadPromises = data.files.map(file => {
+          // Prepare employee info for metadata
+          const employeeInfo = employee.value ? {
+            id: employee.value.id,
+            firstName: employee.value.firstName || employee.value.first_name,
+            lastName: employee.value.lastName || employee.value.last_name
+          } : undefined;
+          
+          return employeeDocumentsService.uploadEmployeeFile(
+            employeeId.value, 
+            file, 
+            currentPath.value, 
+            undefined, 
+            employeeInfo
+          );
+        });
         
         const results = await Promise.all(uploadPromises);
         const successCount = results.filter(result => result !== null).length;

@@ -19,6 +19,7 @@ export interface FileListResponse {
     contentType: string;
     lastModified: string;
     etag: string;
+    metadata?: Record<string, string>;
   }>;
   total: number;
   limit: number;
@@ -66,12 +67,13 @@ const initializeContainer = (): Promise<{ message: string } | undefined> => {
 /**
  * Upload a single file
  */
-const uploadFile = (file: File, prefix?: string, customName?: string): Promise<FileUploadResponse | undefined> => {
+const uploadFile = (file: File, prefix?: string, customName?: string, metadata?: Record<string, string>): Promise<FileUploadResponse | undefined> => {
   ApiService.setHeader();
   const formData = new FormData();
   formData.append('file', file);
   if (prefix) formData.append('prefix', prefix);
   if (customName) formData.append('customName', customName);
+  if (metadata) formData.append('metadata', JSON.stringify(metadata));
 
   return ApiService.vueInstance.axios.post('blobstorage/upload', formData, {
     headers: {
@@ -88,11 +90,12 @@ const uploadFile = (file: File, prefix?: string, customName?: string): Promise<F
 /**
  * Upload multiple files
  */
-const uploadMultipleFiles = (files: File[], prefix?: string): Promise<{ message: string; files: FileUploadResponse[]; count: number } | undefined> => {
+const uploadMultipleFiles = (files: File[], prefix?: string, metadata?: Record<string, string>): Promise<{ message: string; files: FileUploadResponse[]; count: number } | undefined> => {
   ApiService.setHeader();
   const formData = new FormData();
   files.forEach(file => formData.append('files', file));
   if (prefix) formData.append('prefix', prefix);
+  if (metadata) formData.append('metadata', JSON.stringify(metadata));
 
   return ApiService.vueInstance.axios.post('blobstorage/upload/multiple', formData, {
     headers: {

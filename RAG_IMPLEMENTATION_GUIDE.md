@@ -35,7 +35,8 @@ async indexDocument(document: {
   fileName: string;
   filePath: string;
   content: string;
-  projectId: string;
+  entityType: string;
+  entityId: string;
   contentType: string;
   size: number;
   lastModified: Date;
@@ -58,8 +59,8 @@ async generateAnswer(question: string, sources: SearchSource[]): Promise<string>
 - `POST /api/azure-search/index` - Index documents
 - `DELETE /api/azure-search/delete` - Remove documents from index
 - `GET /api/azure-search/health` - Service health check
-- `GET /api/azure-search/insights/{projectId}` - Document insights
-- `GET /api/azure-search/suggestions/{projectId}` - Suggested questions
+- `GET /api/azure-search/insights/{entityType}/{entityId}` - Document insights
+- `GET /api/azure-search/suggestions/{entityType}/{entityId}` - Suggested questions
 
 ### Frontend Integration
 
@@ -93,7 +94,8 @@ AZURE_OPENAI_DEPLOYMENT=GPT4O
     { "name": "fileName", "type": "Edm.String", "searchable": true },
     { "name": "filePath", "type": "Edm.String", "searchable": true },
     { "name": "content", "type": "Edm.String", "searchable": true },
-    { "name": "projectId", "type": "Edm.String", "filterable": true },
+    { "name": "entity_type", "type": "Edm.String", "filterable": true },
+    { "name": "entity_id", "type": "Edm.String", "filterable": true },
     { "name": "contentType", "type": "Edm.String" },
     { "name": "size", "type": "Edm.Int64" },
     { "name": "lastModified", "type": "Edm.DateTimeOffset" },
@@ -130,7 +132,8 @@ const success = await azureAISearchService.indexDocument({
   fileName: 'project-plan.pdf',
   filePath: 'projects/123/documents/project-plan.pdf',
   content: 'Extracted text content from the document...',
-  projectId: '123',
+  entityType: 'project',
+  entityId: '123',
   contentType: 'application/pdf',
   size: 1024000,
   lastModified: new Date()
@@ -139,10 +142,19 @@ const success = await azureAISearchService.indexDocument({
 
 ### 2. **Asking a Question (RAG Process)**
 ```typescript
-// User asks a question
+// User asks a question for a project
 const result = await azureAISearchService.askQuestion({
   question: 'What are the main deliverables?',
-  projectId: '123',
+  entityType: 'project',
+  entityId: '123',
+  maxResults: 5
+});
+
+// User asks a question for an employee
+const result = await azureAISearchService.askQuestion({
+  question: 'What documents are available?',
+  entityType: 'employee',
+  entityId: 'emp-456',
   maxResults: 5
 });
 
@@ -158,6 +170,7 @@ const result = await azureAISearchService.askQuestion({
 // When a document is deleted
 const success = await azureAISearchService.deleteDocument(
   'projects/123/documents/old-file.pdf',
+  'project',
   '123'
 );
 ```

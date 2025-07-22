@@ -6,17 +6,9 @@ This implementation adds metadata support to Azure Blob Storage uploads for empl
 ### Required Metadata Fields
 - `metadata_storage_name`: String - The filename in blob storage
 - `metadata_creation_date`: DateTimeOffset - ISO string of when the file was uploaded
+- `entity_type`: String - Type of entity ('employee' or 'project')
+- `entity_id`: String - The ID of the employee or project
 - `document_type`: String - Type of document (employee_document, project_document, employee_folder_placeholder, project_folder_placeholder)
-
-### Conditional Metadata Fields
-
-#### For Employee Documents:
-- `employee_id`: String - The employee ID
-- `employee_name`: String - Full name of the employee (if available)
-
-#### For Project Documents:
-- `project_id`: String - The project ID  
-- `project_name`: String - Name of the project (if available)
 
 ## Implementation Details
 
@@ -42,12 +34,12 @@ This implementation adds metadata support to Azure Blob Storage uploads for empl
 #### 2. Employee Documents Service (`frontend/app/src/core/services/businessServices/EmployeeDocuments.ts`)
 - Modified `uploadEmployeeFile()` to automatically generate employee metadata
 - Modified `createEmployeeFolder()` to include metadata for folder placeholders
-- Added employee information parameter to both methods
+- Uses `entity_type: 'employee'` and `entity_id: employeeId` in metadata
 
 #### 3. Project Documents Service (`frontend/app/src/core/services/businessServices/ProjectDocuments.ts`)
 - Modified `uploadProjectFile()` to automatically generate project metadata
 - Modified `createProjectFolder()` to include metadata for folder placeholders
-- Added project information parameter to both methods
+- Uses `entity_type: 'project'` and `entity_id: projectId` in metadata
 
 #### 4. View Updates
 - Updated `frontend/app/src/views/employee/Documents.vue` to pass employee information
@@ -58,13 +50,13 @@ This implementation adds metadata support to Azure Blob Storage uploads for empl
 ### Employee Document Upload
 When uploading employee documents, the system automatically:
 1. Extracts employee information from the injected employee data
-2. Generates metadata with employee ID, name, and document type
+2. Generates metadata with entity type 'employee', entity ID, and document type
 3. Uploads the file with metadata attached
 
 ### Project Document Upload
 When uploading project documents, the system automatically:
 1. Extracts project information from the injected project data
-2. Generates metadata with project ID, name, and document type
+2. Generates metadata with entity type 'project', entity ID, and document type
 3. Uploads the file with metadata attached
 
 ### Metadata Retrieval
@@ -79,8 +71,8 @@ Metadata can be retrieved using:
 {
   "metadata_storage_name": "document.pdf",
   "metadata_creation_date": "2024-01-15T10:30:00.000Z",
-  "employee_id": "emp-123",
-  "employee_name": "John Doe",
+  "entity_type": "employee",
+  "entity_id": "emp-123",
   "document_type": "employee_document"
 }
 ```
@@ -90,21 +82,38 @@ Metadata can be retrieved using:
 {
   "metadata_storage_name": "project-plan.pdf",
   "metadata_creation_date": "2024-01-15T10:30:00.000Z",
-  "project_id": "proj-456",
-  "project_name": "Website Redesign",
+  "entity_type": "project",
+  "entity_id": "proj-456",
   "document_type": "project_document"
 }
 ```
 
-## Benefits
-1. **Searchability**: Files can be searched and filtered by metadata
-2. **Audit Trail**: Creation dates and ownership information is preserved
-3. **Organization**: Clear categorization of document types
-4. **Compliance**: Metadata supports regulatory and compliance requirements
-5. **Integration**: Metadata enables better integration with other systems
+### Employee Folder Placeholder
+```json
+{
+  "metadata_storage_name": ".folder_placeholder",
+  "metadata_creation_date": "2024-01-15T10:30:00.000Z",
+  "entity_type": "employee",
+  "entity_id": "emp-123",
+  "document_type": "employee_folder_placeholder"
+}
+```
 
-## Testing
-To verify metadata is working correctly:
-1. Upload a document to an employee or project
-2. Use `GET /api/blobstorage/info/{fileName}` to check the metadata
-3. Use `GET /api/blobstorage/list?prefix=employees/{id}/` or `projects/{id}/` to see metadata for all files 
+### Project Folder Placeholder
+```json
+{
+  "metadata_storage_name": ".folder_placeholder",
+  "metadata_creation_date": "2024-01-15T10:30:00.000Z",
+  "entity_type": "project",
+  "entity_id": "proj-456",
+  "document_type": "project_folder_placeholder"
+}
+```
+
+## Benefits of New Metadata Structure
+
+1. **Unified Structure**: Both employee and project documents use the same metadata fields
+2. **Scalability**: Easy to extend for other entity types in the future
+3. **Consistency**: Standardized approach across all document types
+4. **Querying**: Simplified filtering and searching by entity type and ID
+5. **Maintenance**: Reduced code duplication and easier maintenance 

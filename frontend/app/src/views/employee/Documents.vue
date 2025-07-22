@@ -80,6 +80,17 @@
           </button>
           <!--end::Upload button-->
 
+          <!--begin::AI Search button-->
+          <button
+            class="btn btn-success btn-sm me-2"
+            data-bs-toggle="modal"
+            data-bs-target="#kt_modal_ai_search_employee"
+          >
+            <KTIcon icon-name="robot" icon-class="fs-2 me-1" />
+            Ask AI
+          </button>
+          <!--end::AI Search button-->
+
           <!--begin::Create folder button-->
           <button
             class="btn btn-light btn-sm"
@@ -233,6 +244,14 @@
             Upload Files
           </button>
           <button
+            class="btn btn-success me-3"
+            data-bs-toggle="modal"
+            data-bs-target="#kt_modal_ai_search_employee"
+          >
+            <KTIcon icon-name="robot" icon-class="fs-2 me-1" />
+            Ask AI
+          </button>
+          <button
             class="btn btn-light"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_create_employee_folder"
@@ -256,6 +275,7 @@
       :current-path="currentPath" 
       @files-uploaded="handleFilesUploaded" 
     />
+    <AISearchModal />
     <!--end::Modals-->
   </div>
   <!--end::Documents page-->
@@ -267,6 +287,7 @@ import { useRoute } from "vue-router";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import CreateEmployeeFolderModal from "@/components/employee/CreateEmployeeFolderModal.vue";
 import UploadEmployeeFileModal from "@/components/employee/UploadEmployeeFileModal.vue";
+import AISearchModal from "@/components/employee/AISearchModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import {
   employeeDocumentsService,
@@ -281,6 +302,7 @@ export default defineComponent({
     KTIcon,
     CreateEmployeeFolderModal,
     UploadEmployeeFileModal,
+    AISearchModal,
   },
   setup() {
     const route = useRoute();

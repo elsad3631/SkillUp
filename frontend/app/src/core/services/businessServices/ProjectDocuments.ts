@@ -136,14 +136,10 @@ class ProjectDocumentsService {
       const metadata: Record<string, string> = {
         metadata_storage_name: fileName,
         metadata_creation_date: new Date().toISOString(),
-        project_id: projectId,
+        entity_type: 'project',
+        entity_id: projectId,
         document_type: 'project_document'
       };
-      
-      // Add project name if available
-      if (projectInfo?.name) {
-        metadata.project_name = projectInfo.name;
-      }
       
       const result = await uploadFile(file, '', fullFileName, metadata);
       return result || null;
@@ -171,14 +167,10 @@ class ProjectDocumentsService {
       const metadata: Record<string, string> = {
         metadata_storage_name: '.folder_placeholder',
         metadata_creation_date: new Date().toISOString(),
-        project_id: projectId,
+        entity_type: 'project',
+        entity_id: projectId,
         document_type: 'project_folder_placeholder'
       };
-      
-      // Add project name if available
-      if (projectInfo?.name) {
-        metadata.project_name = projectInfo.name;
-      }
       
       const result = await uploadFile(placeholderFile, '', folderPath + '.folder_placeholder', metadata);
       return !!result;

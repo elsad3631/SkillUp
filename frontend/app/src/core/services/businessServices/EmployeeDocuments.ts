@@ -136,17 +136,10 @@ class EmployeeDocumentsService {
       const metadata: Record<string, string> = {
         metadata_storage_name: fileName,
         metadata_creation_date: new Date().toISOString(),
-        employee_id: employeeId,
+        entity_type: 'employee',
+        entity_id: employeeId,
         document_type: 'employee_document'
       };
-      
-      // Add employee name if available
-      if (employeeInfo) {
-        const employeeName = `${employeeInfo.firstName || ''} ${employeeInfo.lastName || ''}`.trim();
-        if (employeeName) {
-          metadata.employee_name = employeeName;
-        }
-      }
       
       const result = await uploadFile(file, '', fullFileName, metadata);
       return result || null;
@@ -174,17 +167,10 @@ class EmployeeDocumentsService {
       const metadata: Record<string, string> = {
         metadata_storage_name: '.folder_placeholder',
         metadata_creation_date: new Date().toISOString(),
-        employee_id: employeeId,
+        entity_type: 'employee',
+        entity_id: employeeId,
         document_type: 'employee_folder_placeholder'
       };
-      
-      // Add employee name if available
-      if (employeeInfo) {
-        const employeeName = `${employeeInfo.firstName || ''} ${employeeInfo.lastName || ''}`.trim();
-        if (employeeName) {
-          metadata.employee_name = employeeName;
-        }
-      }
       
       const result = await uploadFile(placeholderFile, '', folderPath + '.folder_placeholder', metadata);
       return !!result;

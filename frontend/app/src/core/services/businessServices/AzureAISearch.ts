@@ -6,7 +6,8 @@ const store = useAuthStore();
 // Types for Azure AI Search
 export interface SearchQuery {
   question: string;
-  projectId?: string;
+  entityType?: string;
+  entityId?: string;
   documentPath?: string;
   maxResults?: number;
 }
@@ -31,7 +32,8 @@ export interface SearchHistory {
   question: string;
   answer: string;
   timestamp: Date;
-  projectId: string;
+  entityType: string;
+  entityId: string;
   sources: SearchSource[];
 }
 
@@ -59,9 +61,11 @@ class AzureAISearchService {
   /**
    * Get search history for a project
    */
-  async getSearchHistory(projectId: string): Promise<SearchHistory[]> {
+  async getSearchHistory(projectId: string, entityType?: string, entityId?: string): Promise<SearchHistory[]> {
     try {
-      const response = await ApiService.get(`/azure-search/history/${projectId}`);
+      const entityTypeParam = entityType || 'project';
+      const entityIdParam = entityId || projectId;
+      const response = await ApiService.get(`/azure-search/history/${entityTypeParam}/${entityIdParam}`);
       return response.data as SearchHistory[];
     } catch (error: any) {
       console.error('Error getting search history:', error);
@@ -76,9 +80,11 @@ class AzureAISearchService {
   /**
    * Clear search history for a project
    */
-  async clearSearchHistory(projectId: string): Promise<boolean> {
+  async clearSearchHistory(projectId: string, entityType?: string, entityId?: string): Promise<boolean> {
     try {
-      await ApiService.delete(`/azure-search/history/${projectId}`);
+      const entityTypeParam = entityType || 'project';
+      const entityIdParam = entityId || projectId;
+      await ApiService.delete(`/azure-search/history/${entityTypeParam}/${entityIdParam}`);
       return true;
     } catch (error: any) {
       console.error('Error clearing search history:', error);
@@ -93,9 +99,11 @@ class AzureAISearchService {
   /**
    * Get suggested questions for a project
    */
-  async getSuggestedQuestions(projectId: string): Promise<string[]> {
+  async getSuggestedQuestions(projectId: string, entityType?: string, entityId?: string): Promise<string[]> {
     try {
-      const response = await ApiService.get(`/azure-search/suggestions/${projectId}`);
+      const entityTypeParam = entityType || 'project';
+      const entityIdParam = entityId || projectId;
+      const response = await ApiService.get(`/azure-search/suggestions/${entityTypeParam}/${entityIdParam}`);
       return response.data as string[];
     } catch (error: any) {
       console.error('Error getting suggested questions:', error);
@@ -119,14 +127,16 @@ class AzureAISearchService {
   /**
    * Get document insights for a project
    */
-  async getDocumentInsights(projectId: string): Promise<{
+  async getDocumentInsights(projectId: string, entityType?: string, entityId?: string): Promise<{
     totalDocuments: number;
     documentTypes: Record<string, number>;
     totalSize: number;
     lastUpdated: Date;
   } | null> {
     try {
-      const response = await ApiService.get(`/azure-search/insights/${projectId}`);
+      const entityTypeParam = entityType || 'project';
+      const entityIdParam = entityId || projectId;
+      const response = await ApiService.get(`/azure-search/insights/${entityTypeParam}/${entityIdParam}`);
       return response.data;
     } catch (error: any) {
       console.error('Error getting document insights:', error);
@@ -141,7 +151,8 @@ class AzureAISearchService {
     fileName: string;
     filePath: string;
     content: string;
-    projectId: string;
+    entityType: string;
+    entityId: string;
     contentType?: string;
     size?: number;
     lastModified?: Date;
@@ -162,9 +173,9 @@ class AzureAISearchService {
   /**
    * Delete a document from Azure AI Search index
    */
-  async deleteDocument(filePath: string, projectId: string): Promise<boolean> {
+  async deleteDocument(filePath: string, entityType: string, entityId: string): Promise<boolean> {
     try {
-      const response = await ApiService.delete(`/azure-search/delete?filePath=${encodeURIComponent(filePath)}&projectId=${projectId}`);
+      const response = await ApiService.delete(`/azure-search/delete?filePath=${encodeURIComponent(filePath)}&entityType=${entityType}&entityId=${entityId}`);
       return response.status === 200;
     } catch (error: any) {
       console.error('Error deleting document from index:', error);

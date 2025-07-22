@@ -18,7 +18,7 @@ app.http('askQuestion', {
       }
 
       const body = await request.json() as any;
-      const { question, projectId, documentPath, maxResults } = body;
+      const { question, entityType, entityId, documentPath, maxResults } = body;
 
       if (!question) {
         return {
@@ -29,7 +29,8 @@ app.http('askQuestion', {
 
       const result = await azureSearchService.askQuestion({
         question,
-        projectId,
+        entityType,
+        entityId,
         documentPath,
         maxResults
       });

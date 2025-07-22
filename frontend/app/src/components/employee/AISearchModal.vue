@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" id="kt_modal_ai_search" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="kt_modal_ai_search_employee" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <!--begin::Modal header-->
@@ -18,13 +18,13 @@
         <div class="modal-body">
           <!--begin::Search input-->
           <div class="mb-6">
-            <label class="form-label fw-semibold">Ask a question about your project documents:</label>
+            <label class="form-label fw-semibold">Ask a question about employee documents:</label>
             <div class="input-group">
               <input
                 v-model="question"
                 type="text"
                 class="form-control form-control-lg"
-                placeholder="e.g., What are the main deliverables of this project?"
+                placeholder="e.g., What documents are available for this employee?"
                 @keyup.enter="askQuestion"
                 :disabled="isLoading"
               />
@@ -54,51 +54,51 @@
               <div class="card-body">
                 <div class="row g-3">
                   <div class="col-md-6">
-                    <div class="btn btn-light-primary btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono gli obiettivi principali di questo progetto?')">
-                      <KTIcon icon-name="target" icon-class="fs-2 me-2 text-primary" />
-                      <span>Quali sono gli obiettivi principali di questo progetto?</span>
+                    <div class="btn btn-light-primary btn-sm w-100 text-start p-3" @click="setQuestion('Quali documenti sono disponibili per questo dipendente?')">
+                      <KTIcon icon-name="files" icon-class="fs-2 me-2 text-primary" />
+                      <span>Quali documenti sono disponibili per questo dipendente?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-success btn-sm w-100 text-start p-3" @click="setQuestion('Chi sono i membri del team e i loro ruoli?')">
+                    <div class="btn btn-light-success btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono le competenze e le esperienze del dipendente?')">
                       <KTIcon icon-name="profile-user" icon-class="fs-2 me-2 text-success" />
-                      <span>Chi sono i membri del team e i loro ruoli?</span>
+                      <span>Quali sono le competenze e le esperienze del dipendente?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-info btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono le scadenze e i milestone del progetto?')">
+                    <div class="btn btn-light-info btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono i progetti a cui ha partecipato?')">
                       <KTIcon icon-name="calendar" icon-class="fs-2 me-2 text-info" />
-                      <span>Quali sono le scadenze e i milestone del progetto?</span>
+                      <span>Quali sono i progetti a cui ha partecipato?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-danger btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono i rischi identificati nel progetto?')">
+                    <div class="btn btn-light-danger btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono le valutazioni e i feedback ricevuti?')">
                       <KTIcon icon-name="shield-cross" icon-class="fs-2 me-2 text-danger" />
-                      <span>Quali sono i rischi identificati nel progetto?</span>
+                      <span>Quali sono le valutazioni e i feedback ricevuti?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-warning btn-sm w-100 text-start p-3" @click="setQuestion('Qual è il budget allocato e come è stato speso?')">
+                    <div class="btn btn-light-warning btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono i contratti e i documenti HR?')">
                       <KTIcon icon-name="dollar" icon-class="fs-2 me-2 text-warning" />
-                      <span>Qual è il budget allocato e come è stato speso?</span>
+                      <span>Quali sono i contratti e i documenti HR?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-dark btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono le tecnologie e gli strumenti utilizzati?')">
+                    <div class="btn btn-light-dark btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono le certificazioni e i training completati?')">
                       <KTIcon icon-name="gear" icon-class="fs-2 me-2 text-dark" />
-                      <span>Quali sono le tecnologie e gli strumenti utilizzati?</span>
+                      <span>Quali sono le certificazioni e i training completati?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-primary btn-sm w-100 text-start p-3" @click="setQuestion('Come viene gestita la comunicazione con i clienti?')">
+                    <div class="btn btn-light-primary btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono i documenti di sicurezza e compliance?')">
                       <KTIcon icon-name="message-text" icon-class="fs-2 me-2 text-primary" />
-                      <span>Come viene gestita la comunicazione con i clienti?</span>
+                      <span>Quali sono i documenti di sicurezza e compliance?</span>
                     </div>
                   </div>
                   <div class="col-md-6">
-                    <div class="btn btn-light-success btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono i deliverable principali e il loro stato?')">
+                    <div class="btn btn-light-success btn-sm w-100 text-start p-3" @click="setQuestion('Quali sono i documenti di performance e obiettivi?')">
                       <KTIcon icon-name="files" icon-class="fs-2 me-2 text-success" />
-                      <span>Quali sono i deliverable principali e il loro stato?</span>
+                      <span>Quali sono i documenti di performance e obiettivi?</span>
                     </div>
                   </div>
                 </div>
@@ -237,13 +237,13 @@ import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import azureAISearchService, { type SearchResult } from "@/core/services/businessServices/AzureAISearch";
 
 export default defineComponent({
-  name: "ai-search-modal",
+  name: "ai-search-modal-employee",
   components: {
     KTIcon,
   },
   setup() {
     const route = useRoute();
-    const project = inject<any>('project');
+    const employee = inject<any>('employee');
     
     // Reactive data
     const question = ref('');
@@ -252,7 +252,7 @@ export default defineComponent({
     const error = ref('');
 
     // Computed properties
-    const projectId = computed(() => route.params.id as string);
+    const employeeId = computed(() => route.params.id as string);
 
     // Methods
     const askQuestion = async () => {
@@ -264,8 +264,8 @@ export default defineComponent({
 
         const result = await azureAISearchService.askQuestion({
           question: question.value,
-          entityType: 'project',
-          entityId: projectId.value,
+          entityType: 'employee',
+          entityId: employeeId.value,
           maxResults: 5
         });
 

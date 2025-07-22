@@ -50,7 +50,8 @@ function getClients() {
 
 export interface SearchQuery {
   question: string;
-  projectId?: string;
+  entityType?: string;
+  entityId?: string;
   documentPath?: string;
   maxResults?: number;
 }
@@ -134,8 +135,8 @@ export const azureSearchService = {
         
         const searchResults = await searchClient.search(query.question, {
             top: query.maxResults || 5,
-            select: ["parent_id", "chunk", "title", "employee_id", "project_id"],
-            //filter: query.projectId ? `parent_id eq '${query.projectId}'` : undefined
+            select: ["parent_id", "chunk", "title", "entity_type", "entity_id"],
+            filter: query.entityType && query.entityId ? `entity_type eq '${query.entityType}' and entity_id eq '${query.entityId}'` : undefined
         });
     
         const results = [];
@@ -147,8 +148,8 @@ export const azureSearchService = {
                 filePath: doc.filePath || '',
                 pageNumber: doc.pageNumber,
                 score: result.score,
-                projectId: doc.project_id,
-                employeeId: doc.employee_id
+                entityType: doc.entity_type,
+                entityId: doc.entity_id
             });
         }
 
@@ -220,7 +221,8 @@ export const azureSearchService = {
     fileName: string;
     filePath: string;
     content: string;
-    projectId: string;
+    entityType: string;
+    entityId: string;
     contentType?: string;
     size?: number;
     lastModified?: Date;
@@ -233,7 +235,8 @@ export const azureSearchService = {
         fileName: document.fileName,
         filePath: document.filePath,
         content: document.content,
-        project_id: document.projectId,
+        entity_type: document.entityType,
+        entity_id: document.entityId,
         contentType: document.contentType || 'application/octet-stream',
         size: document.size || 0,
         lastModified: document.lastModified || new Date(),
@@ -251,13 +254,14 @@ export const azureSearchService = {
   /**
    * Delete a document from Azure AI Search index
    */
-  async deleteDocument(filePath: string, projectId: string): Promise<boolean> {
+  async deleteDocument(filePath: string, entityType: string, entityId: string): Promise<boolean> {
     try {
       const { searchClient } = getClients();
       
       await searchClient.deleteDocuments([{
         id: filePath,
-        project_id: projectId
+        entity_type: entityType,
+        entity_id: entityId
       }]);
       return true;
     } catch (error) {

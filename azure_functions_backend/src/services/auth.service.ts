@@ -47,15 +47,59 @@ export const authService = {
     return user;
   },
   async login({ email, password }: any) {
-    const user = await prisma.applicationUser.findUnique({ where: { email } });
+    const user = await prisma.applicationUser.findUnique({ 
+      where: { email },
+      include: {
+        userRoles: {
+          where: {
+            isActive: true,
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
+          },
+          include: {
+            role: {
+              include: {
+                rolePermissions: {
+                  where: { isActive: true },
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    
     if (!user) throw new Error('Invalid credentials');
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new Error('Invalid credentials');
+    
+    // Estrai ruoli e permessi dal database
+    const roles = user.userRoles.map(ur => ur.role.name);
+    const permissions = new Set<string>();
+    
+    user.userRoles.forEach(userRole => {
+      userRole.role.rolePermissions.forEach(rolePermission => {
+        permissions.add(rolePermission.permission.name);
+      });
+    });
+    
     const token = jwt.sign(
-      { userId: user.id, roles: user.roles },
+      { 
+        userId: user.id, 
+        username: user.username,
+        email: user.email,
+        roles: roles,
+        permissions: Array.from(permissions)
+      },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
+    
     return { token, user };
   },
   async resetPassword({ email, newPassword }: any) {

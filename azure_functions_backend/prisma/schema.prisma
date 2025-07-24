@@ -31,6 +31,11 @@ model ApplicationUser {
   activityLogs       UserActivityLog[]
   sentNotifications  Notification[] @relation("NotificationSender")
   receivedNotifications Notification[] @relation("NotificationRecipient")
+  
+  // Nuove relazioni per il sistema di ruoli e permessi
+  userRoles          UserRole[]
+  roleAssignments    UserRole[] @relation("RoleAssignment")
+  permissionGrants   RolePermission[] @relation("PermissionGrant")
 }
 
 model CVData {
@@ -162,4 +167,64 @@ model Notification {
   
   recipient   ApplicationUser @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   sender      ApplicationUser? @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+}
+
+// Sistema di Ruoli e Permessi Granulari
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relazioni
+  userRoles   UserRole[]
+  rolePermissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  resource    String   // es. "users", "projects", "tasks"
+  action      String   // es. "create", "read", "update", "delete"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  // Relazioni
+  rolePermissions RolePermission[]
+}
+
+model UserRole {
+  id                String          @id @default(uuid())
+  userId            String
+  roleId            String
+  assignedBy        String?
+  assignedAt        DateTime        @default(now())
+  expiresAt         DateTime?
+  isActive          Boolean         @default(true)
+  
+  // Relazioni
+  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role              Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedByUser    ApplicationUser? @relation("RoleAssignment", fields: [assignedBy], references: [id], onDelete: SetNull)
+  
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  grantedAt    DateTime   @default(now())
+  grantedBy    String?
+  isActive     Boolean    @default(true)
+  
+  // Relazioni
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  grantedByUser ApplicationUser? @relation("PermissionGrant", fields: [grantedBy], references: [id], onDelete: SetNull)
+  
+  @@unique([roleId, permissionId])
 } 

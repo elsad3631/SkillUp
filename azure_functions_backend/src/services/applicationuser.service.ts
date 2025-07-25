@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+
 const prisma = new PrismaClient();
 
 export const applicationUserService = {
@@ -82,6 +84,11 @@ export const applicationUserService = {
     // Initialize with empty roles array - roles will be managed through UserRole table
     prismaData.roles = [];
 
+    // Hash password if provided (passwordHash field contains the plain password from frontend)
+    if (data.passwordHash) {
+      prismaData.passwordHash = await bcrypt.hash(data.passwordHash, 10);
+    }
+
     if (Array.isArray(data.hardSkills) && data.hardSkills.length > 0) {
       prismaData.hardSkills = { create: data.hardSkills };
     }
@@ -152,7 +159,7 @@ export const applicationUserService = {
 
     // Password hash update (if provided)
     if (data.passwordHash) {
-      prismaData.passwordHash = data.passwordHash;
+      prismaData.passwordHash = await bcrypt.hash(data.passwordHash, 10);
     }
 
     // --- LOGICA INTELLIGENTE SOLO PER hardSkills ---

@@ -695,7 +695,7 @@ export default defineComponent({
         const applicationUserData: any = {
           username: form.username?.trim(),
           email: form.email?.trim(),
-          passwordHash: form.password, // In production, this should be hashed on server
+          passwordHash: form.password, // Password in chiaro - verrà hashata dal backend
           roles: form.roles || ["employee"],
           firstName: form.firstName?.trim(),
           lastName: form.lastName?.trim(),

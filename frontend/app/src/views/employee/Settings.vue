@@ -470,6 +470,220 @@
     </div>
   </div>
 
+  
+  <!-- Sezione Change Password -->
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title d-flex align-items-center">
+        <KTIcon icon-name="shield-tick" icon-class="fs-2 me-2 text-primary" />
+        <h3 class="m-0">Change Password</h3>
+      </div>
+      <div class="card-toolbar">
+        <span class="badge badge-light-primary fs-7">
+          <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+          Secure
+        </span>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Info Alert -->
+      <div class="alert alert-info d-flex align-items-center mb-6">
+        <KTIcon icon-name="information-5" icon-class="fs-2 me-3" />
+        <div>
+          <strong>Password Requirements:</strong>
+          <ul class="mb-0 mt-2">
+            <li>At least 8 characters long</li>
+            <li>Use a mix of letters, numbers, and symbols for better security</li>
+            <li>Don't reuse passwords from other accounts</li>
+          </ul>
+        </div>
+      </div>
+
+      <form @submit.prevent="changePassword">
+        <!-- Current Password -->
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label required fw-semobold fs-6">
+            <KTIcon icon-name="lock" icon-class="fs-6 me-2" />
+            Current Password
+          </label>
+          <div class="col-lg-8 fv-row">
+            <div class="position-relative">
+              <input
+                :type="showCurrentPassword ? 'text' : 'password'"
+                name="currentPassword"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Enter your current password"
+                v-model="passwordForm.currentPassword"
+                required
+              />
+              <button
+                type="button"
+                class="btn btn-icon btn-sm position-absolute end-0 top-0 h-100"
+                @click="showCurrentPassword = !showCurrentPassword"
+              >
+                <KTIcon :icon-name="showCurrentPassword ? 'eye-slash' : 'eye'" icon-class="fs-2" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Password -->
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label required fw-semobold fs-6">
+            <KTIcon icon-name="key" icon-class="fs-6 me-2" />
+            New Password
+          </label>
+          <div class="col-lg-8 fv-row">
+            <div class="position-relative mb-3">
+              <input
+                :type="showNewPassword ? 'text' : 'password'"
+                name="newPassword"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Enter your new password"
+                v-model="passwordForm.newPassword"
+                required
+                minlength="8"
+              />
+              <button
+                type="button"
+                class="btn btn-icon btn-sm position-absolute end-0 top-0 h-100"
+                @click="showNewPassword = !showNewPassword"
+              >
+                <KTIcon :icon-name="showNewPassword ? 'eye-slash' : 'eye'" icon-class="fs-2" />
+              </button>
+            </div>
+            
+            <!-- Password Strength Indicator -->
+            <div v-if="passwordForm.newPassword" class="mb-3">
+              <div class="d-flex align-items-center mb-2">
+                <span class="fw-semobold me-2">Password Strength:</span>
+                <span :class="passwordStrengthClass">{{ passwordStrengthText }}</span>
+              </div>
+              <div class="progress h-8px">
+                <div 
+                  class="progress-bar" 
+                  :class="passwordStrengthBarClass"
+                  :style="{ width: passwordStrengthPercentage + '%' }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Password Requirements Checklist -->
+            <div v-if="passwordForm.newPassword" class="mb-3">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-2">
+                    <KTIcon 
+                      :icon-name="passwordRequirements.length ? 'check' : 'cross'" 
+                      :icon-class="passwordRequirements.length ? 'fs-6 text-success me-2' : 'fs-6 text-danger me-2'" 
+                    />
+                    <span :class="passwordRequirements.length ? 'text-success' : 'text-muted'">
+                      At least 8 characters
+                    </span>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <KTIcon 
+                      :icon-name="passwordRequirements.uppercase ? 'check' : 'cross'" 
+                      :icon-class="passwordRequirements.uppercase ? 'fs-6 text-success me-2' : 'fs-6 text-danger me-2'" 
+                    />
+                    <span :class="passwordRequirements.uppercase ? 'text-success' : 'text-muted'">
+                      One uppercase letter
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-2">
+                    <KTIcon 
+                      :icon-name="passwordRequirements.lowercase ? 'check' : 'cross'" 
+                      :icon-class="passwordRequirements.lowercase ? 'fs-6 text-success me-2' : 'fs-6 text-danger me-2'" 
+                    />
+                    <span :class="passwordRequirements.lowercase ? 'text-success' : 'text-muted'">
+                      One lowercase letter
+                    </span>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <KTIcon 
+                      :icon-name="passwordRequirements.number ? 'check' : 'cross'" 
+                      :icon-class="passwordRequirements.number ? 'fs-6 text-success me-2' : 'fs-6 text-danger me-2'" 
+                    />
+                    <span :class="passwordRequirements.number ? 'text-success' : 'text-muted'">
+                      One number
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm New Password -->
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label required fw-semobold fs-6">
+            <KTIcon icon-name="shield-tick" icon-class="fs-6 me-2" />
+            Confirm New Password
+          </label>
+          <div class="col-lg-8 fv-row">
+            <div class="position-relative">
+              <input
+                :type="showConfirmPassword ? 'text' : 'password'"
+                name="confirmPassword"
+                class="form-control form-control-lg form-control-solid"
+                placeholder="Confirm your new password"
+                v-model="passwordForm.confirmPassword"
+                required
+              />
+              <button
+                type="button"
+                class="btn btn-icon btn-sm position-absolute end-0 top-0 h-100"
+                @click="showConfirmPassword = !showConfirmPassword"
+              >
+                <KTIcon :icon-name="showConfirmPassword ? 'eye-slash' : 'eye'" icon-class="fs-2" />
+              </button>
+            </div>
+            
+            <!-- Password Match Indicator -->
+            <div v-if="passwordForm.newPassword && passwordForm.confirmPassword" class="mt-2">
+              <div v-if="passwordForm.newPassword === passwordForm.confirmPassword" class="d-flex align-items-center text-success">
+                <KTIcon icon-name="check-circle" icon-class="fs-6 me-2" />
+                <span class="fw-semobold">Passwords match!</span>
+              </div>
+              <div v-else class="d-flex align-items-center text-danger">
+                <KTIcon icon-name="cross-circle" icon-class="fs-6 me-2" />
+                <span class="fw-semobold">Passwords do not match</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card-footer d-flex justify-content-end py-6 px-9">
+          <button
+            type="button"
+            class="btn btn-light btn-active-light-primary me-2"
+            @click="resetPasswordForm"
+          >
+            <KTIcon icon-name="refresh" icon-class="fs-2 me-2" />
+            Reset Form
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            :disabled="!isPasswordFormValid || changingPassword"
+          >
+            <span v-if="changingPassword" class="indicator-progress">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Updating Password...
+            </span>
+            <span v-else class="indicator-label">
+              <KTIcon icon-name="shield-tick" icon-class="fs-2 me-2" />
+              Update Password
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal per aggiungere ruolo -->
   <div v-if="showAddRoleModal" class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -563,6 +777,98 @@ export default defineComponent({
     const selectedRoleId = ref('');
     const roleExpirationDate = ref('');
     const addingRole = ref(false);
+
+    // Password change management
+    const passwordForm = ref({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    const changingPassword = ref(false);
+
+    // Password visibility toggles
+    const showCurrentPassword = ref(false);
+    const showNewPassword = ref(false);
+    const showConfirmPassword = ref(false);
+
+    // Password strength calculation
+    const calculatePasswordStrength = (password: string) => {
+      if (!password) return { score: 0, text: '', percentage: 0, class: '', barClass: '' };
+      
+      let score = 0;
+      const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /\d/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      };
+
+      // Calculate score
+      if (requirements.length) score += 1;
+      if (requirements.uppercase) score += 1;
+      if (requirements.lowercase) score += 1;
+      if (requirements.number) score += 1;
+      if (requirements.special) score += 1;
+      if (password.length >= 12) score += 1;
+
+      // Determine strength level
+      let text, class_name, barClass;
+      if (score <= 2) {
+        text = 'Weak';
+        class_name = 'text-danger';
+        barClass = 'bg-danger';
+      } else if (score <= 4) {
+        text = 'Fair';
+        class_name = 'text-warning';
+        barClass = 'bg-warning';
+      } else if (score <= 5) {
+        text = 'Good';
+        class_name = 'text-info';
+        barClass = 'bg-info';
+      } else {
+        text = 'Strong';
+        class_name = 'text-success';
+        barClass = 'bg-success';
+      }
+
+      return {
+        score,
+        text,
+        class: class_name,
+        barClass,
+        percentage: Math.min((score / 6) * 100, 100)
+      };
+    };
+
+    // Computed properties for password strength
+    const passwordStrength = computed(() => calculatePasswordStrength(passwordForm.value.newPassword));
+    const passwordStrengthText = computed(() => passwordStrength.value.text);
+    const passwordStrengthClass = computed(() => passwordStrength.value.class);
+    const passwordStrengthBarClass = computed(() => passwordStrength.value.barClass);
+    const passwordStrengthPercentage = computed(() => passwordStrength.value.percentage);
+
+    // Password requirements
+    const passwordRequirements = computed(() => {
+      const password = passwordForm.value.newPassword;
+      if (!password) return { length: false, uppercase: false, lowercase: false, number: false };
+      
+      return {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /\d/.test(password)
+      };
+    });
+
+    // Computed property for password form validation
+    const isPasswordFormValid = computed(() => {
+      return passwordForm.value.currentPassword &&
+             passwordForm.value.newPassword &&
+             passwordForm.value.confirmPassword &&
+             passwordForm.value.newPassword === passwordForm.value.confirmPassword &&
+             passwordForm.value.newPassword.length >= 8;
+    });
 
     // Computed property for available roles (filtered)
     const availableRoles = computed(() => {
@@ -983,6 +1289,66 @@ export default defineComponent({
       }
     };
 
+    // Password change functions
+    const changePassword = async () => {
+      if (!isPasswordFormValid.value || !userData.value?.id) return;
+      
+      changingPassword.value = true;
+      try {
+        const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+        
+        // Use the auth service endpoint for password change
+        const response = await fetch(`${API_URL}/auth/update-password`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            userId: userData.value.id,
+            currentPassword: passwordForm.value.currentPassword,
+            newPassword: passwordForm.value.newPassword,
+            confirmPassword: passwordForm.value.confirmPassword
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.message || 'Failed to change password');
+        }
+        
+        // Reset form
+        resetPasswordForm();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Password changed!',
+          text: 'Your password has been changed successfully.'
+        });
+      } catch (error: any) {
+        console.error("Error changing password:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message || 'There was an error changing your password.'
+        });
+      } finally {
+        changingPassword.value = false;
+      }
+    };
+
+    const resetPasswordForm = () => {
+      passwordForm.value = {
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      };
+      // Reset visibility toggles
+      showCurrentPassword.value = false;
+      showNewPassword.value = false;
+      showConfirmPassword.value = false;
+    };
+
     const removeRole = async (role: Role) => {
       if (!userData.value?.id) return;
       
@@ -1058,6 +1424,22 @@ export default defineComponent({
       addingRole,
       addRole,
       removeRole,
+      // Password management
+      passwordForm,
+      changingPassword,
+      isPasswordFormValid,
+      changePassword,
+      resetPasswordForm,
+      // Password visibility
+      showCurrentPassword,
+      showNewPassword,
+      showConfirmPassword,
+      // Password strength
+      passwordStrengthText,
+      passwordStrengthClass,
+      passwordStrengthBarClass,
+      passwordStrengthPercentage,
+      passwordRequirements,
     };
   },
 });

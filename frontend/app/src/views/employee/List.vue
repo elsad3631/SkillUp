@@ -87,10 +87,18 @@
 
                 <template v-slot:role="{ row: employee }">
                     <div class="d-flex flex-column align-items-start">
-                        <span class="badge badge-light-primary">
-                            <KTIcon icon-name="shield-tick" icon-class="fs-7 me-1" />
-                            {{ employee.currentRole }}
-                        </span>
+                        <div v-if="employee.userRoles && employee.userRoles.length > 0">
+                            <span v-for="role in employee.userRoles" :key="role.id" class="badge badge-light-primary me-1 mb-1">
+                                <KTIcon icon-name="shield-tick" icon-class="fs-7 me-1" />
+                                {{ role.description || role.name }}
+                            </span>
+                        </div>
+                        <div v-else>
+                            <span class="badge badge-light-warning">
+                                <KTIcon icon-name="shield-cross" icon-class="fs-7 me-1" />
+                                No roles assigned
+                            </span>
+                        </div>
                     </div>
                 </template>
 

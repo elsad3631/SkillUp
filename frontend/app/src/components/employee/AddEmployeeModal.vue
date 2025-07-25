@@ -28,6 +28,18 @@
                 <strong>Nota:</strong> Caricando il CV, l'utente verrà creato automaticamente nel sistema con le credenziali temporanee.
               </div>
             </div>
+            
+            <!-- Role Selection for CV Creation -->
+            <div class="mb-4">
+              <label class="form-label required">Ruolo</label>
+              <select v-model="cvForm.roles" class="form-select" multiple>
+                <option v-for="role in roles" :key="role.id" :value="role.name">
+                  {{ role.description || role.name }}
+                </option>
+              </select>
+              <div class="form-text">Hold Ctrl/Cmd to select multiple roles</div>
+            </div>
+            
             <button class="btn btn-primary" :disabled="cvLoading || !cvFile" @click="extractFromCV">
               <span v-if="cvLoading" class="spinner-border spinner-border-sm me-2"></span>
               Crea utente da CV
@@ -75,10 +87,9 @@
                   <div class="col-md-6">
                     <label class="form-label required">Role</label>
                     <select v-model="form.roles" class="form-select" multiple>
-                      <option value="employee">Employee</option>
-                      <option value="admin">Admin</option>
-                      <option value="manager">Manager</option>
-                      <option value="hr">HR</option>
+                      <option v-for="role in roles" :key="role.id" :value="role.name">
+                        {{ role.description || role.name }}
+                      </option>
                     </select>
                     <div class="form-text">Hold Ctrl/Cmd to select multiple roles</div>
                   </div>
@@ -377,8 +388,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive, onMounted } from "vue";
 import { createEmployee, extractCVData } from "@/core/services/businessServices/Employee";
+import { getAllRoles, type Role } from "@/core/services/businessServices/Role";
 import type { Employee } from "@/core/models/Employee";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
@@ -400,13 +412,60 @@ export default defineComponent({
     const cvLoading = ref(false);
     const cvPrompt = ref('');
     const skillsList = ref('');
+    const roles = ref<Role[]>([]);
     const { currentUser } = useCurrentUser();
+
+    // Load roles from database
+    const loadRoles = async () => {
+      try {
+        const loadedRoles = await getAllRoles();
+        roles.value = loadedRoles;
+        
+        // Set default roles for forms if they're empty
+        if (loadedRoles.length > 0) {
+          const defaultRole = loadedRoles[0].name;
+          if (form.roles.length === 0) {
+            form.roles = [defaultRole];
+          }
+          if (cvForm.roles.length === 0) {
+            cvForm.roles = [defaultRole];
+          }
+        }
+      } catch (error) {
+        console.error('Error loading roles:', error);
+        // Fallback to default roles if API fails
+        roles.value = [
+          { id: '1', name: 'employee', description: 'Employee', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+          { id: '2', name: 'admin', description: 'Administrator', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+          { id: '3', name: 'manager', description: 'Manager', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+          { id: '4', name: 'hr', description: 'Human Resources', isActive: true, createdAt: new Date(), updatedAt: new Date() }
+        ];
+        
+        // Set default roles for forms
+        if (form.roles.length === 0) {
+          form.roles = ['employee'];
+        }
+        if (cvForm.roles.length === 0) {
+          cvForm.roles = ['employee'];
+        }
+      }
+    };
+
+    // Load roles when component mounts
+    onMounted(() => {
+      loadRoles();
+    });
+
+    // Separate form for CV creation
+    const cvForm = reactive({
+      roles: [] as string[],
+    });
 
     const form = reactive({
       username: "mario.rossi",
       email: "mario.rossi@example.com",
       password: "",
-      roles: ["employee"],
+      roles: [] as string[],
       firstName: "Mario",
       lastName: "Rossi",
       phone: "+391234567890",
@@ -526,7 +585,7 @@ export default defineComponent({
         });
 
         // Invia la richiesta in background senza attendere la risposta
-        extractCVData(cvFile.value, currentUser.value?.id).then((result) => {
+        extractCVData(cvFile.value, currentUser.value?.id, cvForm.roles).then((result) => {
           
         }).catch((err: any) => {
           // Log dell'errore per debug
@@ -569,12 +628,16 @@ export default defineComponent({
       activeTab.value = 'manual';
       cvFile.value = null;
       
-      // Reset form
+      // Reset cvForm - use first available role or empty array
+      cvForm.roles = roles.value.length > 0 ? [roles.value[0].name] : [];
+      
+      // Reset form - use first available role or empty array
+      const defaultRole = roles.value.length > 0 ? [roles.value[0].name] : [];
       Object.assign(form, {
         username: "",
         email: "",
         password: "",
-        roles: ["employee"],
+        roles: defaultRole,
         firstName: "",
         lastName: "",
         phone: "",
@@ -692,6 +755,8 @@ export default defineComponent({
 
     return {
       form,
+      cvForm,
+      roles,
       loading,
       onSubmit,
       addHardSkill,

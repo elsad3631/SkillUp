@@ -29,6 +29,7 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
     // Parse the form data
     const formData = await request.formData();
     cvFile = formData.get('cv') as unknown as File;
+    const roles = formData.get('roles') as string;
 
     if (!cvFile) {
       return {
@@ -58,8 +59,19 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
     // Get the requesting user ID from headers
     const requestingUserId = request.headers.get('x-user-id');
 
+    // Parse roles if provided
+    let parsedRoles: string[] | undefined;
+    if (roles) {
+      try {
+        parsedRoles = JSON.parse(roles);
+      } catch (error) {
+        context.log('Failed to parse roles:', error);
+        // Continue with undefined roles (will default to admin)
+      }
+    }
+
     // Use cvDataService to extract data and create user
-    const result = await cvDataService.extractFromCV(multerFile, requestingUserId || undefined);
+    const result = await cvDataService.extractFromCV(multerFile, requestingUserId || undefined, parsedRoles);
 
     return {
       status: 201,

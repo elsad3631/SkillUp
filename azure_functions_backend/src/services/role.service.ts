@@ -131,6 +131,12 @@ export class RoleService {
     });
   }
 
+  // Ottenere solo i ruoli di un utente (senza i record UserRole)
+  async getUserRolesOnly(userId: string): Promise<any[]> {
+    const userRoles = await this.getUserRoles(userId);
+    return userRoles.map(userRole => userRole.role);
+  }
+
   // Ottenere tutti i permessi di un utente
   async getUserPermissions(userId: string): Promise<string[]> {
     const userRoles = await this.getUserRoles(userId);

@@ -61,7 +61,18 @@ export const applicationUserService = {
       }
     });
     
-    return userRoles.map((ur: any) => ur.user);
+    // For each user, get their roles and add them to the user object
+    const usersWithRoles = await Promise.all(
+      userRoles.map(async (ur: any) => {
+        const userRoles = await this.getUserRoles(ur.user.id);
+        return {
+          ...ur.user,
+          userRoles: userRoles
+        };
+      })
+    );
+    
+    return usersWithRoles;
   },
 
   async create(data: any) {
@@ -84,7 +95,38 @@ export const applicationUserService = {
       prismaData.cvData = { create: { ...data.cvData, uploadDate: new Date() } };
     }
     
-    return prisma.applicationUser.create({ data: prismaData });
+    // Create the user first
+    const createdUser = await prisma.applicationUser.create({ data: prismaData });
+    
+    // Handle role assignment if roles are provided
+    if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+      try {
+        // Get all available roles
+        const allRoles = await (prisma as any).role.findMany();
+        
+        // Find roles that match the provided role names
+        const rolesToAssign = allRoles.filter((role: any) => data.roles.includes(role.name));
+        
+        // Assign roles to the user
+        for (const role of rolesToAssign) {
+          await (prisma as any).userRole.create({
+            data: {
+              userId: createdUser.id,
+              roleId: role.id,
+              assignedBy: null, // System assignment
+              isActive: true
+            }
+          });
+        }
+        
+        console.log(`✅ Assigned ${rolesToAssign.length} roles to user ${createdUser.email}`);
+      } catch (error) {
+        console.error(`❌ Error assigning roles to user ${createdUser.email}:`, error);
+        // Don't fail user creation if role assignment fails
+      }
+    }
+    
+    return createdUser;
   },
 
   async update(id: string, data: any) {
@@ -355,7 +397,14 @@ export const applicationUserService = {
 
   async getUserRoles(userId: string) {
     const userRoles = await (prisma as any).userRole.findMany({
-      where: { userId, isActive: true },
+      where: { 
+        userId, 
+        isActive: true,
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
       include: {
         role: true
       }

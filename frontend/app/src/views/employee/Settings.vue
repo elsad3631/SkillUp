@@ -436,346 +436,75 @@
     </div>
   </div>
 
-  <!--begin::Sign-in Method-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_signin_method"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bolder m-0">Sign-in Method</h3>
+  <!-- Sezione Roles -->
+  <div class="card mb-6">
+    <div class="card-header">
+      <h3 class="card-title">User Roles</h3>
+      <div class="card-toolbar">
+        <button type="button" class="btn btn-sm btn-primary" @click="showAddRoleModal = true">
+          <KTIcon icon-name="plus" icon-class="fs-2" />
+          Add Role
+        </button>
       </div>
     </div>
-    <!--end::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_signin_method" class="collapse show">
-      <!--begin::Card body-->
-      <div class="card-body border-top p-9">
-        <!--begin::Email Address-->
-        <div class="d-flex flex-wrap align-items-center mb-8">
-          <div id="kt_signin_email" :class="{ 'd-none': emailFormDisplay }">
-            <div class="fs-4 fw-bolder mb-1">Email Address</div>
-            <div class="fs-6 fw-semobold text-gray-600">
-              support@keenthemes.com
-            </div>
-          </div>
-
-          <div
-            id="kt_signin_email_edit"
-            :class="{ 'd-none': !emailFormDisplay }"
-            class="flex-row-fluid"
-          >
-            <!--begin::Form-->
-            <form
-              id="kt_signin_change_email"
-              class="form"
-              novalidate
-              @submit="updateEmail()"
-            >
-              <div class="row mb-6">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="emailaddress"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Enter New Email Address</label
-                    >
-                    <input
-                      type="email"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      id="emailaddress"
-                      placeholder="Email Address"
-                      name="emailaddress"
-                      value="support@keenthemes.com"
-                    />
-                    
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="confirmemailpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Confirm Password</label
-                    >
-                    <input
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="confirmemailpassword"
-                      id="confirmemailpassword"
-                    />
-                    
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex">
-                <button
-                  id="kt_signin_submit"
-                  type="submit"
-                  ref="updateEmailButton"
-                  class="btn btn-primary me-2 px-6"
-                >
-                  <span class="indicator-label"> Update Email </span>
-                  <span class="indicator-progress">
-                    Please wait...
-                    <span
-                      class="spinner-border spinner-border-sm align-middle ms-2"
-                    ></span>
-                  </span>
-                </button>
-                <button
-                  id="kt_signin_cancel"
-                  type="button"
-                  class="btn btn-color-gray-400 btn-active-light-primary px-6"
-                  @click="emailFormDisplay = !emailFormDisplay"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-            <!--end::Form-->
-          </div>
-          <div
-            id="kt_signin_email_button"
-            :class="{ 'd-none': emailFormDisplay }"
-            class="ms-auto"
-          >
-            <button
-              class="btn btn-light fw-bolder px-6"
-              @click="emailFormDisplay = !emailFormDisplay"
-            >
-              Change Email
-            </button>
-          </div>
-        </div>
-        <!--end::Email Address-->
-
-        <!--begin::Password-->
-        <div class="d-flex flex-wrap align-items-center mb-8">
-          <div
-            id="kt_signin_password"
-            :class="{ 'd-none': passwordFormDisplay }"
-          >
-            <div class="fs-4 fw-bolder mb-1">Password</div>
-            <div class="fs-6 fw-semobold text-gray-600">************</div>
-          </div>
-          <div
-            id="kt_signin_password_edit"
-            class="flex-row-fluid"
-            :class="{ 'd-none': !passwordFormDisplay }"
-          >
-            <div class="fs-6 fw-semobold text-gray-600 mb-4">
-              Password must be at least 8 character and contain symbols
-            </div>
-
-            <!--begin::Form-->
-            <form
-              id="kt_signin_change_password"
-              class="form"
-              novalidate
-              @submit="updatePassword()"
-            >
-              <div class="row mb-6">
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="currentpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Current Password</label
-                    >
-                    <input
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="currentpassword"
-                      id="currentpassword"
-                    />
-                    
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="newpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >New Password</label
-                    >
-                    <input
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="newpassword"
-                      id="newpassword"
-                    />
-                    
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label
-                      for="confirmpassword"
-                      class="form-label fs-6 fw-bold mb-3"
-                      >Confirm New Password</label
-                    >
-                    <input
-                      type="password"
-                      class="form-control form-control-lg form-control-solid fw-semobold fs-6"
-                      name="confirmpassword"
-                      id="confirmpassword"
-                    />
-                    
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex">
-                <button
-                  id="kt_password_submit"
-                  type="submit"
-                  ref="updatePasswordButton"
-                  class="btn btn-primary me-2 px-6"
-                >
-                  <span class="indicator-label"> Update Password </span>
-                  <span class="indicator-progress">
-                    Please wait...
-                    <span
-                      class="spinner-border spinner-border-sm align-middle ms-2"
-                    ></span>
-                  </span>
-                </button>
-                <button
-                  id="kt_password_cancel"
-                  type="button"
-                  @click="passwordFormDisplay = !passwordFormDisplay"
-                  class="btn btn-color-gray-400 btn-active-light-primary px-6"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-            <!--end::Form-->
-          </div>
-          <div
-            id="kt_signin_password_button"
-            class="ms-auto"
-            :class="{ 'd-none': passwordFormDisplay }"
-          >
-            <button
-              @click="passwordFormDisplay = !passwordFormDisplay"
-              class="btn btn-light fw-bolder"
-            >
-              Reset Password
-            </button>
-          </div>
-        </div>
-        <!--end::Password-->
-      </div>
-      <!--end::Card body-->
-    </div>
-    <!--end::Content-->
-  </div>
-  <!--end::Sign-in Method-->
-
-  <!--begin::Deactivate Account-->
-  <div class="card mb-5 mb-xl-10">
-    <!--begin::Card header-->
-    <div
-      class="card-header border-0 cursor-pointer"
-      role="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#kt_account_deactivate"
-      aria-expanded="true"
-      aria-controls="kt_account_deactivate"
-    >
-      <div class="card-title m-0">
-        <h3 class="fw-bolder m-0">Deactivate Account</h3>
-      </div>
-    </div>
-    <!--end::Card header-->
-
-    <!--begin::Content-->
-    <div id="kt_account_deactivate" class="collapse show">
-      <!--begin::Form-->
-      <form
-        id="kt_account_deactivate_form"
-        class="form"
-        @submit.prevent="deactivateAccount()"
-      >
-        <!--begin::Card body-->
-        <div class="card-body border-top p-9">
-          <div
-            class="notice d-flex bg-light-warning rounded border-warning border border-dashed mb-9 p-6"
-          >
-            <KTIcon
-              icon-name="information-5"
-              icon-class="fs-2tx text-warning me-4"
-            />
-            <!--begin::Wrapper-->
-            <div class="d-flex flex-stack flex-grow-1">
-              <!--begin::Content-->
-              <div class="fw-semobold">
-                <h4 class="text-gray-800 fw-bold">
-                  You Are Deactivating Your Account
-                </h4>
-
-                <div class="fs-6 text-gray-600">
-                  For extra security, this requires you to confirm your email or
-                  phone number when you reset yousignr password. <br /><a
-                    class="fw-bold"
-                    href="#"
-                    >Learn more</a
-                  >
-                </div>
-              </div>
-              <!--end::Content-->
-            </div>
-            <!--end::Wrapper-->
-          </div>
-
-          <!--begin::Form input row-->
-          <div class="form-check form-check-solid fv-row">
-            <input
-              name="deactivate"
-              class="form-check-input"
-              type="checkbox"
-              value=""
-              id="deactivate"
-            />
-            <label
-              class="form-check-label fw-semobold ps-2 fs-6"
-              for="deactivate"
-              >Confirm Account Deactivation</label
-            >
-          </div>
-          <!--end::Form input row-->
-        </div>
-        <!--end::Card body-->
-
-        <!--begin::Card footer-->
-        <div class="card-footer d-flex justify-content-end py-6 px-9">
-          <button
-            id="kt_account_deactivate_account_submit"
-            ref="submitButton5"
-            type="submit"
-            class="btn btn-danger fw-semobold"
-          >
-            <span class="indicator-label"> Deactivate Account </span>
-            <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
+    <div class="card-body">
+      <div v-if="userRoles && userRoles.length > 0">
+        <div v-for="role in userRoles" :key="role.id" class="mb-3 p-3 border rounded d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge badge-light-primary fs-6">
+              <KTIcon icon-name="shield-tick" icon-class="fs-7 me-1" />
+              {{ role.description || role.name }}
             </span>
+            <small class="text-muted d-block mt-1">Role ID: {{ role.id }}</small>
+          </div>
+          <button type="button" class="btn btn-sm btn-danger" @click="removeRole(role)">
+            <KTIcon icon-name="trash" icon-class="fs-3" />
+            Remove
           </button>
         </div>
-        <!--end::Card footer-->
-      </form>
-      <!--end::Form-->
+      </div>
+      <div v-else class="text-center text-muted py-4">
+        <KTIcon icon-name="shield-cross" icon-class="fs-2x mb-2" />
+        <p>No roles assigned to this user</p>
+      </div>
     </div>
-    <!--end::Content-->
   </div>
-  <!--end::Deactivate Account-->
+
+  <!-- Modal per aggiungere ruolo -->
+  <div v-if="showAddRoleModal" class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Role to User</h5>
+          <button type="button" class="btn-close" @click="showAddRoleModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Select Role</label>
+            <select v-model="selectedRoleId" class="form-select">
+              <option value="">Choose a role...</option>
+              <option v-for="role in availableRoles" :key="role.id" :value="role.id">
+                {{ role.description || role.name }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Expiration Date (Optional)</label>
+            <input type="date" v-model="roleExpirationDate" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showAddRoleModal = false">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="addRole" :disabled="!selectedRoleId || addingRole">
+            <span v-if="addingRole" class="spinner-border spinner-border-sm me-2"></span>
+            Add Role
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 
   </div>
   <!--end::Settings Content-->
@@ -783,17 +512,13 @@
 
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
-import { defineComponent, ref, inject, watch, onMounted, onUnmounted, computed, nextTick } from "vue";
+import { defineComponent, ref, inject, watch, onMounted, computed } from "vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
-import * as Yup from "yup";
-import ApiService from "@/core/services/ApiService";
-import { useAuthStore } from "@/stores/auth";
-// Updated to use ApplicationUser API calls
-// import { getEmployee, updateEmployee } from "@/core/services/businessServices/Employee";
 import { useRoute } from "vue-router";
 import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
+import { getAllRoles, getUserRoles, assignRoleToUser, removeRoleFromUser, type Role } from "@/core/services/businessServices/Role";
 import type { Employee } from "@/core/models/Employee";
 
 interface CvData {
@@ -825,19 +550,25 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const submitButton1 = ref<HTMLElement | null>(null);
-    const submitButton2 = ref<HTMLElement | null>(null);
-    const submitButton3 = ref<HTMLElement | null>(null);
-    const submitButton4 = ref<HTMLElement | null>(null);
-    const submitButton5 = ref<HTMLElement | null>(null);
-    const updateEmailButton = ref<HTMLElement | null>(null);
-    const updatePasswordButton = ref<HTMLElement | null>(null);
 
     // Reactive states
-    const emailFormDisplay = ref(false);
-    const passwordFormDisplay = ref(false);
     const editingHardSkillIndex = ref<number | null>(null);
     const editingSoftSkillIndex = ref<number | null>(null);
     const editingExperienceIndex = ref<number | null>(null);
+
+    // Role management
+    const userRoles = ref<Role[]>([]);
+    const allRoles = ref<Role[]>([]);
+    const showAddRoleModal = ref(false);
+    const selectedRoleId = ref('');
+    const roleExpirationDate = ref('');
+    const addingRole = ref(false);
+
+    // Computed property for available roles (filtered)
+    const availableRoles = computed(() => {
+      const assignedRoleIds = userRoles.value.map(role => role.id);
+      return allRoles.value.filter(role => !assignedRoleIds.includes(role.id));
+    });
 
     // Determina se siamo in modalità employee view o account view
     const isEmployeeView = computed(() => !!route.params.id);
@@ -878,15 +609,43 @@ export default defineComponent({
       }
     });
 
+    // Role management functions - defined before watcher
+    const loadUserRoles = async () => {
+      try {
+        if (userData.value?.id) {
+          const roles = await getUserRoles(userData.value.id);
+          userRoles.value = roles || [];
+        } else {
+          userRoles.value = [];
+        }
+      } catch (error) {
+        console.error("Error loading user roles:", error);
+        userRoles.value = [];
+      }
+    };
+
+    const loadAvailableRoles = async () => {
+      try {
+        const roles = await getAllRoles();
+        allRoles.value = roles;
+      } catch (error) {
+        console.error("Error loading available roles:", error);
+      }
+    };
+
     // Watch for user data changes and update profile details
-    watch(userData, (val) => {
+    watch(userData, async (val) => {
       if (val) {
         profileDetails.value = {
           firstName: val.firstName || val.first_name || '',
           lastName: val.lastName || val.last_name || '',
           email: val.email || '',
           phone: val.phone || '',
-          dateOfBirth: val.dateOfBirth || val.date_of_birth || '',
+          dateOfBirth: val.dateOfBirth || val.date_of_birth ? 
+            (typeof val.dateOfBirth === 'string' || typeof val.date_of_birth === 'string' ? 
+              (val.dateOfBirth || val.date_of_birth).split('T')[0] : 
+              new Date(val.dateOfBirth || val.date_of_birth).toISOString().split('T')[0]
+            ) : '',
           placeOfBirth: val.placeOfBirth || val.place_of_birth || '',
           address: val.address || '',
           currentRole: val.currentRole || val.current_role || '',
@@ -900,10 +659,11 @@ export default defineComponent({
             storageUrl: val.cvData?.storageUrl || val.cv_data?.storage_url || ''
           }
         };
+        
+        // Reload roles when user changes
+        await loadUserRoles();
       }
     }, { immediate: true });
-
-    const authStore = useAuthStore();
 
     const saveChanges1 = async () => {
       if (submitButton1.value) {
@@ -993,100 +753,6 @@ export default defineComponent({
             submitButton1.value?.removeAttribute("data-kt-indicator");
           }, 1000);
         }
-      }
-    };
-
-    const saveChanges2 = () => {
-      if (submitButton2.value) {
-        // Activate indicator
-        submitButton2.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          submitButton2.value?.removeAttribute("data-kt-indicator");
-        }, 2000);
-      }
-    };
-
-    const saveChanges3 = () => {
-      if (submitButton3.value) {
-        // Activate indicator
-        submitButton3.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          submitButton3.value?.removeAttribute("data-kt-indicator");
-        }, 2000);
-      }
-    };
-
-    const saveChanges4 = () => {
-      if (submitButton4.value) {
-        // Activate indicator
-        submitButton4.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          submitButton4.value?.removeAttribute("data-kt-indicator");
-        }, 2000);
-      }
-    };
-
-    const deactivateAccount = () => {
-      if (submitButton5.value) {
-        // Activate indicator
-        submitButton5.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          submitButton5.value?.removeAttribute("data-kt-indicator");
-
-          Swal.fire({
-            text: "Email is successfully changed!",
-            icon: "success",
-            confirmButtonText: "Ok",
-            buttonsStyling: false,
-            heightAuto: false,
-            customClass: {
-              confirmButton: "btn btn-light-primary",
-            },
-          }).then(() => {
-            emailFormDisplay.value = false;
-          });
-        }, 2000);
-      }
-    };
-
-    const updateEmail = () => {
-      if (updateEmailButton.value) {
-        // Activate indicator
-        updateEmailButton.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          updateEmailButton.value?.removeAttribute("data-kt-indicator");
-
-          emailFormDisplay.value = false;
-        }, 2000);
-      }
-    };
-
-    const updatePassword = () => {
-      if (updatePasswordButton.value) {
-        // Activate indicator
-        updatePasswordButton.value.setAttribute("data-kt-indicator", "on");
-
-        setTimeout(() => {
-          updatePasswordButton.value?.removeAttribute("data-kt-indicator");
-
-          Swal.fire({
-            text: "Password is successfully changed!",
-            icon: "success",
-            confirmButtonText: "Ok",
-            buttonsStyling: false,
-            heightAuto: false,
-            customClass: {
-              confirmButton: "btn btn-light-primary",
-            },
-          }).then(() => {
-            passwordFormDisplay.value = false;
-          });
-        }, 2000);
       }
     };
 
@@ -1279,34 +945,92 @@ export default defineComponent({
       }
     };
 
-    // Clean up temporary files on component unmount
-    onMounted(() => {
-      window.addEventListener('beforeunload', () => {
-        // This cleanup is now handled by onUnmounted
-      });
-    });
 
-    onUnmounted(async () => {
-      // Cleanup is no longer needed since avatar management moved to Account.vue
+
+    const addRole = async () => {
+      if (!selectedRoleId.value || !userData.value?.id) return;
+      
+      addingRole.value = true;
+      try {
+        await assignRoleToUser({
+          userId: userData.value.id,
+          roleId: selectedRoleId.value,
+          expiresAt: roleExpirationDate.value || undefined
+        });
+        
+        // Reload user roles
+        await loadUserRoles();
+        
+        // Reset form
+        selectedRoleId.value = '';
+        roleExpirationDate.value = '';
+        showAddRoleModal.value = false;
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Role assigned!',
+          text: 'The role has been assigned successfully.'
+        });
+      } catch (error) {
+        console.error("Error assigning role:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'There was an error assigning the role.'
+        });
+      } finally {
+        addingRole.value = false;
+      }
+    };
+
+    const removeRole = async (role: Role) => {
+      if (!userData.value?.id) return;
+      
+      const confirm = await Swal.fire({
+        title: 'Remove Role?',
+        text: `Are you sure you want to remove the role "${role.description || role.name}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, remove it!'
+      });
+      
+      if (confirm.isConfirmed) {
+        try {
+          await removeRoleFromUser(userData.value.id, role.id);
+          
+          // Reload user roles
+          await loadUserRoles();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Role removed!',
+            text: 'The role has been removed successfully.'
+          });
+        } catch (error) {
+          console.error("Error removing role:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'There was an error removing the role.'
+          });
+        }
+      }
+    };
+
+    // Load roles on mount
+    onMounted(async () => {
+      // Load roles on mount
+      await loadUserRoles();
+      await loadAvailableRoles();
     });
 
     return {
       submitButton1,
-      submitButton2,
-      submitButton3,
-      submitButton4,
-      submitButton5,
       saveChanges1,
-      saveChanges2,
-      saveChanges3,
-      saveChanges4,
-      deactivateAccount,
       profileDetails,
       employee: userData, // Unified reference
-      emailFormDisplay,
-      passwordFormDisplay,
-      updateEmail,
-      updatePassword,
       getAssetPath,
       // Skills management
       addHardSkill,
@@ -1325,6 +1049,15 @@ export default defineComponent({
       deleteExperience: deleteExperienceFn,
       editingExperienceIndex,
       editExperience,
+      // Role management
+      userRoles,
+      availableRoles,
+      showAddRoleModal,
+      selectedRoleId,
+      roleExpirationDate,
+      addingRole,
+      addRole,
+      removeRole,
     };
   },
 });

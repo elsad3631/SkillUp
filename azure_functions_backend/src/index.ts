@@ -16,6 +16,7 @@ import './functions/skillTraining';
 import './functions/skill';
 import './functions/experience';
 import './functions/user';
+import './functions/roles';
 
 // All functions are automatically registered when their modules are imported
 // The @azure/functions app.http() calls in each function file handle the registration 

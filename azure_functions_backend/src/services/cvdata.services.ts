@@ -28,7 +28,7 @@ export const cvDataService = {
   async remove(id: string) {
     return prisma.cVData.delete({ where: { id } });
   },
-  async extractFromCV(file: Express.Multer.File, requestingUserId?: string) {
+  async extractFromCV(file: Express.Multer.File, requestingUserId?: string, roles?: string[]) {
     let cvText = '';
     const ext = file.originalname.split('.').pop()?.toLowerCase();
     if (ext === 'pdf') {
@@ -279,24 +279,49 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
     // Crea l'ApplicationUser nel database
     const createdUser = await applicationUserService.create(applicationUserData);
     
-    // Automatically assign admin role through the role system
-    try {
-      const allRoles = await roleService.getAllRoles();
-      const adminRole = allRoles.find(role => role.name === 'admin');
-      
-      if (adminRole) {
-        await roleService.assignRoleToUser({
-          userId: createdUser.id,
-          roleId: adminRole.id,
-          assignedBy: null // Use null for system assignment
-        });
-        console.log(`✅ Admin role assigned to user ${createdUser.email} (created from CV)`);
-      } else {
-        console.warn(`⚠️ Admin role not found in database for user ${createdUser.email} (created from CV)`);
+    // Assign roles through the role system
+    if (roles && roles.length > 0) {
+      try {
+        const allRoles = await roleService.getAllRoles();
+        
+        for (const roleName of roles) {
+          const role = allRoles.find(r => r.name === roleName);
+          
+          if (role) {
+            await roleService.assignRoleToUser({
+              userId: createdUser.id,
+              roleId: role.id,
+              assignedBy: null // Use null for system assignment
+            });
+            console.log(`✅ Role ${roleName} assigned to user ${createdUser.email} (created from CV)`);
+          } else {
+            console.warn(`⚠️ Role ${roleName} not found in database for user ${createdUser.email} (created from CV)`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error assigning roles to user ${createdUser.email} (created from CV):`, error);
+        // Don't fail user creation if role assignment fails
       }
-    } catch (error) {
-      console.error(`❌ Error assigning admin role to user ${createdUser.email} (created from CV):`, error);
-      // Don't fail user creation if role assignment fails
+    } else {
+      // Default to admin role if no roles provided
+      try {
+        const allRoles = await roleService.getAllRoles();
+        const adminRole = allRoles.find(role => role.name === 'admin');
+        
+        if (adminRole) {
+          await roleService.assignRoleToUser({
+            userId: createdUser.id,
+            roleId: adminRole.id,
+            assignedBy: null // Use null for system assignment
+          });
+          console.log(`✅ Admin role assigned to user ${createdUser.email} (created from CV)`);
+        } else {
+          console.warn(`⚠️ Admin role not found in database for user ${createdUser.email} (created from CV)`);
+        }
+      } catch (error) {
+        console.error(`❌ Error assigning admin role to user ${createdUser.email} (created from CV):`, error);
+        // Don't fail user creation if role assignment fails
+      }
     }
     
     // Crea un log dell'attività se è stato fornito l'ID dell'utente richiedente

@@ -19,6 +19,14 @@ export interface ApplicationUser {
   department?: string | null;
   position?: string | null;
   isAvailable: boolean;
+  userRoles?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
 }
 
 const getApplicationUsers = (filterRequest?: string): Promise<Array<ApplicationUser> | undefined> => {

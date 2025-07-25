@@ -83,7 +83,7 @@ app.post('/api/roles', async (request: HttpRequest, context: InvocationContext):
       return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
     }
 
-    const body = await request.json();
+    const body = await request.json() as { name: string; description?: string };
     const { name, description } = body;
 
     if (!name) {
@@ -118,7 +118,7 @@ app.put('/api/roles/{id}', async (request: HttpRequest, context: InvocationConte
     }
 
     const id = request.params.id;
-    const body = await request.json();
+    const body = await request.json() as { name?: string; description?: string; isActive?: boolean };
     const { name, description, isActive } = body;
 
     const role = await roleService.updateRole(id, { name, description, isActive });
@@ -130,30 +130,35 @@ app.put('/api/roles/{id}', async (request: HttpRequest, context: InvocationConte
 });
 
 // DELETE /api/roles/:id - Elimina ruolo
-app.delete('/api/roles/{id}', async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-  try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
-    }
+app.http('deleteRoleById', {
+  methods: ['DELETE'],
+  route: '/api/roles/{id}',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (!token) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
+      }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
-    }
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
+      }
 
-    // Verifica permesso
-    const hasPermission = await roleService.hasPermission(decoded.userId, 'roles:delete');
-    if (!hasPermission) {
-      return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
-    }
+      // Verifica permesso
+      const hasPermission = await roleService.hasPermission(decoded.userId, 'roles:delete');
+      if (!hasPermission) {
+        return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
+      }
 
-    const id = request.params.id;
-    const role = await roleService.deleteRole(id);
-    return { status: 200, body: JSON.stringify(role) };
-  } catch (error) {
-    context.error('Errore nell\'eliminazione del ruolo:', error);
-    return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+      const id = request.params.id;
+      const role = await roleService.deleteRole(id);
+      return { status: 200, body: JSON.stringify(role) };
+    } catch (error) {
+      context.error('Errore nell\'eliminazione del ruolo:', error);
+      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+    }
   }
 });
 
@@ -176,7 +181,7 @@ app.post('/api/roles/assign', async (request: HttpRequest, context: InvocationCo
       return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
     }
 
-    const body = await request.json();
+    const body = await request.json() as { userId: string; roleId: string; expiresAt?: string };
     const { userId, roleId, expiresAt } = body;
 
     if (!userId || !roleId) {
@@ -198,32 +203,37 @@ app.post('/api/roles/assign', async (request: HttpRequest, context: InvocationCo
 });
 
 // DELETE /api/roles/assign/:userId/:roleId - Rimuovi ruolo da utente
-app.delete('/api/roles/assign/{userId}/{roleId}', async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-  try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
+app.http('removeRoleFromUser', {
+  methods: ['DELETE'],
+  route: '/api/roles/assign/{userId}/{roleId}',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (!token) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
+      }
+
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
+      }
+
+      // Verifica permesso
+      const hasPermission = await roleService.hasPermission(decoded.userId, 'roles:assign');
+      if (!hasPermission) {
+        return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
+      }
+
+      const userId = request.params.userId;
+      const roleId = request.params.roleId;
+
+      const userRole = await roleService.removeRoleFromUser(userId, roleId);
+      return { status: 200, body: JSON.stringify(userRole) };
+    } catch (error) {
+      context.error('Errore nella rimozione del ruolo:', error);
+      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
     }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
-    }
-
-    // Verifica permesso
-    const hasPermission = await roleService.hasPermission(decoded.userId, 'roles:assign');
-    if (!hasPermission) {
-      return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
-    }
-
-    const userId = request.params.userId;
-    const roleId = request.params.roleId;
-
-    const userRole = await roleService.removeRoleFromUser(userId, roleId);
-    return { status: 200, body: JSON.stringify(userRole) };
-  } catch (error) {
-    context.error('Errore nella rimozione del ruolo:', error);
-    return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
   }
 });
 

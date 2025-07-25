@@ -1,8 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { RoleService } from './role.service';
 
 const prisma = new PrismaClient();
+const roleService = new RoleService();
 const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
 const JWT_EXPIRES_IN = '8h';
 
@@ -13,7 +15,7 @@ export const authService = {
     email, 
     password, 
     username,
-    roles = ['employee'],
+    roles = ['admin'], // Default to admin role instead of employee
     currentRole,
     department,
     dateOfBirth,
@@ -32,7 +34,7 @@ export const authService = {
         username: generatedUsername,
         email, 
         passwordHash, 
-        roles,
+        roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
         firstName: first_name,
         lastName: last_name,
         currentRole,
@@ -44,47 +46,63 @@ export const authService = {
         isAvailable
       },
     });
+
+    // Automatically assign admin role through the role system
+    try {
+      const allRoles = await roleService.getAllRoles();
+      const adminRole = allRoles.find(role => role.name === 'admin');
+      
+      if (adminRole) {
+        await roleService.assignRoleToUser({
+          userId: user.id,
+          roleId: adminRole.id,
+          assignedBy: null // Use null for system assignment
+        });
+        console.log(`✅ Admin role assigned to user ${user.email}`);
+      } else {
+        console.warn(`⚠️ Admin role not found in database for user ${user.email}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error assigning admin role to user ${user.email}:`, error);
+      // Don't fail registration if role assignment fails
+    }
+
     return user;
   },
   async login({ email, password }: any) {
     const user = await prisma.applicationUser.findUnique({ 
-      where: { email },
-      include: {
-        userRoles: {
-          where: {
-            isActive: true,
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } },
-            ],
-          },
-          include: {
-            role: {
-              include: {
-                rolePermissions: {
-                  where: { isActive: true },
-                  include: {
-                    permission: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      where: { email }
     });
     
     if (!user) throw new Error('Invalid credentials');
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) throw new Error('Invalid credentials');
     
-    // Estrai ruoli e permessi dal database
-    const roles = user.userRoles.map(ur => ur.role.name);
+    // Get roles and permissions from the UserRole table
+    const userRoles = await (prisma as any).userRole.findMany({
+      where: { userId: user.id, isActive: true },
+      include: {
+        role: {
+          include: {
+            rolePermissions: {
+              include: {
+                permission: true
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    const roles = userRoles.map((ur: any) => ur.role.name);
     const permissions = new Set<string>();
     
-    user.userRoles.forEach(userRole => {
-      userRole.role.rolePermissions.forEach(rolePermission => {
-        permissions.add(rolePermission.permission.name);
+    // Collect all permissions from user's roles
+    userRoles.forEach((userRole: any) => {
+      userRole.role.rolePermissions?.forEach((rp: any) => {
+        if (rp.isActive && rp.permission) {
+          permissions.add(rp.permission.name);
+        }
       });
     });
     

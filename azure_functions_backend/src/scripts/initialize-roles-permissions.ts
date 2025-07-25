@@ -81,36 +81,48 @@ async function initializeRolesAndPermissions() {
     ];
 
     for (const roleData of defaultRoles) {
+      let role;
+      
       try {
-        // Creare il ruolo
-        const role = await roleService.createRole({
+        // Creare il ruolo o ottenerlo se esiste già
+        role = await roleService.createRole({
           name: roleData.name,
           description: roleData.description
         });
         console.log(`✅ Creato ruolo: ${role.name}`);
-
-        // Assegnare i permessi al ruolo
-        for (const permissionName of roleData.permissions) {
-          try {
-            // Usa il servizio invece di Prisma diretto
-            const allPermissions = await permissionService.getAllPermissions();
-            const permission = allPermissions.find((p: any) => p.name === permissionName);
-
-            if (permission) {
-              await permissionService.grantPermissionToRole({
-                roleId: role.id,
-                permissionId: permission.id,
-                grantedBy: 'system' // ID di un utente di sistema
-              });
-            }
-          } catch (error) {
-            console.log(`⚠️ Permesso ${permissionName} non trovato o già assegnato`);
-          }
-        }
-        console.log(`✅ Assegnati ${roleData.permissions.length} permessi al ruolo ${role.name}`);
       } catch (error) {
-        console.log(`⚠️ Ruolo ${roleData.name} già esistente`);
+        // Se il ruolo esiste già, ottienilo
+        const allRoles = await roleService.getAllRoles();
+        role = allRoles.find((r: any) => r.name === roleData.name);
+        if (role) {
+          console.log(`⚠️ Ruolo ${roleData.name} già esistente, recuperato per assegnazione permessi`);
+        } else {
+          console.log(`❌ Errore nel recuperare il ruolo ${roleData.name}`);
+          continue;
+        }
       }
+
+      // Assegnare i permessi al ruolo (sia nuovo che esistente)
+      let assignedCount = 0;
+      for (const permissionName of roleData.permissions) {
+        try {
+          // Usa il servizio invece di Prisma diretto
+          const allPermissions = await permissionService.getAllPermissions();
+          const permission = allPermissions.find((p: any) => p.name === permissionName);
+
+          if (permission) {
+            await permissionService.grantPermissionToRole({
+              roleId: role.id,
+              permissionId: permission.id,
+              grantedBy: null // Use null for system assignment
+            });
+            assignedCount++;
+          }
+        } catch (error) {
+          console.log(`⚠️ Permesso ${permissionName} non trovato o già assegnato`);
+        }
+      }
+      console.log(`✅ Assegnati ${assignedCount} permessi al ruolo ${role.name}`);
     }
 
     // 3. Creare un utente superadmin di default se non esiste
@@ -130,7 +142,7 @@ async function initializeRolesAndPermissions() {
           passwordHash,
           firstName: 'Super',
           lastName: 'Admin',
-          roles: ['superadmin'],
+          roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
           isAvailable: true
         }
       });
@@ -143,7 +155,7 @@ async function initializeRolesAndPermissions() {
         await roleService.assignRoleToUser({
           userId: adminUser.id,
           roleId: superadminRole.id,
-          assignedBy: 'system'
+          assignedBy: null
         });
         console.log('✅ Creato utente superadmin: admin@skillup.com / admin123');
       }

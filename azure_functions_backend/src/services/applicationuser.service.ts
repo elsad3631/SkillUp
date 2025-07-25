@@ -14,7 +14,7 @@ export const applicationUserService = {
   },
 
   async getById(id: string) {
-    return prisma.applicationUser.findUnique({
+    const user = await prisma.applicationUser.findUnique({
       where: { id },
       include: {
         hardSkills: true,
@@ -28,34 +28,48 @@ export const applicationUserService = {
         },
       },
     });
+
+    if (!user) return null;
+
+    // Get user roles from UserRole table
+    const userRoles = await this.getUserRoles(id);
+    
+    return {
+      ...user,
+      userRoles: userRoles
+    };
   },
 
   async getByRole(role: string) {
-    return prisma.applicationUser.findMany({
+    // Get users by role using the UserRole table
+    const userRoles = await (prisma as any).userRole.findMany({
       where: {
-        roles: {
-          has: role,
+        role: {
+          name: role
         },
+        isActive: true
       },
       include: {
-        hardSkills: true,
-        softSkills: true,
-        experiences: true,
-        cvData: true,
-      },
+        user: {
+          include: {
+            hardSkills: true,
+            softSkills: true,
+            experiences: true,
+            cvData: true,
+          }
+        }
+      }
     });
+    
+    return userRoles.map((ur: any) => ur.user);
   },
 
   async create(data: any) {
     // Adatta skills, experiences e cvData per il nested create Prisma
     const prismaData: any = { ...data };
     
-    // Ensure roles is an array
-    if (typeof data.roles === 'string') {
-      prismaData.roles = [data.roles];
-    } else if (!Array.isArray(data.roles)) {
-      prismaData.roles = ['employee']; // Default role
-    }
+    // Initialize with empty roles array - roles will be managed through UserRole table
+    prismaData.roles = [];
 
     if (Array.isArray(data.hardSkills) && data.hardSkills.length > 0) {
       prismaData.hardSkills = { create: data.hardSkills };
@@ -90,14 +104,9 @@ export const applicationUserService = {
       avatar: data.avatar, // Add avatar field mapping
     };
 
-    // Handle roles update
-    if (data.roles) {
-      if (typeof data.roles === 'string') {
-        prismaData.roles = [data.roles];
-      } else if (Array.isArray(data.roles)) {
-        prismaData.roles = data.roles;
-      }
-    }
+    // Roles are managed through the UserRole table, not the roles field
+    // Remove roles from prismaData to prevent updates to the roles field
+    delete prismaData.roles;
 
     // Password hash update (if provided)
     if (data.passwordHash) {
@@ -308,11 +317,28 @@ export const applicationUserService = {
     });
   },
 
-  async updateRoles(id: string, roles: string[]) {
-    return prisma.applicationUser.update({
-      where: { id },
-      data: { roles },
+  async updateRoles(id: string, roleNames: string[]) {
+    // Remove all existing roles for the user
+    await (prisma as any).userRole.deleteMany({
+      where: { userId: id }
     });
+    
+    // Add new roles
+    const allRoles = await (prisma as any).role.findMany();
+    const rolesToAssign = allRoles.filter((role: any) => roleNames.includes(role.name));
+    
+    for (const role of rolesToAssign) {
+      await (prisma as any).userRole.create({
+        data: {
+          userId: id,
+          roleId: role.id,
+          assignedBy: null,
+          isActive: true
+        }
+      });
+    }
+    
+    return this.getById(id);
   },
 
   async getAvailableUsers() {
@@ -325,5 +351,38 @@ export const applicationUserService = {
         cvData: true,
       },
     });
+  },
+
+  async getUserRoles(userId: string) {
+    const userRoles = await (prisma as any).userRole.findMany({
+      where: { userId, isActive: true },
+      include: {
+        role: true
+      }
+    });
+    
+    return userRoles.map((ur: any) => ur.role);
+  },
+
+  async getUserRolesWithPermissions(userId: string) {
+    const userRoles = await (prisma as any).userRole.findMany({
+      where: { userId, isActive: true },
+      include: {
+        role: {
+          include: {
+            rolePermissions: {
+              include: {
+                permission: true
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    return userRoles.map((ur: any) => ({
+      role: ur.role,
+      permissions: ur.role.rolePermissions?.map((rp: any) => rp.permission) || []
+    }));
   },
 }; 

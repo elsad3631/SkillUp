@@ -20,7 +20,7 @@ export interface UpdatePermissionRequest {
 export interface GrantPermissionRequest {
   roleId: string;
   permissionId: string;
-  grantedBy: string;
+  grantedBy: string | null;
 }
 
 export class PermissionService {

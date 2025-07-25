@@ -7,7 +7,10 @@ import path from 'path';
 import bcrypt from 'bcrypt';
 import { applicationUserService } from './applicationuser.service';
 import { userActivityLogService } from './userActivityLog.service';
+import { RoleService } from './role.service';
+
 const prisma = new PrismaClient();
+const roleService = new RoleService();
 
 export const cvDataService = {
   async getAll() {
@@ -246,7 +249,7 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
       username: finalUsername,
       email: extracted.email,
       passwordHash: passwordHash,
-      roles: ['employee'], // Ruolo di default
+      roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
       firstName: extracted.firstName,
       lastName: extracted.lastName,
       dateOfBirth: safeParseDate(extracted.dateOfBirth),
@@ -275,6 +278,26 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
 
     // Crea l'ApplicationUser nel database
     const createdUser = await applicationUserService.create(applicationUserData);
+    
+    // Automatically assign admin role through the role system
+    try {
+      const allRoles = await roleService.getAllRoles();
+      const adminRole = allRoles.find(role => role.name === 'admin');
+      
+      if (adminRole) {
+        await roleService.assignRoleToUser({
+          userId: createdUser.id,
+          roleId: adminRole.id,
+          assignedBy: null // Use null for system assignment
+        });
+        console.log(`✅ Admin role assigned to user ${createdUser.email} (created from CV)`);
+      } else {
+        console.warn(`⚠️ Admin role not found in database for user ${createdUser.email} (created from CV)`);
+      }
+    } catch (error) {
+      console.error(`❌ Error assigning admin role to user ${createdUser.email} (created from CV):`, error);
+      // Don't fail user creation if role assignment fails
+    }
     
     // Crea un log dell'attività se è stato fornito l'ID dell'utente richiedente
     if (requestingUserId) {

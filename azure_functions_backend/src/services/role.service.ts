@@ -1,4 +1,4 @@
-import { PrismaClient, Role, UserRole, RolePermission } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -16,14 +16,14 @@ export interface UpdateRoleRequest {
 export interface AssignRoleRequest {
   userId: string;
   roleId: string;
-  assignedBy: string;
+  assignedBy: string | null;
   expiresAt?: Date;
 }
 
 export class RoleService {
   // Creare un nuovo ruolo
-  async createRole(data: CreateRoleRequest): Promise<Role> {
-    return await prisma.role.create({
+  async createRole(data: CreateRoleRequest): Promise<any> {
+    return await (prisma as any).role.create({
       data: {
         name: data.name,
         description: data.description,
@@ -32,16 +32,16 @@ export class RoleService {
   }
 
   // Ottenere tutti i ruoli
-  async getAllRoles(): Promise<Role[]> {
-    return await prisma.role.findMany({
+  async getAllRoles(): Promise<any[]> {
+    return await (prisma as any).role.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
     });
   }
 
   // Ottenere un ruolo per ID
-  async getRoleById(id: string): Promise<Role | null> {
-    return await prisma.role.findUnique({
+  async getRoleById(id: string): Promise<any | null> {
+    return await (prisma as any).role.findUnique({
       where: { id },
       include: {
         rolePermissions: {
@@ -54,24 +54,24 @@ export class RoleService {
   }
 
   // Aggiornare un ruolo
-  async updateRole(id: string, data: UpdateRoleRequest): Promise<Role> {
-    return await prisma.role.update({
+  async updateRole(id: string, data: UpdateRoleRequest): Promise<any> {
+    return await (prisma as any).role.update({
       where: { id },
       data,
     });
   }
 
   // Eliminare un ruolo (soft delete)
-  async deleteRole(id: string): Promise<Role> {
-    return await prisma.role.update({
+  async deleteRole(id: string): Promise<any> {
+    return await (prisma as any).role.update({
       where: { id },
       data: { isActive: false },
     });
   }
 
   // Assegnare un ruolo a un utente
-  async assignRoleToUser(data: AssignRoleRequest): Promise<UserRole> {
-    return await prisma.userRole.create({
+  async assignRoleToUser(data: AssignRoleRequest): Promise<any> {
+    return await (prisma as any).userRole.create({
       data: {
         userId: data.userId,
         roleId: data.roleId,
@@ -94,8 +94,8 @@ export class RoleService {
   }
 
   // Rimuovere un ruolo da un utente
-  async removeRoleFromUser(userId: string, roleId: string): Promise<UserRole> {
-    return await prisma.userRole.update({
+  async removeRoleFromUser(userId: string, roleId: string): Promise<any> {
+    return await (prisma as any).userRole.update({
       where: {
         userId_roleId: {
           userId,
@@ -107,8 +107,8 @@ export class RoleService {
   }
 
   // Ottenere i ruoli di un utente
-  async getUserRoles(userId: string): Promise<UserRole[]> {
-    return await prisma.userRole.findMany({
+  async getUserRoles(userId: string): Promise<any[]> {
+    return await (prisma as any).userRole.findMany({
       where: {
         userId,
         isActive: true,
@@ -137,7 +137,7 @@ export class RoleService {
     const permissions = new Set<string>();
 
     userRoles.forEach(userRole => {
-      userRole.role.rolePermissions.forEach(rolePermission => {
+      userRole.role.rolePermissions.forEach((rolePermission: any) => {
         if (rolePermission.isActive) {
           permissions.add(rolePermission.permission.name);
         }

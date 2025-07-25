@@ -134,31 +134,36 @@ app.put('/api/permissions/{id}', async (request: HttpRequest, context: Invocatio
 });
 
 // DELETE /api/permissions/:id - Elimina permesso
-app.delete('/api/permissions/{id}', async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-  try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
-    }
+app.http('deletePermissionById', {
+  methods: ['DELETE'],
+  route: '/api/permissions/{id}',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (!token) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
+      }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
-    }
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
+      }
 
-    // Verifica permesso
-    const roleService = new (await import('../services/role.service')).RoleService();
-    const hasPermission = await roleService.hasPermission(decoded.userId, 'permissions:delete');
-    if (!hasPermission) {
-      return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
-    }
+      // Verifica permesso
+      const roleService = new (await import('../services/role.service')).RoleService();
+      const hasPermission = await roleService.hasPermission(decoded.userId, 'permissions:delete');
+      if (!hasPermission) {
+        return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
+      }
 
-    const id = request.params.id;
-    const permission = await permissionService.deletePermission(id);
-    return { status: 200, body: JSON.stringify(permission) };
-  } catch (error) {
-    context.error('Errore nell\'eliminazione del permesso:', error);
-    return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+      const id = request.params.id;
+      const permission = await permissionService.deletePermission(id);
+      return { status: 200, body: JSON.stringify(permission) };
+    } catch (error) {
+      context.error('Errore nell\'eliminazione del permesso:', error);
+      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+    }
   }
 });
 
@@ -203,33 +208,38 @@ app.post('/api/permissions/grant', async (request: HttpRequest, context: Invocat
 });
 
 // DELETE /api/permissions/grant/:roleId/:permissionId - Revoca permesso da ruolo
-app.delete('/api/permissions/grant/{roleId}/{permissionId}', async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
-  try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
+app.http('revokePermissionFromRole', {
+  methods: ['DELETE'],
+  route: '/api/permissions/grant/{roleId}/{permissionId}',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      if (!token) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non fornito' }) };
+      }
+
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
+      }
+
+      // Verifica permesso
+      const roleService = new (await import('../services/role.service')).RoleService();
+      const hasPermission = await roleService.hasPermission(decoded.userId, 'permissions:grant');
+      if (!hasPermission) {
+        return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
+      }
+
+      const roleId = request.params.roleId;
+      const permissionId = request.params.permissionId;
+
+      const rolePermission = await permissionService.revokePermissionFromRole(roleId, permissionId);
+      return { status: 200, body: JSON.stringify(rolePermission) };
+    } catch (error) {
+      context.error('Errore nella revoca del permesso:', error);
+      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
     }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return { status: 401, body: JSON.stringify({ error: 'Token non valido' }) };
-    }
-
-    // Verifica permesso
-    const roleService = new (await import('../services/role.service')).RoleService();
-    const hasPermission = await roleService.hasPermission(decoded.userId, 'permissions:grant');
-    if (!hasPermission) {
-      return { status: 403, body: JSON.stringify({ error: 'Permesso negato' }) };
-    }
-
-    const roleId = request.params.roleId;
-    const permissionId = request.params.permissionId;
-
-    const rolePermission = await permissionService.revokePermissionFromRole(roleId, permissionId);
-    return { status: 200, body: JSON.stringify(rolePermission) };
-  } catch (error) {
-    context.error('Errore nella revoca del permesso:', error);
-    return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
   }
 });
 

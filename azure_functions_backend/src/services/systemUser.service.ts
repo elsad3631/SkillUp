@@ -23,7 +23,7 @@ export const systemUserService = {
             username: 'system',
             email: 'system@skillup.local',
             passwordHash: passwordHash,
-            roles: ['system'],
+            roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
             firstName: 'System',
             lastName: 'User',
             isAvailable: false, // System user is never available for login
@@ -57,10 +57,25 @@ export const systemUserService = {
     try {
       const user = await prisma.applicationUser.findUnique({
         where: { id: userId },
-        select: { username: true, roles: true }
+        select: { username: true }
       });
       
-      return user?.username === 'system' || (user?.roles && user.roles.includes('system')) || false;
+      if (user?.username === 'system') {
+        return true;
+      }
+      
+      // Check if user has system role through UserRole table
+      const systemRole = await (prisma as any).userRole.findFirst({
+        where: {
+          userId: userId,
+          role: {
+            name: 'system'
+          },
+          isActive: true
+        }
+      });
+      
+      return !!systemRole;
     } catch (error) {
       return false;
     }

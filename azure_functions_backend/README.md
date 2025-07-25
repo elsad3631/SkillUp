@@ -54,6 +54,72 @@ npm run build
 npm start
 ```
 
+## Database Migrations
+
+### Creating a new migration
+When you make changes to the Prisma schema (`prisma/schema.prisma`), create a new migration:
+
+```bash
+npx prisma migrate dev --name descriptive_migration_name
+```
+
+This command will:
+- Create a new migration file in `prisma/migrations/`
+- Apply the migration to your database
+- Regenerate the Prisma client
+
+### Applying migrations to production
+To apply migrations to a production database:
+
+```bash
+npx prisma migrate deploy
+```
+
+### Resetting the database
+⚠️ **WARNING: This will delete all data in your database**
+
+To reset the database and apply all migrations from scratch:
+
+```bash
+npx prisma migrate reset
+```
+
+This command will:
+- Drop the database
+- Recreate the database
+- Apply all migrations
+- Run seed scripts (if configured)
+
+### Viewing migration history
+To see the status of migrations:
+
+```bash
+npx prisma migrate status
+```
+
+### Rolling back migrations
+To undo the last migration (development only):
+
+```bash
+npx prisma migrate resolve --rolled-back migration_name
+```
+
+### Database introspection
+To introspect an existing database and generate a Prisma schema:
+
+```bash
+npx prisma db pull
+```
+
+### Pushing schema changes (development only)
+For quick development iterations, you can push schema changes without creating migrations:
+
+```bash
+npx prisma db push
+```
+
+⚠️ **Note:** Use `db push` only in development. Always use migrations for production.
+
 ### Avviare Azurite eseguendo il comando seguente
 
 ```sh

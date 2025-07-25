@@ -51,7 +51,7 @@ export function requireAuth(options: AuthorizationOptions = {}) {
       // Verifica accesso alle proprie risorse
       if (options.allowOwnResource && options.resourceOwnerField) {
         const body = await request.json().catch(() => ({}));
-        const resourceOwnerId = body[options.resourceOwnerField];
+        const resourceOwnerId = (body as any)[options.resourceOwnerField];
         
         if (resourceOwnerId && resourceOwnerId === decoded.userId) {
           return { user: decoded, isAuthorized: true };

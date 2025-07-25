@@ -3,24 +3,24 @@
 ## 🧑‍💼 Gestione Avanzata degli Utenti
 
 ### 🔹 Ruoli e Permessi Granulari
-- [ ] Definire schema `roles` e `permissions` nel database
-- [ ] Aggiungere tabella `user_roles` many-to-many
-- [ ] Aggiornare API di login per includere ruoli nel JWT
-- [ ] Creare middleware backend per autorizzazioni
+- [x] Definire schema `roles` e `permissions` nel database
+- [x] Aggiungere tabella `user_roles` many-to-many
+- [x] Aggiornare API di login per includere ruoli nel JWT
+- [x] Creare middleware backend per autorizzazioni
 - [ ] UI: gestione dei permessi in frontend
 
 ### 🔹 Autenticazione a 2 Fattori (MFA)
-- [ ] Integrazione con app tipo Google Authenticator
+- [x] Integrazione con app tipo Google Authenticator
 - [ ] Generazione QR Code e salvataggio chiave segreta
 - [ ] Backend: verifica codice OTP
-- [ ] Frontend: UI per gestione MFA
+- [x] Frontend: UI per gestione MFA
 
 ## 📊 Dashboard & Analytics
 
 ### 🔹 Dashboard Interattiva
-- [ ] Design UI/UX
+- [x] Design UI/UX
 - [ ] API: metriche su progetti, dipendenti, task
-- [ ] Frontend: visualizzazione con grafici (es. Chart.js, Recharts)
+- [x] Frontend: visualizzazione con grafici (es. Chart.js, Recharts)
 - [ ] KPI con filtri per data, progetto, ruolo
 
 ## 📁 Gestione Avanzata dei Documenti

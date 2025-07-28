@@ -7,7 +7,7 @@
     <!--begin::Menu item-->
     <div class="menu-item px-3">
       <div class="menu-content fs-6 text-dark fw-bold px-3 py-4">
-        Quick Actions
+        Settings
       </div>
     </div>
     <!--end::Menu item-->

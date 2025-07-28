@@ -4,11 +4,14 @@ import ApiService from "@/core/services/ApiService";
 import JwtService from "@/core/services/JwtService";
 
 export interface User {
-  name: string;
-  surname: string;
+  name?: string;
+  surname?: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   password: string;
-  api_token: string;
+  api_token?: string;
+  sector?: string;
 }
 
 export const useAuthStore = defineStore("auth", () => {
@@ -61,7 +64,7 @@ export const useAuthStore = defineStore("auth", () => {
     purgeAuth();
   }
 
-  function register(credentials: { username: string; email: string; password: string; roles?: string[] }) {
+  function register(credentials: { first_name: string; last_name: string; email: string; password: string; sector?: string; roles?: string[] }) {
     return ApiService.post("auth/register", credentials)
       .then(({ data }) => {
         // Dopo la registrazione, effettua il login per ottenere il token

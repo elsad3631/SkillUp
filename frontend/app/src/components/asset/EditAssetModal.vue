@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Aggiungi Asset</h2>
+          <h2>Modifica Asset</h2>
           <button class="btn btn-icon btn-sm btn-active-icon-primary" @click="$emit('close')">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -36,7 +36,7 @@
               <input v-model="customType" class="form-control" placeholder="Inserisci il tipo personalizzato" required />
             </div>
             <div class="mb-3">
-              <label class="form-label">Abilitata</label>
+              <label class="form-label">Stato</label>
               <div class="form-check">
                 <input type="checkbox" v-model="enable" class="form-check-input" />
                 <label class="form-check-label">Asset attivo</label>
@@ -45,7 +45,7 @@
             <div class="d-flex justify-content-end">
               <button type="button" class="btn btn-light me-2" @click="$emit('close')">Annulla</button>
               <button type="submit" class="btn btn-primary" :disabled="!name || !selectedType">
-                Aggiungi
+                Salva Modifiche
               </button>
             </div>
           </form>
@@ -56,16 +56,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
-import { createAsset } from '@/core/services/businessServices/Asset';
+import { updateAsset } from '@/core/services/businessServices/Asset';
 
-const emit = defineEmits(['created', 'close']);
+const props = defineProps<{ asset: any }>();
+const emit = defineEmits(['close', 'updated']);
 
 const name = ref('');
 const selectedType = ref('');
 const customType = ref('');
 const enable = ref(true);
+
+// Inizializza i valori quando l'asset cambia
+watch(() => props.asset, (newAsset) => {
+  if (newAsset) {
+    name.value = newAsset.name;
+    selectedType.value = newAsset.type;
+    customType.value = '';
+    enable.value = newAsset.enable;
+  }
+}, { immediate: true });
 
 function onTypeChange() {
   if (selectedType.value !== 'other') {
@@ -82,16 +93,17 @@ async function onSubmit() {
       return;
     }
     
-    const asset = await createAsset({ 
-      name: name.value, 
-      type: finalType, 
-      enable: enable.value 
+    const updatedAsset = await updateAsset(props.asset.id, {
+      name: name.value,
+      type: finalType,
+      enable: enable.value
     });
-    emit('created', asset);
+    
+    emit('updated', updatedAsset);
     emit('close');
-    Swal.fire('Successo', 'Asset aggiunto con successo!', 'success');
+    Swal.fire('Successo', 'Asset aggiornato con successo!', 'success');
   } catch {
-    Swal.fire('Errore', 'Impossibile aggiungere l\'asset', 'error');
+    Swal.fire('Errore', 'Impossibile aggiornare l\'asset', 'error');
   }
 }
 </script> 

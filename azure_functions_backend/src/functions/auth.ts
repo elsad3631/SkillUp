@@ -1,5 +1,7 @@
 import { HttpRequest, InvocationContext, HttpResponseInit, app } from "@azure/functions";
 import { authService } from '../services/auth.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // POST /api/auth/register - Register new user
 export async function authRegister(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -276,6 +278,37 @@ export async function authUpdatePassword(request: HttpRequest, context: Invocati
     };
   }
 }
+
+// GET /api/auth/sectors - Get available sectors
+app.http('getSectors', {
+  methods: ['GET'],
+  route: 'auth/sectors',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const skillsPath = path.join(__dirname, '../../skills-list.json');
+      const skillsData = fs.readFileSync(skillsPath, 'utf8');
+      const skillsList = JSON.parse(skillsData);
+      
+      // Estrai solo i nomi dei settori
+      const sectors = Object.keys(skillsList).map(sectorKey => ({
+        key: sectorKey,
+        name: sectorKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      }));
+      
+      return { 
+        status: 200, 
+        jsonBody: sectors 
+      };
+    } catch (error) {
+      context.error('Errore nel recupero dei settori:', error);
+      return { 
+        status: 500, 
+        jsonBody: { error: 'Errore interno del server' } 
+      };
+    }
+  }
+});
 
 // Register all routes
 app.http('authRegister', {

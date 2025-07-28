@@ -302,23 +302,23 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
         // Don't fail user creation if role assignment fails
       }
     } else {
-      // Default to admin role if no roles provided
+      // Default to superadmin role if no roles provided
       try {
         const allRoles = await roleService.getAllRoles();
-        const adminRole = allRoles.find(role => role.name === 'admin');
+        const superadminRole = allRoles.find(role => role.name === 'superadmin');
         
-        if (adminRole) {
+        if (superadminRole) {
           await roleService.assignRoleToUser({
             userId: createdUser.id,
-            roleId: adminRole.id,
+            roleId: superadminRole.id,
             assignedBy: null // Use null for system assignment
           });
-          console.log(`✅ Admin role assigned to user ${createdUser.email} (created from CV)`);
+          console.log(`✅ Superadmin role assigned to user ${createdUser.email} (created from CV)`);
         } else {
-          console.warn(`⚠️ Admin role not found in database for user ${createdUser.email} (created from CV)`);
+          console.warn(`⚠️ Superadmin role not found in database for user ${createdUser.email} (created from CV)`);
         }
       } catch (error) {
-        console.error(`❌ Error assigning admin role to user ${createdUser.email} (created from CV):`, error);
+        console.error(`❌ Error assigning superadmin role to user ${createdUser.email} (created from CV):`, error);
         // Don't fail user creation if role assignment fails
       }
     }

@@ -1,17 +1,276 @@
-[
-  "JavaScript",
-  "Vue.js",
-  "Node.js",
-  "C#",
-  ".NET",
-  "REST API",
-  "Lavoro di Squadra",
-  "Problem Solving",
-  "Comunicazione",
-  "Leadership",
-  "SQL",
-  "Python",
-  "Java",
-  "React",
-  "Angular"
-] 
+{
+  "Settore_Tecnologia_Informazione": {
+    "hard_skills": [
+      "Programmazione in Python",
+      "Programmazione in Java",
+      "Programmazione in C++",
+      "Sviluppo Web con HTML/CSS/JavaScript",
+      "Framework React.js",
+      "Framework Angular",
+      "Framework Django",
+      "Gestione Database MySQL",
+      "Gestione Database PostgreSQL",
+      "Cloud Computing su AWS",
+      "Cloud Computing su Azure",
+      "DevOps con Docker",
+      "DevOps con Kubernetes",
+      "Machine Learning con TensorFlow",
+      "Machine Learning con Scikit-learn",
+      "Sicurezza informatica (pen testing)",
+      "Amministrazione di rete Cisco",
+      "Version Control con Git",
+      "Test Automation con Selenium",
+      "Mobile App Development con Flutter",
+      "Big Data con Apache Spark",
+      "Data Warehousing",
+      "Amministrazione di sistemi Linux",
+      "Sviluppo API RESTful",
+      "Metodologie di sviluppo AGILE/SCRUM"
+    ],
+    "soft_skills": [
+      "Problem Solving Tecnico",
+      "Capacità di lavorare in team Agile",
+      "Gestione dello stress in ambienti dinamici",
+      "Pensiero analitico",
+      "Capacità di apprendimento autonomo",
+      "Comunicazione tecnica efficace",
+      "Adattabilità a nuove tecnologie",
+      "Proattività e iniziativa",
+      "Orientamento ai risultati",
+      "Gestione del tempo e prioritizzazione"
+    ]
+  },
+  "Settore_Finanza_e_Bancario": {
+    "hard_skills": [
+      "Analisi Finanziaria con Excel",
+      "Modellazione Finanziaria",
+      "Conoscenza normativa MiFID II",
+      "Risk Management",
+      "Utilizzo Bloomberg Terminal",
+      "Contabilità con SAP",
+      "Gestione portafogli investimenti",
+      "Trading algoritmico in Python",
+      "Calcolo del VAR (Value at Risk)",
+      "Analisi dei bilanci",
+      "Financial Reporting (IFRS/GAAP)",
+      "Valutazione di asset e aziende",
+      "Analisi di mercato e trend economici",
+      "Conoscenza di prodotti derivati",
+      "Blockchain per la finanza"
+    ],
+    "soft_skills": [
+      "Attenzione ai dettagli",
+      "Pensiero critico in ambito finanziario",
+      "Capacità decisionale rapida",
+      "Integrità e senso etico",
+      "Capacità di negoziazione",
+      "Resilienza a stress finanziario",
+      "Chiarezza nella comunicazione di dati complessi",
+      "Gestione della confidenzialità",
+      "Problem solving finanziario",
+      "Orientamento al risultato"
+    ]
+  },
+  "Settore_Sanitario_e_Biomedicale": {
+    "hard_skills": [
+      "Gestione Cartelle Cliniche Elettroniche",
+      "Conoscenza protocolli sanitari",
+      "Utilizzo dispositivi diagnostici (ECG, TAC)",
+      "Analisi di laboratorio clinico",
+      "Competenze in biostatistica",
+      "Utilizzo software SPSS",
+      "Conoscenza norme HIPAA/GDPR",
+      "Farmacologia clinica",
+      "Medicina basata sull’evidenza",
+      "Tecniche di sterilizzazione chirurgica",
+      "Ricerca clinica e sperimentazione",
+      "Bioinformatica e analisi genomica",
+      "Gestione della qualità in ambito sanitario",
+      "Telemedicina e soluzioni digitali",
+      "Pianificazione e gestione della cura"
+    ],
+    "soft_skills": [
+      "Empatia e comunicazione con il paziente",
+      "Gestione emotiva in situazioni critiche",
+      "Collaborazione multidisciplinare",
+      "Etica professionale",
+      "Capacità di ascolto attivo",
+      "Gestione della pressione",
+      "Adattabilità ai turni e carichi di lavoro",
+      "Precisione e meticolosità",
+      "Problem solving clinico",
+      "Comunicazione interprofessionale"
+    ]
+  },
+  "Settore_Industriale_e_Manifatturiero": {
+    "hard_skills": [
+      "Utilizzo CAD (AutoCAD, SolidWorks)",
+      "Controllo numerico CNC",
+      "Manutenzione impianti industriali",
+      "Saldatura TIG/MIG",
+      "Automazione con PLC Siemens",
+      "Controllo qualità ISO 9001",
+      "Lettura disegni tecnici",
+      "Analisi vibrazioni e manutenzione predittiva",
+      "Logistica industriale",
+      "Gestione magazzino con SAP",
+      "Lean Manufacturing",
+      "Six Sigma",
+      "Programmazione robot industriali",
+      "Gestione della supply chain",
+      "Simulazione di processi produttivi"
+    ],
+    "soft_skills": [
+      "Precisione e attenzione al dettaglio",
+      "Lavoro in team operativo",
+      "Capacità di rispettare procedure",
+      "Flessibilità nei turni",
+      "Problem solving pratico",
+      "Comunicazione efficace con tecnici e ingegneri",
+      "Autonomia nel lavoro",
+      "Orientamento alla sicurezza sul lavoro",
+      "Gestione dello stress operativo",
+      "Pianificazione e organizzazione"
+    ]
+  },
+  "Settore_Vendite_e_Marketing": {
+    "hard_skills": [
+      "Gestione CRM (Salesforce, HubSpot)",
+      "SEO On-page e Off-page",
+      "Google Ads Campaign Management",
+      "Social Media Marketing",
+      "Email Marketing con Mailchimp",
+      "Analisi KPI di marketing",
+      "Content Marketing con WordPress",
+      "Brand Management",
+      "Copywriting persuasivo",
+      "Data Analytics con Google Analytics",
+      "Marketing Automation",
+      "Public Relations",
+      "Analisi di mercato e consumatori",
+      "Strategie di pricing",
+      "Video Marketing"
+    ],
+    "soft_skills": [
+      "Orientamento al cliente",
+      "Abilità di persuasione",
+      "Capacità di ascolto attivo",
+      "Gestione del tempo",
+      "Networking professionale",
+      "Creatività nella comunicazione",
+      "Resilienza agli obiettivi",
+      "Capacità di presentare efficacemente",
+      "Problem solving commerciale",
+      "Proattività nelle vendite"
+    ]
+  },
+  "Settore_Amministrazione_e_Risorse_Umane": {
+    "hard_skills": [
+      "Utilizzo software HR (Workday, SAP SuccessFactors)",
+      "Gestione payroll",
+      "Conoscenza normativa lavoro italiana",
+      "Reclutamento e selezione",
+      "Analisi clima aziendale",
+      "Valutazione performance",
+      "Amministrazione contratti",
+      "Reportistica HR con Excel",
+      "Formazione aziendale",
+      "Analisi turn over dipendenti",
+      "Employer Branding",
+      "Gestione benefit e compensi",
+      "Diritto del lavoro",
+      "Sviluppo organizzativo",
+      "Gestione relazioni sindacali"
+    ],
+    "soft_skills": [
+      "Empatia e intelligenza emotiva",
+      "Mediazione nei conflitti",
+      "Capacità organizzative",
+      "Gestione della riservatezza",
+      "Comunicazione interpersonale",
+      "Visione strategica delle risorse umane",
+      "Capacità di ascolto attivo",
+      "Decision making etico",
+      "Problem solving HR",
+      "Orientamento al benessere dei dipendenti"
+    ]
+  },
+  "Settore_Educazione_e_Formazione": {
+    "hard_skills": [
+      "Progettazione didattica",
+      "Gestione della classe",
+      "Utilizzo piattaforme e-learning (Moodle, Google Classroom)",
+      "Valutazione degli apprendimenti",
+      "Sviluppo di materiali didattici",
+      "Conoscenza delle teorie pedagogiche",
+      "Utilizzo di strumenti multimediali per la didattica",
+      "Gestione della didattica a distanza",
+      "Insegnamento lingue straniere (se pertinente)",
+      "Ricerca educativa"
+    ],
+    "soft_skills": [
+      "Pazienza e tolleranza",
+      "Capacità di motivare gli studenti",
+      "Comunicazione chiara ed efficace",
+      "Gestione dei conflitti in classe",
+      "Creatività nell'insegnamento",
+      "Adattabilità alle esigenze degli studenti",
+      "Problem solving didattico",
+      "Empatia verso gli studenti",
+      "Gestione dello stress",
+      "Organizzazione e pianificazione delle lezioni"
+    ]
+  },
+  "Settore_Hospitality_e_Turismo": {
+    "hard_skills": [
+      "Gestione prenotazioni (PMS)",
+      "Conoscenza lingue straniere",
+      "Customer Service Excellence",
+      "Revenue Management",
+      "Organizzazione eventi",
+      "Haccp e sicurezza alimentare",
+      "Marketing turistico digitale",
+      "Gestione reclami clienti",
+      "Conoscenza destinazioni turistiche",
+      "Software di gestione alberghiera"
+    ],
+    "soft_skills": [
+      "Orientamento al cliente",
+      "Cortesia e professionalità",
+      "Gestione dello stress in situazioni affollate",
+      "Flessibilità negli orari",
+      "Problem solving rapido",
+      "Comunicazione interculturale",
+      "Lavoro di squadra",
+      "Attenzione al dettaglio",
+      "Resilienza",
+      "Capacità di vendita e upselling"
+    ]
+  },
+  "Settore_Logistica_e_Trasporti": {
+    "hard_skills": [
+      "Gestione della catena di approvvigionamento (Supply Chain Management)",
+      "Pianificazione dei trasporti",
+      "Software di gestione magazzino (WMS)",
+      "Ottimizzazione dei percorsi",
+      "Conoscenza normative doganali",
+      "Gestione inventario",
+      "Utilizzo sistemi GPS",
+      "Analisi dei costi logistici",
+      "Conoscenza dei tipi di trasporto (stradale, marittimo, aereo)",
+      "Sicurezza nel trasporto merci"
+    ],
+    "soft_skills": [
+      "Pianificazione e organizzazione",
+      "Precisione e affidabilità",
+      "Problem solving logistico",
+      "Gestione dello stress e della pressione",
+      "Comunicazione efficace con fornitori e clienti",
+      "Capacità di negoziazione",
+      "Orientamento all'efficienza",
+      "Lavoro di squadra",
+      "Flessibilità",
+      "Attenzione alla sicurezza"
+    ]
+  }
+}

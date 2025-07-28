@@ -1,7 +1,8 @@
 import { HttpRequest, InvocationContext, HttpResponseInit, app } from "@azure/functions";
 import { assetService } from '../services/asset.service';
+import { authService } from '../services/auth.service';
 
-// GET /api/asset - Get all assets
+// GET /api/asset - Get all assets for logged user
 export async function assetGetAll(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
 
@@ -13,7 +14,26 @@ export async function assetGetAll(request: HttpRequest, context: InvocationConte
       };
     }
 
-    const assets = await assetService.getAll();
+    // Get user from token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token di autenticazione richiesto' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const user = authService.verifyToken(token);
+    
+    if (!user) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token non valido' }
+      };
+    }
+
+    const assets = await assetService.getAll(user.userId);
 
     return {
       status: 200,
@@ -65,7 +85,7 @@ export async function assetGetById(request: HttpRequest, context: InvocationCont
   }
 }
 
-// POST /api/asset - Create new asset
+// POST /api/asset - Create new asset for logged user
 export async function assetCreate(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
 
@@ -74,6 +94,25 @@ export async function assetCreate(request: HttpRequest, context: InvocationConte
       return {
         status: 405,
         jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    // Get user from token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token di autenticazione richiesto' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const user = authService.verifyToken(token);
+    
+    if (!user) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token non valido' }
       };
     }
 
@@ -87,7 +126,12 @@ export async function assetCreate(request: HttpRequest, context: InvocationConte
       };
     }
 
-    const asset = await assetService.create({ name, type, enable });
+    const asset = await assetService.create({ 
+      name, 
+      type, 
+      enable: enable ?? true,
+      applicationUserId: user.userId 
+    });
 
     return {
       status: 201,
@@ -103,7 +147,7 @@ export async function assetCreate(request: HttpRequest, context: InvocationConte
   }
 }
 
-// PUT /api/asset/{id} - Update asset
+// PUT /api/asset/{id} - Update asset for logged user
 export async function assetUpdate(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
 
@@ -115,9 +159,44 @@ export async function assetUpdate(request: HttpRequest, context: InvocationConte
       };
     }
 
+    // Get user from token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token di autenticazione richiesto' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const user = authService.verifyToken(token);
+    
+    if (!user) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token non valido' }
+      };
+    }
+
     const id = Number((context.triggerMetadata?.id as string) || request.url.split('/').pop() || '0');
     const body = await request.json() as { name?: string; type?: string; enable?: boolean };
     const { name, type, enable } = body;
+
+    // Verify that the asset belongs to the user
+    const existingAsset = await assetService.getById(id);
+    if (!existingAsset) {
+      return {
+        status: 404,
+        jsonBody: { error: 'Asset non trovato' }
+      };
+    }
+
+    if (existingAsset.applicationUserId !== user.userId) {
+      return {
+        status: 403,
+        jsonBody: { error: 'Non autorizzato a modificare questo asset' }
+      };
+    }
 
     const asset = await assetService.update(id, { name, type, enable });
 
@@ -135,7 +214,7 @@ export async function assetUpdate(request: HttpRequest, context: InvocationConte
   }
 }
 
-// DELETE /api/asset/{id} - Remove asset
+// DELETE /api/asset/{id} - Remove asset for logged user
 export async function assetRemove(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
 
@@ -147,7 +226,43 @@ export async function assetRemove(request: HttpRequest, context: InvocationConte
       };
     }
 
+    // Get user from token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token di autenticazione richiesto' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const user = authService.verifyToken(token);
+    
+    if (!user) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token non valido' }
+      };
+    }
+
     const id = Number((context.triggerMetadata?.id as string) || request.url.split('/').pop() || '0');
+
+    // Verify that the asset belongs to the user
+    const existingAsset = await assetService.getById(id);
+    if (!existingAsset) {
+      return {
+        status: 404,
+        jsonBody: { error: 'Asset non trovato' }
+      };
+    }
+
+    if (existingAsset.applicationUserId !== user.userId) {
+      return {
+        status: 403,
+        jsonBody: { error: 'Non autorizzato a cancellare questo asset' }
+      };
+    }
+
     await assetService.remove(id);
 
     return {

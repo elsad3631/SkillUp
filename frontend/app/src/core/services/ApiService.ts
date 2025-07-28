@@ -29,14 +29,17 @@ class ApiService {
    */
   public static setHeader(): void {
     const { currentUser } = useCurrentUser();
+    const token = JwtService.getToken();
+    const userId = currentUser.value?.id ?? JSON.parse(localStorage.currentUser)?.id;
+    
     ApiService.vueInstance.axios.defaults.headers.common[
       "Authorization"
-    ] = `Bearer ${JwtService.getToken()}`;
+    ] = `Bearer ${token}`;
     ApiService.vueInstance.axios.defaults.headers.common["Accept"] =
       "application/json";
       ApiService.vueInstance.axios.defaults.headers.common[
         "x-user-id"
-      ] = `${currentUser.value?.id ?? JSON.parse(localStorage.currentUser)?.id}`;
+      ] = `${userId}`;
   }
 
   /**

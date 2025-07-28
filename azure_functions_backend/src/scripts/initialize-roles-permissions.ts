@@ -21,7 +21,7 @@ async function initializeRolesAndPermissions() {
     const defaultRoles = [
       {
         name: 'superadmin',
-        description: 'Super amministratore con tutti i permessi',
+        description: 'Super amministratore con tutti i permessi del sistema',
         permissions: [
           'users:create', 'users:read', 'users:update', 'users:delete',
           'projects:create', 'projects:read', 'projects:update', 'projects:delete',
@@ -34,7 +34,7 @@ async function initializeRolesAndPermissions() {
       },
       {
         name: 'admin',
-        description: 'Amministratore con permessi di gestione',
+        description: 'Amministratore con permessi di gestione avanzati',
         permissions: [
           'users:create', 'users:read', 'users:update',
           'projects:create', 'projects:read', 'projects:update', 'projects:delete',
@@ -46,14 +46,58 @@ async function initializeRolesAndPermissions() {
         ]
       },
       {
+        name: 'consultant',
+        description: 'Consulente con accesso ai progetti e alle risorse',
+        permissions: [
+          'users:read',
+          'projects:read', 'projects:update',
+          'tasks:read', 'tasks:update',
+          'dashboard:read', 'reports:read',
+          'notifications:read', 'notifications:send'
+        ]
+      },
+      {
+        name: 'hr',
+        description: 'Risorse Umane con accesso ai dati dei dipendenti',
+        permissions: [
+          'users:create', 'users:read', 'users:update',
+          'projects:read',
+          'tasks:read',
+          'dashboard:read', 'reports:read',
+          'notifications:read', 'notifications:send'
+        ]
+      },
+      {
         name: 'manager',
-        description: 'Manager di progetto',
+        description: 'Manager di progetto con permessi di gestione progetti',
         permissions: [
           'users:read',
           'projects:create', 'projects:read', 'projects:update',
           'tasks:create', 'tasks:read', 'tasks:update', 'tasks:delete',
           'dashboard:read', 'reports:read',
           'notifications:read', 'notifications:send'
+        ]
+      },
+      {
+        name: 'administration',
+        description: 'Amministrazione con permessi di gestione operativa',
+        permissions: [
+          'users:read', 'users:update',
+          'projects:read', 'projects:update',
+          'tasks:read', 'tasks:update',
+          'dashboard:read', 'reports:read', 'reports:export',
+          'notifications:read', 'notifications:send'
+        ]
+      },
+      {
+        name: 'segretary',
+        description: 'Segretario con permessi di base e supporto',
+        permissions: [
+          'users:read',
+          'projects:read',
+          'tasks:read',
+          'dashboard:read',
+          'notifications:read'
         ]
       },
       {

@@ -3,19 +3,47 @@ const prisma = new PrismaClient();
 
 // TODO: Creare asset.controller.ts e asset.routes.ts per esporre le API degli asset
 export const assetService = {
-  async getAll() {
-    return prisma.asset.findMany();
+  async getAll(userId?: string) {
+    if (userId) {
+      return prisma.asset.findMany({
+        where: { applicationUserId: userId },
+        include: { applicationUser: true }
+      });
+    }
+    return prisma.asset.findMany({
+      include: { applicationUser: true }
+    });
   },
   async getById(id: number) {
-    return prisma.asset.findUnique({ where: { id } });
+    return prisma.asset.findUnique({ 
+      where: { id },
+      include: { applicationUser: true }
+    });
   },
   async create(data: any) {
-    return prisma.asset.create({ data });
+    return prisma.asset.create({ 
+      data,
+      include: { applicationUser: true }
+    });
   },
   async update(id: number, data: any) {
-    return prisma.asset.update({ where: { id }, data });
+    return prisma.asset.update({ 
+      where: { id }, 
+      data,
+      include: { applicationUser: true }
+    });
   },
   async remove(id: number) {
     return prisma.asset.delete({ where: { id } });
   },
+  async getByType(type: string, userId?: string) {
+    const where: any = { type };
+    if (userId) {
+      where.applicationUserId = userId;
+    }
+    return prisma.asset.findMany({
+      where,
+      include: { applicationUser: true }
+    });
+  }
 }; 

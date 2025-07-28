@@ -30,6 +30,7 @@ model ApplicationUser {
   activityLogs       UserActivityLog[]
   sentNotifications  Notification[] @relation("NotificationSender")
   receivedNotifications Notification[] @relation("NotificationRecipient")
+  assets             Asset[]
   
   // Nuove relazioni per il sistema di ruoli e permessi
   userRoles          UserRole[]
@@ -126,10 +127,12 @@ model SkillTraining {
 }
 
 model Asset {
-  id     Int     @id @default(autoincrement())
-  name   String
-  type   String
-  enable Boolean @default(true)
+  id                Int              @id @default(autoincrement())
+  name              String
+  type              String
+  enable            Boolean          @default(true)
+  applicationUserId String?
+  applicationUser   ApplicationUser? @relation(fields: [applicationUserId], references: [id], onDelete: Cascade)
 }
 
 model UserActivityLog {

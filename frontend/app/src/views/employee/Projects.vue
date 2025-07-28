@@ -372,7 +372,7 @@ export default defineComponent({
 
     // Controlla se l'utente corrente è admin
     const isUserAdmin = computed(() => {
-      return currentUser.value?.roles?.includes('admin') || false;
+      return currentUser.value?.roles?.includes('admin') || currentUser.value?.roles?.includes('superadmin') || false;
     });
 
     // ID dei progetti già assegnati

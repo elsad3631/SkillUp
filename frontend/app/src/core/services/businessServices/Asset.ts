@@ -5,7 +5,8 @@ const store = useAuthStore();
 
 const getAssets = (): Promise<any[] | undefined> => {
   ApiService.setHeader();
-  return ApiService.get("assets")
+  
+  return ApiService.get("asset")
     .then(({ data }) => data as any[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -15,7 +16,7 @@ const getAssets = (): Promise<any[] | undefined> => {
 
 const createAsset = (formData: any): Promise<any | undefined> => {
   ApiService.setHeader();
-  return ApiService.post("assets", formData)
+  return ApiService.post("asset", formData)
     .then(({ data }) => data as any)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -25,7 +26,7 @@ const createAsset = (formData: any): Promise<any | undefined> => {
 
 const updateAsset = (id: number, formData: any): Promise<any | undefined> => {
   ApiService.setHeader();
-  return ApiService.put(`assets/${id}`, formData)
+  return ApiService.put(`asset/${id}`, formData)
     .then(({ data }) => data as any)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -35,7 +36,7 @@ const updateAsset = (id: number, formData: any): Promise<any | undefined> => {
 
 const deleteAsset = (id: number): Promise<boolean> => {
   ApiService.setHeader();
-  return ApiService.delete(`assets/${id}`)
+  return ApiService.delete(`asset/${id}`)
     .then(() => true)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);

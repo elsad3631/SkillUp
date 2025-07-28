@@ -319,3 +319,190 @@ app.http('debugAssignTestRole', {
     }
   }
 }); 
+
+// POST /api/roles/initialize - Inizializza i ruoli di base del sistema
+app.http('initializeRoles', {
+  methods: ['POST'],
+  route: 'roles/initialize',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const defaultRoles = [
+        {
+          name: 'superadmin',
+          description: 'Super amministratore con tutti i permessi del sistema'
+        },
+        {
+          name: 'admin',
+          description: 'Amministratore con permessi di gestione avanzati'
+        },
+        {
+          name: 'consultant',
+          description: 'Consulente con accesso ai progetti e alle risorse'
+        },
+        {
+          name: 'hr',
+          description: 'Risorse Umane con accesso ai dati dei dipendenti'
+        },
+        {
+          name: 'manager',
+          description: 'Manager di progetto con permessi di gestione progetti'
+        },
+        {
+          name: 'administration',
+          description: 'Amministrazione con permessi di gestione operativa'
+        },
+        {
+          name: 'segretary',
+          description: 'Segretario con permessi di base e supporto'
+        }
+      ];
+
+      const results = [];
+      const errors = [];
+
+      for (const roleData of defaultRoles) {
+        try {
+          // Verifica se il ruolo esiste già
+          const existingRoles = await roleService.getAllRoles();
+          const existingRole = existingRoles.find((r: any) => r.name === roleData.name);
+          
+          if (existingRole) {
+            results.push({
+              name: roleData.name,
+              status: 'already_exists',
+              message: `Ruolo ${roleData.name} già esistente`,
+              role: existingRole
+            });
+          } else {
+            // Crea il nuovo ruolo
+            const newRole = await roleService.createRole(roleData);
+            results.push({
+              name: roleData.name,
+              status: 'created',
+              message: `Ruolo ${roleData.name} creato con successo`,
+              role: newRole
+            });
+            context.log(`✅ Ruolo ${roleData.name} creato con successo`);
+          }
+        } catch (error) {
+          errors.push({
+            name: roleData.name,
+            error: error instanceof Error ? error.message : 'Errore sconosciuto'
+          });
+          context.error(`❌ Errore nella creazione del ruolo ${roleData.name}:`, error);
+        }
+      }
+
+      const response = {
+        success: errors.length === 0,
+        message: errors.length === 0 ? 
+          'Tutti i ruoli sono stati inizializzati con successo' : 
+          `${results.length} ruoli processati, ${errors.length} errori`,
+        results,
+        errors: errors.length > 0 ? errors : undefined
+      };
+
+      return { 
+        status: errors.length === 0 ? 201 : 207, // 207 Multi-Status se ci sono errori
+        body: JSON.stringify(response) 
+      };
+    } catch (error) {
+      context.error('Errore nell\'inizializzazione dei ruoli:', error);
+      return { 
+        status: 500, 
+        body: JSON.stringify({ 
+          error: 'Errore interno del server durante l\'inizializzazione dei ruoli',
+          details: error instanceof Error ? error.message : 'Errore sconosciuto'
+        }) 
+      };
+    }
+  }
+});
+
+// POST /api/roles/bulk-create - Crea ruoli multipli
+app.http('bulkCreateRoles', {
+  methods: ['POST'],
+  route: 'roles/bulk-create',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const body = await request.json() as { roles: Array<{ name: string; description?: string }> };
+      const { roles } = body;
+
+      if (!roles || !Array.isArray(roles) || roles.length === 0) {
+        return { 
+          status: 400, 
+          body: JSON.stringify({ error: 'Array di ruoli richiesto e non vuoto' }) 
+        };
+      }
+
+      const results = [];
+      const errors = [];
+
+      for (const roleData of roles) {
+        try {
+          if (!roleData.name) {
+            errors.push({
+              name: roleData.name || 'unnamed',
+              error: 'Nome del ruolo richiesto'
+            });
+            continue;
+          }
+
+          // Verifica se il ruolo esiste già
+          const existingRoles = await roleService.getAllRoles();
+          const existingRole = existingRoles.find((r: any) => r.name === roleData.name);
+          
+          if (existingRole) {
+            results.push({
+              name: roleData.name,
+              status: 'already_exists',
+              message: `Ruolo ${roleData.name} già esistente`,
+              role: existingRole
+            });
+          } else {
+            // Crea il nuovo ruolo
+            const newRole = await roleService.createRole(roleData);
+            results.push({
+              name: roleData.name,
+              status: 'created',
+              message: `Ruolo ${roleData.name} creato con successo`,
+              role: newRole
+            });
+            context.log(`✅ Ruolo ${roleData.name} creato con successo`);
+          }
+        } catch (error) {
+          errors.push({
+            name: roleData.name,
+            error: error instanceof Error ? error.message : 'Errore sconosciuto'
+          });
+          context.error(`❌ Errore nella creazione del ruolo ${roleData.name}:`, error);
+        }
+      }
+
+      const response = {
+        success: errors.length === 0,
+        message: errors.length === 0 ? 
+          'Tutti i ruoli sono stati creati con successo' : 
+          `${results.length} ruoli processati, ${errors.length} errori`,
+        results,
+        errors: errors.length > 0 ? errors : undefined
+      };
+
+      return { 
+        status: errors.length === 0 ? 201 : 207, // 207 Multi-Status se ci sono errori
+        body: JSON.stringify(response) 
+      };
+    } catch (error) {
+      context.error('Errore nella creazione bulk dei ruoli:', error);
+      return { 
+        status: 500, 
+        body: JSON.stringify({ 
+          error: 'Errore interno del server durante la creazione bulk dei ruoli',
+          details: error instanceof Error ? error.message : 'Errore sconosciuto'
+        }) 
+      };
+    }
+  }
+}); 

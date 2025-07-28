@@ -127,6 +127,43 @@
       <!--end::Input group-->
 
       <!--begin::Input group-->
+      <div class="fv-row mb-7">
+        <label class="form-label fw-bold text-dark fs-6">
+          <i class="ki-duotone ki-briefcase fs-5 text-primary me-2"></i>
+          Settore della Società
+        </label>
+        <Field
+          name="sector"
+          class="form-select form-select-lg form-select-solid"
+          data-control="select2"
+          data-placeholder="Seleziona il settore della tua società..."
+          data-allow-clear="true"
+          as="select"
+        >
+          <option></option>
+          <option value="Settore_Tecnologia_Informazione">Tecnologia e Informazione</option>
+          <option value="Settore_Finanza_e_Bancario">Finanza e Bancario</option>
+          <option value="Settore_Sanitario_e_Biomedicale">Sanitario e Biomedicale</option>
+          <option value="Settore_Industriale_e_Manifatturiero">Industriale e Manifatturiero</option>
+          <option value="Settore_Vendite_e_Marketing">Vendite e Marketing</option>
+          <option value="Settore_Amministrazione_e_Risorse_Umane">Amministrazione e Risorse Umane</option>
+          <option value="Settore_Educazione_e_Formazione">Educazione e Formazione</option>
+          <option value="Settore_Hospitality_e_Turismo">Hospitality e Turismo</option>
+          <option value="Settore_Logistica_e_Trasporti">Logistica e Trasporti</option>
+        </Field>
+        <div class="fv-plugins-message-container">
+          <div class="fv-help-block">
+            <ErrorMessage name="sector" />
+          </div>
+        </div>
+        <div class="form-text">
+          <i class="ki-duotone ki-information-5 fs-6 text-primary me-2"></i>
+          La selezione del settore permetterà di assegnare automaticamente le competenze specifiche del settore al tuo profilo.
+        </div>
+      </div>
+      <!--end::Input group-->
+
+      <!--begin::Input group-->
       <div class="mb-10 fv-row" data-kt-password-meter="true">
         <!--begin::Wrapper-->
         <div class="mb-1">
@@ -293,6 +330,9 @@ export default defineComponent({
         .required("Email is required")
         .email("Please enter a valid email address")
         .label("Email"),
+      sector: Yup.string()
+        .required("Settore is required")
+        .label("Settore"),
       password: Yup.string()
         .required("Password is required")
         .min(8, "Password must be at least 8 characters")

@@ -44,9 +44,9 @@
           data-bs-toggle="tooltip"
           data-bs-placement="right"
           data-bs-dismiss="click"
-          title="Quick actions"
+          title="Settings"
         >
-          <KTIcon icon-name="element-11" icon-class="fs-1" />
+          <KTIcon icon-name="gear" icon-class="fs-1" />
         </button>
         <Dropdown2 />
       </div>

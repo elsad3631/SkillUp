@@ -22,6 +22,7 @@ model ApplicationUser {
   currentRole        String?
   department         String?
   isAvailable        Boolean             @default(true)
+  company            String?             // ID dell'utente Super Admin che rappresenta la società
   cvData             CVData?
   hardSkills         EmployeeSkill[]     @relation("HardSkills")
   softSkills         EmployeeSkill[]     @relation("SoftSkills")

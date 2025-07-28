@@ -68,7 +68,22 @@ app.http('createUser', {
   handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     try {
       const body = await request.json();
-      const user = await userService.create(body);
+      
+      // Estrai l'ID dell'utente dal token JWT se presente
+      let requestingUserId: string | undefined;
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.substring(7);
+          const jwt = require('jsonwebtoken');
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+          requestingUserId = decoded.userId;
+        } catch (error) {
+          console.warn('Invalid JWT token in createUser request');
+        }
+      }
+      
+      const user = await userService.create(body, requestingUserId);
       
       return {
         status: 201,

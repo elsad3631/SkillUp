@@ -95,7 +95,28 @@ export async function applicationUserCreate(request: HttpRequest, context: Invoc
     }
 
     const body = await request.json();
-    const user = await applicationUserService.create(body);
+    
+    // Estrai l'ID dell'utente dal token JWT se presente
+    let requestingUserId: string | undefined;
+    const authHeader = request.headers.get('authorization');
+    console.log(`🔍 Authorization header: ${authHeader ? 'Present' : 'Missing'}`);
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        requestingUserId = decoded.userId;
+        console.log(`✅ Extracted requestingUserId from JWT: ${requestingUserId}`);
+        console.log(`📋 Full JWT payload:`, decoded);
+      } catch (error) {
+        console.warn('Invalid JWT token in applicationUserCreate request:', error);
+      }
+    } else {
+      console.warn('No valid authorization header found');
+    }
+    
+    const user = await applicationUserService.create(body, requestingUserId);
 
     return {
       status: 201,
@@ -169,6 +190,49 @@ export async function applicationUserRemove(request: HttpRequest, context: Invoc
   }
 }
 
+// POST /api/applicationuser/bulk/delete - Bulk remove users
+export async function applicationUserBulkRemove(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  context.log('HTTP trigger function processed a request.');
+
+  try {
+    if (request.method !== 'POST') {
+      return {
+        status: 405,
+        jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    const body: any = await request.json();
+    const { userIds } = body;
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return {
+        status: 400,
+        jsonBody: { error: 'userIds must be a non-empty array' }
+      };
+    }
+
+    const result = await applicationUserService.bulkRemove(userIds);
+
+    return {
+      status: 200,
+      jsonBody: {
+        message: 'Bulk delete operation completed',
+        deletedUsers: result.deletedUsers,
+        deletedFiles: result.deletedFiles,
+        totalUsers: result.totalUsers
+      }
+    };
+
+  } catch (error: any) {
+    context.log('Bulk remove users error:', error);
+    return {
+      status: 500,
+      jsonBody: { error: error.message || 'Failed to bulk remove users' }
+    };
+  }
+}
+
 // GET /api/applicationuser/role/{role} - Get users by role
 export async function applicationUserGetByRole(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
@@ -182,7 +246,14 @@ export async function applicationUserGetByRole(request: HttpRequest, context: In
     }
 
     const role = (context.triggerMetadata?.role as string) || request.url.split('/').pop() || '';
-    const users = await applicationUserService.getByRole(role);
+    
+    // Extract company parameter from query string
+    const url = new URL(request.url);
+    const companyId = url.searchParams.get('company');
+    
+    console.log(`🔍 Getting users by role: ${role}, company: ${companyId || 'all'}`);
+    
+    const users = await applicationUserService.getByRole(role, companyId || undefined);
 
     return {
       status: 200,
@@ -194,6 +265,40 @@ export async function applicationUserGetByRole(request: HttpRequest, context: In
     return {
       status: 500,
       jsonBody: { error: error.message || 'Failed to retrieve users by role' }
+    };
+  }
+}
+
+// GET /api/applicationuser/non-superadmin - Get all users except superadmin
+export async function applicationUserGetNonSuperAdmin(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  context.log('HTTP trigger function processed a request.');
+
+  try {
+    if (request.method !== 'GET') {
+      return {
+        status: 405,
+        jsonBody: { error: 'Method not allowed' }
+      };
+    }
+    
+    // Extract company parameter from query string
+    const url = new URL(request.url);
+    const companyId = url.searchParams.get('company');
+    
+    console.log(`🔍 Getting non-superadmin users, company: ${companyId || 'all'}`);
+    
+    const users = await applicationUserService.getNonSuperAdminUsers(companyId || undefined);
+
+    return {
+      status: 200,
+      jsonBody: users
+    };
+
+  } catch (error: any) {
+    context.log('Get non-superadmin users error:', error);
+    return {
+      status: 500,
+      jsonBody: { error: error.message || 'Failed to retrieve non-superadmin users' }
     };
   }
 }
@@ -545,11 +650,25 @@ app.http('applicationUserRemove', {
   handler: applicationUserRemove
 });
 
+app.http('applicationUserBulkRemove', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'applicationuser/bulk/delete',
+  handler: applicationUserBulkRemove
+});
+
 app.http('applicationUserGetByRole', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: 'applicationuser/role/{role}',
   handler: applicationUserGetByRole
+});
+
+app.http('applicationUserGetNonSuperAdmin', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'applicationuser/filter/non-superadmin',
+  handler: applicationUserGetNonSuperAdmin
 });
 
 app.http('applicationUserGetByUsername', {

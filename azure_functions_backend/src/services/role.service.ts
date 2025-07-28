@@ -39,6 +39,68 @@ export class RoleService {
     });
   }
 
+  // Ottenere ruoli disponibili (escludendo superadmin)
+  async getAvailableRoles(): Promise<any[]> {
+    return await (prisma as any).role.findMany({
+      where: { 
+        isActive: true,
+        name: {
+          not: 'superadmin'
+        }
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  // Ottenere ruoli disponibili per un utente specifico (escludendo superadmin e ruoli già assegnati)
+  async getAvailableRolesForUser(userId?: string): Promise<any[]> {
+    const baseQuery = {
+      where: { 
+        isActive: true,
+        name: {
+          not: 'superadmin'
+        }
+      },
+      orderBy: { name: 'asc' },
+    };
+
+    // Se non viene specificato un userId, restituisci tutti i ruoli disponibili
+    if (!userId) {
+      return await (prisma as any).role.findMany(baseQuery);
+    }
+
+    // Ottieni i ruoli già assegnati all'utente (solo quelli attivi)
+    const userRoles = await (prisma as any).userRole.findMany({
+      where: {
+        userId,
+        isActive: true,
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ],
+      },
+      include: {
+        role: true
+      }
+    });
+
+    const assignedRoleIds = userRoles.map((ur: any) => ur.role.id);
+
+    // Filtra i ruoli escludendo quelli già assegnati attivamente
+    return await (prisma as any).role.findMany({
+      where: { 
+        isActive: true,
+        name: {
+          not: 'superadmin'
+        },
+        id: {
+          notIn: assignedRoleIds
+        }
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   // Ottenere un ruolo per ID
   async getRoleById(id: string): Promise<any | null> {
     return await (prisma as any).role.findUnique({
@@ -71,6 +133,46 @@ export class RoleService {
 
   // Assegnare un ruolo a un utente
   async assignRoleToUser(data: AssignRoleRequest): Promise<any> {
+    // Prima verifica se il ruolo è già assegnato all'utente
+    const existingUserRole = await (prisma as any).userRole.findUnique({
+      where: {
+        userId_roleId: {
+          userId: data.userId,
+          roleId: data.roleId,
+        },
+      },
+    });
+
+    if (existingUserRole) {
+      // Se il ruolo esiste già, aggiornalo invece di crearlo
+      return await (prisma as any).userRole.update({
+        where: {
+          userId_roleId: {
+            userId: data.userId,
+            roleId: data.roleId,
+          },
+        },
+        data: {
+          isActive: true,
+          assignedBy: data.assignedBy,
+          expiresAt: data.expiresAt,
+        },
+        include: {
+          role: true,
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+    }
+
+    // Se il ruolo non esiste, crealo
     return await (prisma as any).userRole.create({
       data: {
         userId: data.userId,
@@ -95,6 +197,20 @@ export class RoleService {
 
   // Rimuovere un ruolo da un utente
   async removeRoleFromUser(userId: string, roleId: string): Promise<any> {
+    // Prima verifica se il record esiste
+    const existingUserRole = await (prisma as any).userRole.findUnique({
+      where: {
+        userId_roleId: {
+          userId,
+          roleId,
+        },
+      },
+    });
+
+    if (!existingUserRole) {
+      throw new Error('Ruolo non trovato per questo utente');
+    }
+
     return await (prisma as any).userRole.update({
       where: {
         userId_roleId: {

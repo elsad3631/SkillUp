@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt';
 import { applicationUserService } from './applicationuser.service';
 import { userActivityLogService } from './userActivityLog.service';
 import { RoleService } from './role.service';
+import { blobStorageService } from './blobstorage.service';
 
 const prisma = new PrismaClient();
 const roleService = new RoleService();
@@ -28,7 +29,7 @@ export const cvDataService = {
   async remove(id: string) {
     return prisma.cVData.delete({ where: { id } });
   },
-  async extractFromCV(file: Express.Multer.File, requestingUserId?: string, roles?: string[]) {
+  async extractFromCV(file: Express.Multer.File, requestingUserId?: string, roles?: string[], company?: string) {
     let cvText = '';
     const ext = file.originalname.split('.').pop()?.toLowerCase();
     if (ext === 'pdf') {
@@ -40,10 +41,44 @@ export const cvDataService = {
     } else {
       throw new Error('Unsupported file type');
     }
-    // Carica la lista di skills da un file JSON
-    const skillsListPath = path.join(__dirname, '../../skills-list.json');
-    const skillsListArr = JSON.parse(fs.readFileSync(skillsListPath, 'utf-8'));
-    const skillsList = skillsListArr.join(', ');
+
+    // Recupera gli assets dal database per la company specificata
+    let skillsList = '';
+    if (company) {
+      try {
+        const assets = await prisma.asset.findMany({
+          where: {
+            applicationUser: {
+              company: company
+            },
+            enable: true
+          },
+          select: {
+            name: true,
+            type: true
+          }
+        });
+        
+        // Filtra solo hard skills e soft skills
+        const hardSkills = assets.filter(asset => asset.type === 'hard skill').map(asset => asset.name);
+        const softSkills = assets.filter(asset => asset.type === 'soft skill').map(asset => asset.name);
+        
+        // Combina le skills in una lista
+        const allSkills = [...hardSkills, ...softSkills];
+        skillsList = allSkills.join(', ');
+      } catch (error) {
+        console.error('Error fetching assets for company:', error);
+        // Fallback alla lista hardcoded se non riesce a recuperare dal database
+        const skillsListPath = path.join(__dirname, '../../skills-list.json');
+        const skillsListArr = JSON.parse(fs.readFileSync(skillsListPath, 'utf-8'));
+        skillsList = skillsListArr.join(', ');
+      }
+    } else {
+      // Fallback alla lista hardcoded se non è specificata la company
+      const skillsListPath = path.join(__dirname, '../../skills-list.json');
+      const skillsListArr = JSON.parse(fs.readFileSync(skillsListPath, 'utf-8'));
+      skillsList = skillsListArr.join(', ');
+    }
     // Prompt fisso
     const prompt = `Sei un assistente AI esperto nell'analisi di curriculum vitae.
 Ti fornirò il testo di un curriculum e dovrai estrarre le seguenti informazioni in formato JSON.
@@ -142,8 +177,7 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
     let extracted;
     try {
       let content = response.data.choices[0].message.content;
-      console.log('🔍 Raw OpenAI response:', content);
-      
+
       // Rimuovi blocchi di codice markdown se presenti
       if (content.includes('```json')) {
         content = content.replace(/```json\n?/g, '').replace(/```/g, '');
@@ -157,10 +191,7 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
         content = jsonMatch[0];
       }
       
-      console.log('🔧 Cleaned content for parsing:', content);
-      
       extracted = JSON.parse(content);
-      console.log('✅ Successfully parsed JSON:', extracted);
     } catch (e) {
       console.error('❌ JSON parsing failed:', e);
       console.error('Raw content was:', response.data.choices[0].message.content);
@@ -256,72 +287,39 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
       address: extracted.address,
       phone: extracted.phone,
       isAvailable: true, // Default disponibile
+      roles: roles || ['employee'], // Passa i ruoli al servizio
+      company: company, // Usa il campo company passato dal frontend
       hardSkills: processedHardSkills,
       softSkills: processedSoftSkills,
       experiences: processedExperiences,
-      cvData: {
-        fileName: file.originalname,
-        storageUrl: `cv_uploads/${finalUsername}_${Date.now()}_${file.originalname}`,
-      }
+      // Non includiamo cvData qui - verrà aggiunto dopo il salvataggio del file
     };
     
-    // Debug logging prima della creazione
-    console.log('🔍 Creating ApplicationUser with processed data:', {
-      username: applicationUserData.username,
-      email: applicationUserData.email,
-      experiencesCount: applicationUserData.experiences.length,
-      hardSkillsCount: applicationUserData.hardSkills.length,
-      softSkillsCount: applicationUserData.softSkills.length,
-      sampleExperience: applicationUserData.experiences[0] || 'none',
-    });
-
-    // Crea l'ApplicationUser nel database
-    const createdUser = await applicationUserService.create(applicationUserData);
+    // Crea l'ApplicationUser nel database (i ruoli verranno assegnati automaticamente dal servizio)
+    const createdUser = await applicationUserService.create(applicationUserData, requestingUserId);
     
-    // Assign roles through the role system
-    if (roles && roles.length > 0) {
-      try {
-        const allRoles = await roleService.getAllRoles();
-        
-        for (const roleName of roles) {
-          const role = allRoles.find(r => r.name === roleName);
-          
-          if (role) {
-            await roleService.assignRoleToUser({
-              userId: createdUser.id,
-              roleId: role.id,
-              assignedBy: null // Use null for system assignment
-            });
-            console.log(`✅ Role ${roleName} assigned to user ${createdUser.email} (created from CV)`);
-          } else {
-            console.warn(`⚠️ Role ${roleName} not found in database for user ${createdUser.email} (created from CV)`);
-          }
-        }
-      } catch (error) {
-        console.error(`❌ Error assigning roles to user ${createdUser.email} (created from CV):`, error);
-        // Don't fail user creation if role assignment fails
+    // Ora che abbiamo l'ID dell'utente, salviamo il file CV nello storage
+    const cvBlobName = `cv/${createdUser.id}/${file.originalname}`;
+    const cvStorageUrl = await blobStorageService.uploadFile(
+      cvBlobName, 
+      file.buffer, 
+      file.mimetype,
+      {
+        metadata_storage_name: file.originalname,
+        metadata_creation_date: new Date().toISOString(),
+        entity_type: 'employee',
+        entity_id: createdUser.id,
+        document_type: 'employee_cv'
       }
-    } else {
-      // Default to superadmin role if no roles provided
-      try {
-        const allRoles = await roleService.getAllRoles();
-        const superadminRole = allRoles.find(role => role.name === 'superadmin');
-        
-        if (superadminRole) {
-          await roleService.assignRoleToUser({
-            userId: createdUser.id,
-            roleId: superadminRole.id,
-            assignedBy: null // Use null for system assignment
-          });
-          console.log(`✅ Superadmin role assigned to user ${createdUser.email} (created from CV)`);
-        } else {
-          console.warn(`⚠️ Superadmin role not found in database for user ${createdUser.email} (created from CV)`);
-        }
-      } catch (error) {
-        console.error(`❌ Error assigning superadmin role to user ${createdUser.email} (created from CV):`, error);
-        // Don't fail user creation if role assignment fails
+    );
+    
+    // Aggiorna l'utente con i dati del CV salvato
+    await applicationUserService.update(createdUser.id, {
+      cvData: {
+        fileName: file.originalname,
+        storageUrl: cvStorageUrl,
       }
-    }
+    });
     
     // Crea un log dell'attività se è stato fornito l'ID dell'utente richiedente
     if (requestingUserId) {
@@ -336,6 +334,7 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
             createdUserId: createdUser.id,
             createdUserEmail: createdUser.email,
             cvFileName: file.originalname,
+            cvStorageUrl: cvStorageUrl,
             extractedSkillsCount: {
               hardSkills: processedHardSkills.length,
               softSkills: processedSoftSkills.length

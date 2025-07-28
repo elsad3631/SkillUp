@@ -331,8 +331,8 @@
             </div>
             -->
 
-            <!-- CV Data Section -->
-            <div class="card mb-6">
+            <!-- CV Data Section - Only visible when CV is uploaded -->
+            <div v-if="form.cvData.fileName || form.cvData.storageUrl" class="card mb-6">
               <div class="card-header">
                 <h3 class="card-title">CV Information</h3>
               </div>
@@ -345,6 +345,7 @@
                       type="text"
                       class="form-control"
                       placeholder="e.g. john_doe_cv.pdf"
+                      readonly
                     />
                   </div>
                   <div class="col-md-6">
@@ -354,6 +355,7 @@
                       type="url"
                       class="form-control"
                       placeholder="https://example.com/cv.pdf"
+                      readonly
                     />
                   </div>
                 </div>
@@ -390,7 +392,7 @@
 <script lang="ts">
 import { defineComponent, ref, reactive, onMounted } from "vue";
 import { createEmployee, extractCVData } from "@/core/services/businessServices/Employee";
-import { getAllRoles, type Role } from "@/core/services/businessServices/Role";
+import { getAvailableRolesForUser, type Role } from "@/core/services/businessServices/Role";
 import type { Employee } from "@/core/models/Employee";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
@@ -418,7 +420,7 @@ export default defineComponent({
     // Load roles from database
     const loadRoles = async () => {
       try {
-        const loadedRoles = await getAllRoles();
+        const loadedRoles = await getAvailableRolesForUser();
         roles.value = loadedRoles;
         
         // Set default roles for forms if they're empty
@@ -496,8 +498,8 @@ export default defineComponent({
         }
       ],
       cvData: {
-        fileName: "mario_rossi_cv.pdf",
-        storageUrl: "https://example.com/mario_rossi_cv.pdf",
+        fileName: "",
+        storageUrl: "",
       },
     });
 
@@ -576,48 +578,47 @@ export default defineComponent({
               </div>
               <p><strong>Stiamo elaborando il tuo CV...</strong></p>
               <p class="text-muted">Questa operazione può richiedere alcuni minuti.</p>
-              <p class="text-muted">Riceverai una notifica quando l'elaborazione sarà completata.</p>
+              <p class="text-info">
+                <i class="fas fa-info-circle"></i>
+                L'utente verrà creato in background. Riceverai una notifica quando l'operazione sarà completata.
+              </p>
             </div>
           `,
           showConfirmButton: true,
+          confirmButtonText: 'Ho capito',
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
 
         // Invia la richiesta in background senza attendere la risposta
-        extractCVData(cvFile.value, currentUser.value?.id, cvForm.roles).then((result) => {
-          
-        }).catch((err: any) => {
-          // Log dell'errore per debug
-          console.error('Errore estrazione CV:', err);
-        });
+        extractCVData(cvFile.value, currentUser.value?.id, cvForm.roles, currentUser.value?.company)
+          .then((result) => {
+            // Log del successo per debug
+            console.log('CV elaborato con successo:', result);
+            
+            // Emetti l'evento per aggiornare la lista degli utenti
+            emit("employee-created", result.user);
+          })
+          .catch((err) => {
+            // Log dell'errore per debug
+            console.error('Errore estrazione CV:', err);
+          });
         
-        // Chiudi il loading e mostra messaggio di conferma
-        await loadingAlert;
-        
-        await Swal.fire({
-          icon: 'success',
-          title: 'Richiesta inviata!',
-          html: `
-            <p><strong>Il CV è stato inviato per l'elaborazione.</strong></p>
-            <br>
-            <p>Riceverai una notifica quando l'elaborazione sarà completata.</p>
-            <br>
-            <p class="text-info">
-              <i class="fas fa-info-circle"></i>
-              <strong>Nota:</strong> L'elaborazione avviene in background e può richiedere alcuni minuti.
-            </p>
-          `,
-          confirmButtonText: 'Ho capito',
-        });
-        
-        // Reset del form e chiudi modal
+        // Reset del form e chiudi modal immediatamente
         resetForm();
         if (props.closeModal) props.closeModal();
         
       } catch (err: any) {
         // Log dell'errore per debug
-        console.error('Errore invio CV:', err);
+        console.error('Errore preparazione CV:', err);
+        
+        // Mostra messaggio di errore solo per errori di preparazione
+        await Swal.fire({
+          icon: 'error',
+          title: 'Errore durante la preparazione',
+          text: err.message || 'Si è verificato un errore durante la preparazione del CV.',
+          confirmButtonText: 'OK',
+        });
       } finally {
         cvLoading.value = false;
       }
@@ -691,6 +692,21 @@ export default defineComponent({
           storageUrl: form.cvData.storageUrl?.trim(),
         } : undefined;
 
+        // Determina il campo company basato sull'utente corrente
+        let companyId: string | undefined;
+        if (currentUser.value) {
+          const userRoles = currentUser.value.userRoles || [];
+          const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+          
+          if (isSuperAdmin) {
+            // Se l'utente corrente è super admin, il nuovo utente viene associato alla sua società
+            companyId = currentUser.value.company || currentUser.value.id;
+          } else {
+            // Se l'utente corrente non è super admin, il nuovo utente viene associato alla società dell'utente corrente
+            companyId = currentUser.value.company;
+          }
+        }
+
         // Costruisco l'oggetto applicationUser con nomi camelCase e solo campi valorizzati
         const applicationUserData: any = {
           username: form.username?.trim(),
@@ -707,6 +723,7 @@ export default defineComponent({
         if (form.address) applicationUserData.address = form.address.trim();
         if (form.currentRole) applicationUserData.currentRole = form.currentRole.trim();
         if (form.department) applicationUserData.department = form.department.trim();
+        if (companyId) applicationUserData.company = companyId;
         if (processedHardSkills.length > 0) applicationUserData.hardSkills = processedHardSkills;
         if (processedSoftSkills.length > 0) applicationUserData.softSkills = processedSoftSkills;
         if (processedExperiences.length > 0) applicationUserData.experiences = processedExperiences;

@@ -188,27 +188,44 @@
               ></textarea>
             </div>
           </div>
-          <!-- CV Data -->
+          <!-- CV Management -->
           <div class="row mb-6">
-            <div class="col-lg-6">
-              <label class="col-form-label fw-semobold fs-6">CV File Name</label>
-              <input
-                type="text"
-                name="cvData.fileName"
-                class="form-control form-control-lg form-control-solid"
-                placeholder="e.g. john_doe_cv.pdf"
-                v-model="profileDetails.cvData.fileName"
-              />
-            </div>
-            <div class="col-lg-6">
-              <label class="col-form-label fw-semobold fs-6">CV URL</label>
-              <input
-                type="text"
-                name="cvData.storageUrl"
-                class="form-control form-control-lg form-control-solid"
-                placeholder="https://example.com/cv.pdf"
-                v-model="profileDetails.cvData.storageUrl"
-              />
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">CV Document</label>
+            <div class="col-lg-8 fv-row">
+              <!-- CV not uploaded yet -->
+              <div v-if="!profileDetails.cvData.fileName && !profileDetails.cvData.storageUrl" class="text-center p-4 border-2 border-dashed border-gray-300 rounded">
+                <KTIcon icon-name="document" icon-class="fs-2x text-muted mb-3" />
+                <p class="text-muted mb-3">No CV uploaded yet</p>
+                <button type="button" class="btn btn-primary" @click="showCvUploadModal = true">
+                  <KTIcon icon-name="plus" icon-class="fs-2 me-2" />
+                  Upload CV
+                </button>
+              </div>
+              
+              <!-- CV already uploaded -->
+              <div v-else class="d-flex align-items-center justify-content-between p-3 border rounded bg-light">
+                <div class="d-flex align-items-center">
+                  <KTIcon icon-name="document" icon-class="fs-2 text-primary me-3" />
+                  <div>
+                    <p class="fw-semobold mb-1">{{ profileDetails.cvData.fileName }}</p>
+                    <small class="text-muted">CV uploaded</small>
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-sm btn-outline-primary" @click="downloadCV">
+                    <KTIcon icon-name="download" icon-class="fs-3" />
+                    Download
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-warning" @click="showCvUploadModal = true">
+                    <KTIcon icon-name="pencil" icon-class="fs-3" />
+                    Replace
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" @click="deleteCV">
+                    <KTIcon icon-name="trash" icon-class="fs-3" />
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -718,6 +735,46 @@
     </div>
   </div>
 
+  <!-- Modal per caricamento CV -->
+  <div v-if="showCvUploadModal" class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ profileDetails.cvData.fileName ? 'Replace CV' : 'Upload CV' }}</h5>
+          <button type="button" class="btn-close" @click="showCvUploadModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Select CV File (.pdf, .docx)</label>
+            <input 
+              type="file" 
+              class="form-control" 
+              accept=".pdf,.docx" 
+              @change="onCvFileChange"
+              ref="cvFileInput"
+            />
+            <div class="form-text">Supported formats: PDF, DOCX (max 10MB)</div>
+          </div>
+          <div v-if="selectedCvFile" class="alert alert-info">
+            <strong>Selected file:</strong> {{ selectedCvFile.name }} ({{ formatFileSize(selectedCvFile.size) }})
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="showCvUploadModal = false">Cancel</button>
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            @click="uploadCV" 
+            :disabled="!selectedCvFile || uploadingCV"
+          >
+            <span v-if="uploadingCV" class="spinner-border spinner-border-sm me-2"></span>
+            {{ profileDetails.cvData.fileName ? 'Replace CV' : 'Upload CV' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 
   </div>
@@ -732,7 +789,7 @@ import { useRoute } from "vue-router";
 import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
-import { getAllRoles, getUserRoles, assignRoleToUser, removeRoleFromUser, type Role } from "@/core/services/businessServices/Role";
+import { getAvailableRolesForUser, getUserRoles, assignRoleToUser, removeRoleFromUser, type Role } from "@/core/services/businessServices/Role";
 import type { Employee } from "@/core/models/Employee";
 
 interface CvData {
@@ -777,6 +834,12 @@ export default defineComponent({
     const selectedRoleId = ref('');
     const roleExpirationDate = ref('');
     const addingRole = ref(false);
+
+    // CV management
+    const showCvUploadModal = ref(false);
+    const selectedCvFile = ref<File | null>(null);
+    const uploadingCV = ref(false);
+    const cvFileInput = ref<HTMLInputElement | null>(null);
 
     // Password change management
     const passwordForm = ref({
@@ -870,10 +933,9 @@ export default defineComponent({
              passwordForm.value.newPassword.length >= 8;
     });
 
-    // Computed property for available roles (filtered)
+    // Computed property for available roles (server-side filtered)
     const availableRoles = computed(() => {
-      const assignedRoleIds = userRoles.value.map(role => role.id);
-      return allRoles.value.filter(role => !assignedRoleIds.includes(role.id));
+      return allRoles.value;
     });
 
     // Determina se siamo in modalità employee view o account view
@@ -932,7 +994,7 @@ export default defineComponent({
 
     const loadAvailableRoles = async () => {
       try {
-        const roles = await getAllRoles();
+        const roles = await getAvailableRolesForUser(userData.value?.id);
         allRoles.value = roles;
       } catch (error) {
         console.error("Error loading available roles:", error);
@@ -1264,8 +1326,9 @@ export default defineComponent({
           expiresAt: roleExpirationDate.value || undefined
         });
         
-        // Reload user roles
+        // Reload user roles and available roles
         await loadUserRoles();
+        await loadAvailableRoles();
         
         // Reset form
         selectedRoleId.value = '';
@@ -1277,13 +1340,24 @@ export default defineComponent({
           title: 'Role assigned!',
           text: 'The role has been assigned successfully.'
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error assigning role:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'There was an error assigning the role.'
-        });
+        
+        // Gestisci specificamente l'errore di ruolo già assegnato
+        if (error.response?.data?.code === 'ROLE_ALREADY_ASSIGNED' || 
+            (error.message && error.message.includes('already assigned'))) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Role already assigned',
+            text: 'This role is already assigned to the user.'
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.response?.data?.error || error.message || 'There was an error assigning the role.'
+          });
+        }
       } finally {
         addingRole.value = false;
       }
@@ -1366,20 +1440,358 @@ export default defineComponent({
         try {
           await removeRoleFromUser(userData.value.id, role.id);
           
-          // Reload user roles
+          // Reload user roles and available roles
           await loadUserRoles();
+          await loadAvailableRoles();
           
           Swal.fire({
             icon: 'success',
             title: 'Role removed!',
             text: 'The role has been removed successfully.'
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error removing role:", error);
           Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'There was an error removing the role.'
+            text: error.response?.data?.error || error.message || 'There was an error removing the role.'
+          });
+        }
+      }
+    };
+
+    // CV management functions
+    const formatFileSize = (bytes: number): string => {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    const onCvFileChange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        const file = target.files[0];
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid file type',
+            text: 'Please select a PDF or DOCX file.'
+          });
+          return;
+        }
+        // Validate file size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+          Swal.fire({
+            icon: 'error',
+            title: 'File too large',
+            text: 'Please select a file smaller than 10MB.'
+          });
+          return;
+        }
+        selectedCvFile.value = file;
+      }
+    };
+
+    const uploadCV = async () => {
+      if (!selectedCvFile.value || !userData.value?.id) return;
+      
+      uploadingCV.value = true;
+      try {
+        const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+        
+        // If replacing an existing CV, delete the old file first
+        if (profileDetails.value.cvData.storageUrl) {
+          try {
+            // Extract the blob name from the storage URL
+            const url = new URL(profileDetails.value.cvData.storageUrl);
+            const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+            
+            // The URL format should be: /container-name/blob-path
+            // We need to get everything after the container name
+            if (pathParts.length >= 2) {
+              // Skip the first part (container name) and join the rest
+              const blobName = pathParts.slice(1).join('/');
+              
+              // Delete old file from blob storage
+              const deleteResponse = await fetch(`${API_URL}/blobstorage/${encodeURIComponent(blobName)}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              });
+              
+              if (!deleteResponse.ok) {
+                console.warn('Failed to delete old CV from blob storage:', deleteResponse.statusText);
+              } else {
+                console.log('Old CV deleted from blob storage successfully');
+              }
+            }
+          } catch (blobError) {
+            console.warn('Error deleting old CV from blob storage:', blobError);
+            // Continue with upload even if old file deletion fails
+          }
+        }
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('file', selectedCvFile.value);
+        formData.append('prefix', `cv/${userData.value.id}`);
+        // Don't use customName - let the service generate the filename with the prefix
+        
+        // Add metadata
+        const metadata = {
+          metadata_storage_name: selectedCvFile.value.name,
+          metadata_creation_date: new Date().toISOString(),
+          entity_type: 'employee',
+          entity_id: userData.value.id,
+          document_type: 'employee_cv'
+        };
+        formData.append('metadata', JSON.stringify(metadata));
+        
+        // Upload file
+        const response = await fetch(`${API_URL}/blobstorage/upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload CV');
+        }
+        
+        const result = await response.json();
+        
+        // Update profile details with new CV data
+        profileDetails.value.cvData = {
+          fileName: selectedCvFile.value.name,
+          storageUrl: result.fileUrl
+        };
+        
+        // Update user in database
+        const updateData = {
+          cvData: {
+            fileName: selectedCvFile.value.name,
+            storageUrl: result.fileUrl
+          }
+        };
+        
+        if (isEmployeeView.value && route.params.id) {
+          // Update employee
+          const employeeResponse = await fetch(`${API_URL}/applicationuser/${route.params.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+          });
+          
+          if (!employeeResponse.ok) {
+            throw new Error('Failed to update employee CV data');
+          }
+          
+          // Refresh employee data
+          if (refreshEmployee) {
+            await refreshEmployee();
+          }
+        } else {
+          // Update current user - only update cvData if it exists
+          if (result.fileUrl) {
+            await updateCurrentUser({
+              cvData: {
+                fileName: selectedCvFile.value.name,
+                storageUrl: result.fileUrl
+              }
+            } as any);
+          }
+        }
+        
+        // Close modal and reset
+        showCvUploadModal.value = false;
+        selectedCvFile.value = null;
+        if (cvFileInput.value) {
+          cvFileInput.value.value = '';
+        }
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'CV uploaded successfully!',
+          text: 'Your CV has been uploaded and saved.'
+        });
+        
+      } catch (error: any) {
+        console.error("Error uploading CV:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Upload failed',
+          text: error.message || 'There was an error uploading your CV.'
+        });
+      } finally {
+        uploadingCV.value = false;
+      }
+    };
+
+    const downloadCV = async () => {
+      if (profileDetails.value.cvData.storageUrl && profileDetails.value.cvData.fileName) {
+        try {
+          const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+          
+          // Extract the blob name from the storage URL
+          const url = new URL(profileDetails.value.cvData.storageUrl);
+          const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+          
+          // The URL format should be: /container-name/blob-path
+          // We need to get everything after the container name
+          if (pathParts.length >= 2) {
+            // Skip the first part (container name) and join the rest
+            const blobName = pathParts.slice(1).join('/');
+            
+            // Download from blob storage via backend
+            const downloadResponse = await fetch(`${API_URL}/blobstorage/download/${encodeURIComponent(blobName)}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+            
+            if (!downloadResponse.ok) {
+              throw new Error(`Failed to download file: ${downloadResponse.statusText}`);
+            }
+            
+            // Get the file as blob
+            const blob = await downloadResponse.blob();
+            
+            // Create download link
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = profileDetails.value.cvData.fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+            
+          } else {
+            throw new Error('Invalid storage URL format');
+          }
+        } catch (error: any) {
+          console.error("Error downloading CV:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Download failed',
+            text: error.message || 'There was an error downloading your CV.'
+          });
+        }
+      }
+    };
+
+    const deleteCV = async () => {
+      const confirm = await Swal.fire({
+        title: 'Delete CV?',
+        text: 'Are you sure you want to delete your CV? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+      });
+      
+      if (confirm.isConfirmed) {
+        try {
+          const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+          
+          // First, delete the file from blob storage if we have a storage URL
+          if (profileDetails.value.cvData.storageUrl) {
+            try {
+              // Extract the blob name from the storage URL
+              const url = new URL(profileDetails.value.cvData.storageUrl);
+              const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+              
+              // The URL format should be: /container-name/blob-path
+              // We need to get everything after the container name
+              if (pathParts.length >= 2) {
+                // Skip the first part (container name) and join the rest
+                const blobName = pathParts.slice(1).join('/');
+                
+                // Delete from blob storage
+                const deleteResponse = await fetch(`${API_URL}/blobstorage/${encodeURIComponent(blobName)}`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+                
+                if (!deleteResponse.ok) {
+                  console.warn('Failed to delete file from blob storage:', deleteResponse.statusText);
+                  const errorText = await deleteResponse.text();
+                  console.warn('Error details:', errorText);
+                } else {
+                  console.log('File deleted from blob storage successfully');
+                }
+              } else {
+                console.warn('Could not extract blob name from URL:', profileDetails.value.cvData.storageUrl);
+              }
+            } catch (blobError) {
+              console.warn('Error deleting from blob storage:', blobError);
+              // Continue with database update even if blob deletion fails
+            }
+          }
+          
+          // Clear CV data from database
+          const updateData = {
+            cvData: {
+              fileName: '',
+              storageUrl: ''
+            }
+          };
+          
+          if (isEmployeeView.value && route.params.id) {
+            // Update employee
+            const response = await fetch(`${API_URL}/applicationuser/${route.params.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updateData)
+            });
+            
+            if (!response.ok) {
+              throw new Error('Failed to delete CV from database');
+            }
+            
+            // Refresh employee data
+            if (refreshEmployee) {
+              await refreshEmployee();
+            }
+          } else {
+            // Update current user - clear cvData
+            await updateCurrentUser({
+              cvData: {
+                fileName: '',
+                storageUrl: ''
+              }
+            } as any);
+          }
+          
+          // Update local state
+          profileDetails.value.cvData = {
+            fileName: '',
+            storageUrl: ''
+          };
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'CV deleted!',
+            text: 'Your CV has been deleted successfully from both storage and database.'
+          });
+          
+        } catch (error: any) {
+          console.error("Error deleting CV:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Delete failed',
+            text: error.message || 'There was an error deleting your CV.'
           });
         }
       }
@@ -1440,6 +1852,16 @@ export default defineComponent({
       passwordStrengthBarClass,
       passwordStrengthPercentage,
       passwordRequirements,
+      // CV management
+      showCvUploadModal,
+      selectedCvFile,
+      uploadingCV,
+      cvFileInput,
+      onCvFileChange,
+      uploadCV,
+      downloadCV,
+      deleteCV,
+      formatFileSize,
     };
   },
 });

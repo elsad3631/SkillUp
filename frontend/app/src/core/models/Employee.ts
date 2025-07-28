@@ -45,4 +45,5 @@ export class Employee extends CosmosEntityBase {
   department?: string;
   is_available: boolean = true;
   user_id?: string;
+  company?: string; // ID dell'utente Super Admin che rappresenta la società
 }

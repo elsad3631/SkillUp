@@ -123,9 +123,26 @@ app.http('assignRoleToUser', {
       });
 
       return { status: 201, body: JSON.stringify(userRole) };
-    } catch (error) {
+    } catch (error: any) {
       context.error('Errore nell\'assegnazione del ruolo:', error);
-      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+      
+      // Gestisci specificamente l'errore di vincolo di unicità
+      if (error.code === 'P2002') {
+        return { 
+          status: 409, 
+          body: JSON.stringify({ 
+            error: 'Il ruolo è già assegnato a questo utente',
+            code: 'ROLE_ALREADY_ASSIGNED'
+          }) 
+        };
+      }
+      
+      return { 
+        status: 500, 
+        body: JSON.stringify({ 
+          error: error.message || 'Errore interno del server' 
+        }) 
+      };
     }
   }
 });
@@ -142,9 +159,26 @@ app.http('removeRoleFromUser', {
 
       const userRole = await roleService.removeRoleFromUser(userId, roleId);
       return { status: 200, body: JSON.stringify(userRole) };
-    } catch (error) {
+    } catch (error: any) {
       context.error('Errore nella rimozione del ruolo:', error);
-      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+      
+      // Gestisci specificamente l'errore di record non trovato
+      if (error.code === 'P2025') {
+        return { 
+          status: 404, 
+          body: JSON.stringify({ 
+            error: 'Ruolo non trovato per questo utente',
+            code: 'ROLE_NOT_FOUND'
+          }) 
+        };
+      }
+      
+      return { 
+        status: 500, 
+        body: JSON.stringify({ 
+          error: error.message || 'Errore interno del server' 
+        }) 
+      };
     }
   }
 });
@@ -177,10 +211,28 @@ app.http('getAvailableRoles', {
   authLevel: 'anonymous',
   handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     try {
-      const roles = await roleService.getAllRoles();
+      const roles = await roleService.getAvailableRoles();
       return { status: 200, body: JSON.stringify(roles) };
     } catch (error) {
       context.error('Errore nel recupero dei ruoli disponibili:', error);
+      return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
+    }
+  }
+});
+
+// Register the routes
+app.http('getAvailableRolesForUser', {
+  methods: ['GET'],
+  route: 'roles/available/{userId?}',
+  authLevel: 'anonymous',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const url = new URL(request.url);
+      const userId = url.pathname.split('/').pop();
+      const roles = await roleService.getAvailableRolesForUser(userId);
+      return { status: 200, body: JSON.stringify(roles) };
+    } catch (error) {
+      context.error('Errore nel recupero dei ruoli disponibili per utente:', error);
       return { status: 500, body: JSON.stringify({ error: 'Errore interno del server' }) };
     }
   }

@@ -19,6 +19,7 @@ export interface ApplicationUser {
   department?: string | null;
   position?: string | null;
   isAvailable: boolean;
+  company?: string | null; // ID dell'utente Super Admin che rappresenta la società
   userRoles?: Array<{
     id: string;
     name: string;
@@ -53,9 +54,27 @@ const getApplicationUserById = (id: string): Promise<ApplicationUser | undefined
     });
 };
 
-const getApplicationUsersByRole = (role: string): Promise<Array<ApplicationUser> | undefined> => {
+const getApplicationUsersByRole = (role: string, companyId?: string): Promise<Array<ApplicationUser> | undefined> => {
   ApiService.setHeader();
-  return ApiService.get(`applicationuser/role/${role}`)
+  const url = companyId 
+    ? `applicationuser/role/${role}?company=${encodeURIComponent(companyId)}`
+    : `applicationuser/role/${role}`;
+    
+  return ApiService.get(url)
+    .then(({ data }) => data as ApplicationUser[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const getNonSuperAdminUsers = (companyId?: string): Promise<Array<ApplicationUser> | undefined> => {
+  ApiService.setHeader();
+  const url = companyId 
+    ? `applicationuser/filter/non-superadmin?company=${encodeURIComponent(companyId)}`
+    : `applicationuser/filter/non-superadmin`;
+    
+  return ApiService.get(url)
     .then(({ data }) => data as ApplicationUser[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -103,6 +122,20 @@ const deleteApplicationUser = (id: string): Promise<boolean> => {
     });
 };
 
+const bulkDeleteApplicationUsers = (userIds: string[]): Promise<{
+  deletedUsers: number;
+  deletedFiles: number;
+  totalUsers: number;
+} | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post('applicationuser/bulk/delete', { userIds })
+    .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 const searchApplicationUsers = (params: {
   query?: string;
   role?: string;
@@ -129,9 +162,11 @@ export {
   getApplicationUsers,
   getApplicationUserById,
   getApplicationUsersByRole,
+  getNonSuperAdminUsers,
   getAvailableApplicationUsers,
   createApplicationUser,
   updateApplicationUser,
   deleteApplicationUser,
+  bulkDeleteApplicationUsers,
   searchApplicationUsers,
 }; 

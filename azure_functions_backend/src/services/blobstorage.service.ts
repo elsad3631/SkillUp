@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = "DefaultEndpointsProtocol=https;AccountName=intentaistorage;AccountKey=OcyVws7RI7V1fKFgpLxfBYjUF/y/Lf9FAZRmIyx2ZiXMZ1vsylYFsMgJBVPpFVsLawxzdXtV41FS+ASt1KdB1g==;EndpointSuffix=core.windows.net"//process.env.AzureBlobStorageConnectionString;
+const connectionString = process.env.AzureBlobStorageConnectionString;
 const containerName = process.env.AzureBlobStorageContainer;
 
 if (!connectionString) {

@@ -30,6 +30,7 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
     const formData = await request.formData();
     cvFile = formData.get('cv') as unknown as File;
     const roles = formData.get('roles') as string;
+    const company = formData.get('company') as string;
 
     if (!cvFile) {
       return {
@@ -71,7 +72,7 @@ export async function extractCVData(request: HttpRequest, context: InvocationCon
     }
 
     // Use cvDataService to extract data and create user
-    const result = await cvDataService.extractFromCV(multerFile, requestingUserId || undefined, parsedRoles);
+    const result = await cvDataService.extractFromCV(multerFile, requestingUserId || undefined, parsedRoles, company);
 
     return {
       status: 201,

@@ -131,8 +131,15 @@ export const authService = {
         placeOfBirth,
         address,
         phone,
-        isAvailable
+        isAvailable,
+        company: null // Verrà aggiornato dopo la creazione con l'ID dell'utente stesso
       },
+    });
+
+    // Aggiorna il campo company con l'ID dell'utente stesso (super admin = società)
+    await prisma.applicationUser.update({
+      where: { id: user.id },
+      data: { company: user.id }
     });
 
     // Automatically assign superadmin role through the role system
@@ -202,6 +209,16 @@ export const authService = {
       });
     });
     
+    // Map user roles to the expected format for frontend
+    const mappedUserRoles = userRoles.map((ur: any) => ({
+      id: ur.id,
+      name: ur.role.name,
+      description: ur.role.description,
+      isActive: ur.isActive,
+      createdAt: ur.role.createdAt,
+      updatedAt: ur.role.updatedAt
+    }));
+    
     const token = jwt.sign(
       { 
         userId: user.id, 
@@ -214,7 +231,13 @@ export const authService = {
       { expiresIn: JWT_EXPIRES_IN }
     );
     
-    return { token, user };
+    return { 
+      token, 
+      user: {
+        ...user,
+        userRoles: mappedUserRoles
+      }
+    };
   },
   async resetPassword({ email, newPassword }: any) {
     const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -224,7 +247,7 @@ export const authService = {
     });
   },
   async getUserById(userId: string) {
-    return prisma.applicationUser.findUnique({ 
+    const user = await prisma.applicationUser.findUnique({ 
       where: { id: userId },
       include: {
         hardSkills: true,
@@ -233,6 +256,36 @@ export const authService = {
         cvData: true,
       },
     });
+
+    if (!user) {
+      return null;
+    }
+
+    // Get user roles
+    const userRoles = await prisma.userRole.findMany({
+      where: {
+        userId: userId,
+        isActive: true
+      },
+      include: {
+        role: true
+      }
+    });
+
+    // Map user roles to the expected format
+    const mappedUserRoles = userRoles.map(ur => ({
+      id: ur.id,
+      name: ur.role.name,
+      description: ur.role.description,
+      isActive: ur.isActive,
+      createdAt: ur.role.createdAt,
+      updatedAt: ur.role.updatedAt
+    }));
+
+    return {
+      ...user,
+      userRoles: mappedUserRoles
+    };
   },
   verifyToken(token: string) {
     const payload = jwt.verify(token, JWT_SECRET);

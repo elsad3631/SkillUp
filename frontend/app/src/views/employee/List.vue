@@ -172,12 +172,14 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
 import { 
-    getApplicationUsersByRole, 
+    getNonSuperAdminUsers, 
     getApplicationUserById, 
     deleteApplicationUser,
+    bulkDeleteApplicationUsers,
     type ApplicationUser 
 } from "@/core/services/businessServices/ApplicationUser";
 import type { Employee } from "@/core/models/Employee";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
     name: "employees-listing",
@@ -235,13 +237,35 @@ export default defineComponent({
         const loading = ref(false);
         const editModalLoading = ref(false);
 
+        const { currentUser } = useCurrentUser();
+
         const fetchEmployees = async () => {
             loading.value = true;
             try {
-                const result = await getApplicationUsersByRole('employee');
+                // Determina il companyId basato sull'utente corrente
+                let companyId: string | undefined;
+                if (currentUser.value) {
+                    const userRoles = currentUser.value.userRoles || [];
+                    const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+                
+                    if (isSuperAdmin) {
+                        // Se l'utente corrente è super admin, mostra tutti gli employee della sua società
+                        companyId = currentUser.value.company || currentUser.value.id;
+                    } else {
+                        // Se l'utente corrente non è super admin, mostra solo gli employee della sua società
+                        companyId = currentUser.value.company;
+                    }
+                } else {
+                    console.warn('⚠️ No current user found');
+                }
+                
+                const result = await getNonSuperAdminUsers(companyId);
+                
                 if (result) {
                     tableData.value = result;
                     initEmployees.value = [...result];
+                } else {
+                    console.warn('⚠️ No employees returned');
                 }
             } catch (error) {
                 console.error('Failed to fetch employees:', error);
@@ -292,7 +316,7 @@ export default defineComponent({
             if (selectedIds.value.length === 0) return;
             const confirm = await Swal.fire({
                 title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.value.length} employees. This action cannot be undone!`,
+                text: `You are about to delete ${selectedIds.value.length} employees and all their associated files (CVs, avatars, etc.). This action cannot be undone!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -300,22 +324,27 @@ export default defineComponent({
                 confirmButtonText: 'Yes, delete them!'
             });
             if (confirm.isConfirmed) {
-                let allSuccess = true;
-                for (const id of selectedIds.value) {
-                    try {
-                        const success = await deleteApplicationUser(id);
-                        if (!success) allSuccess = false;
-                    } catch (error) {
-                        allSuccess = false;
+                try {
+                    const result = await bulkDeleteApplicationUsers(selectedIds.value);
+                    if (result) {
+                        tableData.value = tableData.value.filter(e => !selectedIds.value.includes(e.id));
+                        initEmployees.value = initEmployees.value.filter(e => !selectedIds.value.includes(e.id));
+                        selectedIds.value = [];
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            html: `
+                                <p><strong>${result.deletedUsers} employees</strong> have been deleted successfully.</p>
+                                <p class="text-muted">Also deleted <strong>${result.deletedFiles} associated files</strong> (CVs, avatars, etc.).</p>
+                            `
+                        });
+                    } else {
+                        Swal.fire('Error', 'Failed to delete employees.', 'error');
                     }
-                }
-                tableData.value = tableData.value.filter(e => !selectedIds.value.includes(e.id));
-                initEmployees.value = initEmployees.value.filter(e => !selectedIds.value.includes(e.id));
-                selectedIds.value = [];
-                if (allSuccess) {
-                    Swal.fire('Deleted!', 'Selected employees have been deleted.', 'success');
-                } else {
-                    Swal.fire('Error', 'Some employees could not be deleted.', 'error');
+                } catch (error) {
+                    console.error('Failed to delete employees:', error);
+                    Swal.fire('Error', 'Failed to delete employees.', 'error');
                 }
             }
         };
@@ -323,7 +352,7 @@ export default defineComponent({
         const deleteSingleEmployee = async (id: string) => {
             const confirm = await Swal.fire({
                 title: 'Are you sure?',
-                text: "This action cannot be undone!",
+                text: "This will delete the employee and all their associated files (CV, avatar, etc.). This action cannot be undone!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -336,13 +365,13 @@ export default defineComponent({
                     if (success) {
                         tableData.value = tableData.value.filter(e => e.id !== id);
                         initEmployees.value = initEmployees.value.filter(e => e.id !== id);
-                        Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                        Swal.fire('Deleted!', 'Employee and all associated files have been deleted.', 'success');
                     } else {
-                        Swal.fire('Error', 'Failed to delete user.', 'error');
+                        Swal.fire('Error', 'Failed to delete employee.', 'error');
                     }
                 } catch (error) {
-                    console.error('Failed to delete user:', error);
-                    Swal.fire('Error', 'Failed to delete user.', 'error');
+                    console.error('Failed to delete employee:', error);
+                    Swal.fire('Error', 'Failed to delete employee.', 'error');
                 }
             }
         };
@@ -416,6 +445,7 @@ export default defineComponent({
                 date_of_birth: appUser.dateOfBirth,
                 place_of_birth: appUser.placeOfBirth,
                 user_id: appUser.id,
+                company: appUser.company,
                 creation_date: new Date(),
                 update_date: new Date(),
             } as Employee;
@@ -437,6 +467,7 @@ export default defineComponent({
                 currentRole: employee.current_role,
                 department: employee.department,
                 isAvailable: employee.is_available,
+                company: employee.company,
             } as ApplicationUser;
         };
 
@@ -450,7 +481,11 @@ export default defineComponent({
             }
         };
 
-        onMounted(() => {
+        onMounted(async () => {
+            // Assicurati che l'utente corrente sia caricato prima di fetchare gli employee
+            if (!currentUser.value) {
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Attendi un po' per il caricamento
+            }
             fetchEmployees();
             MenuComponent.reinitialization();
         });

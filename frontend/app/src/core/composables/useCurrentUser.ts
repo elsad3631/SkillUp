@@ -18,6 +18,15 @@ export interface CurrentUser {
   currentRole?: string;
   department?: string;
   isAvailable: boolean;
+  company?: string; // ID dell'utente Super Admin che rappresenta la società
+  userRoles?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
   cvData?: {
     id: string;
     fileName: string;

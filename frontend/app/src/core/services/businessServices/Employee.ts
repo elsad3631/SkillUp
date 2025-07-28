@@ -59,13 +59,18 @@ const deleteEmployee = (id: string): Promise<boolean> => {
     });
 };
 
-const extractCVData = (cvFile: File, userId?: string, roles?: string[]): Promise<any> => {
+const extractCVData = (cvFile: File, userId?: string, roles?: string[], company?: string): Promise<any> => {
   const data = new FormData();
   data.append('cv', cvFile);
   
   // Add roles to form data if provided
   if (roles && roles.length > 0) {
     data.append('roles', JSON.stringify(roles));
+  }
+  
+  // Add company to form data if provided
+  if (company) {
+    data.append('company', company);
   }
   
   // Use axios directly for this specific case since we need custom headers

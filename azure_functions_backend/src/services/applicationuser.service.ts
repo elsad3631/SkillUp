@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { RoleService } from './role.service';
 
 const prisma = new PrismaClient();
+const roleService = new RoleService();
 
 export const applicationUserService = {
   async getAll() {
@@ -42,15 +44,29 @@ export const applicationUserService = {
     };
   },
 
-  async getByRole(role: string) {
+  async getByRole(role: string, companyId?: string) {
+    console.log(`🔍 getByRole called with role: ${role}, companyId: ${companyId || 'undefined'}`);
+    
+    // Build the where clause for UserRole
+    const whereClause: any = {
+      role: {
+        name: role
+      },
+      isActive: true
+    };
+
+    // If companyId is provided, filter by company
+    if (companyId) {
+      whereClause.user = {
+        company: companyId
+      };
+    }
+
+    console.log('🔍 Where clause:', JSON.stringify(whereClause, null, 2));
+
     // Get users by role using the UserRole table
     const userRoles = await (prisma as any).userRole.findMany({
-      where: {
-        role: {
-          name: role
-        },
-        isActive: true
-      },
+      where: whereClause,
       include: {
         user: {
           include: {
@@ -63,6 +79,8 @@ export const applicationUserService = {
       }
     });
     
+    console.log(`📋 Found ${userRoles.length} user roles for role: ${role}`);
+    
     // For each user, get their roles and add them to the user object
     const usersWithRoles = await Promise.all(
       userRoles.map(async (ur: any) => {
@@ -74,18 +92,120 @@ export const applicationUserService = {
       })
     );
     
+    console.log(`✅ Returning ${usersWithRoles.length} users with roles`);
     return usersWithRoles;
   },
 
-  async create(data: any) {
+  async getNonSuperAdminUsers(companyId?: string) {
+    console.log(`🔍 getNonSuperAdminUsers called with companyId: ${companyId || 'undefined'}`);
+    
+    // Build the where clause to exclude superadmin users
+    const whereClause: any = {
+      isActive: true,
+      role: {
+        name: {
+          not: 'superadmin'
+        }
+      }
+    };
+
+    // If companyId is provided, filter by company
+    if (companyId) {
+      whereClause.user = {
+        company: companyId
+      };
+    }
+
+    // Get all users except superadmin using the UserRole table
+    const userRoles = await (prisma as any).userRole.findMany({
+      where: whereClause,
+      include: {
+        user: {
+          include: {
+            hardSkills: true,
+            softSkills: true,
+            experiences: true,
+            cvData: true,
+          }
+        },
+        role: true
+      }
+    });
+    
+    // Group by user and transform roles
+    const userMap = new Map();
+    
+    for (const ur of userRoles) {
+      if (!ur.user || !ur.role) continue;
+      
+      if (!userMap.has(ur.user.id)) {
+        userMap.set(ur.user.id, {
+          ...ur.user,
+          userRoles: []
+        });
+      }
+      
+      userMap.get(ur.user.id).userRoles.push({
+        id: ur.id,
+        name: ur.role.name,
+        description: ur.role.description,
+        isActive: ur.isActive,
+        createdAt: ur.role.createdAt,
+        updatedAt: ur.role.updatedAt
+      });
+    }
+    
+    const usersWithRoles = Array.from(userMap.values());
+    console.log(`✅ Returning ${usersWithRoles.length} non-superadmin users with roles`);
+    return usersWithRoles;
+  },
+
+  async create(data: any, requestingUserId?: string) {
     // Adatta skills, experiences e cvData per il nested create Prisma
     const prismaData: any = { ...data };
     
-
+    // Rimuovi il campo roles dai dati - verrà gestito separatamente tramite UserRole
+    delete prismaData.roles;
 
     // Hash password if provided (passwordHash field contains the plain password from frontend)
     if (data.passwordHash) {
       prismaData.passwordHash = await bcrypt.hash(data.passwordHash, 10);
+    }
+
+    // Genera un username unico se quello fornito è già in uso
+    if (prismaData.username) {
+      let finalUsername = prismaData.username;
+      let counter = 1;
+      
+      while (true) {
+        const existingUser = await prisma.applicationUser.findUnique({
+          where: { username: finalUsername }
+        });
+        
+        if (!existingUser) {
+          break; // Username è disponibile
+        }
+        
+        // Username già in uso, prova con un numero
+        finalUsername = `${prismaData.username}${counter}`;
+        counter++;
+        
+        // Limite di sicurezza per evitare loop infiniti
+        if (counter > 100) {
+          throw new Error('Impossibile generare un username unico dopo 100 tentativi');
+        }
+      }
+      
+      prismaData.username = finalUsername;
+      console.log(`✅ Generated unique username: ${finalUsername}`);
+    }
+
+    // Il campo company viene ora gestito dal frontend
+    // Se non viene fornito, rimane null
+    if (prismaData.company) {
+      console.log(`🏢 Company field provided from frontend: ${prismaData.company}`);
+    } else {
+      console.log(`⚠️ No company field provided, will be null`);
     }
 
     if (Array.isArray(data.hardSkills) && data.hardSkills.length > 0) {
@@ -104,7 +224,50 @@ export const applicationUserService = {
     // Create the user first
     const createdUser = await prisma.applicationUser.create({ data: prismaData });
     
-
+    // Assegna i ruoli tramite il sistema UserRole
+    if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+      try {
+        const allRoles = await roleService.getAllRoles();
+        
+        for (const roleName of data.roles) {
+          const role = allRoles.find(r => r.name === roleName);
+          
+          if (role) {
+            await roleService.assignRoleToUser({
+              userId: createdUser.id,
+              roleId: role.id,
+              assignedBy: requestingUserId || null
+            });
+            console.log(`✅ Role ${roleName} assigned to user ${createdUser.email}`);
+          } else {
+            console.warn(`⚠️ Role ${roleName} not found in database for user ${createdUser.email}`);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error assigning roles to user ${createdUser.email}:`, error);
+        // Don't fail user creation if role assignment fails
+      }
+    } else {
+      // Default to employee role if no roles provided
+      try {
+        const allRoles = await roleService.getAllRoles();
+        const employeeRole = allRoles.find(role => role.name === 'employee');
+        
+        if (employeeRole) {
+          await roleService.assignRoleToUser({
+            userId: createdUser.id,
+            roleId: employeeRole.id,
+            assignedBy: requestingUserId || null
+          });
+          console.log(`✅ Default employee role assigned to user ${createdUser.email}`);
+        } else {
+          console.warn(`⚠️ Employee role not found in database for user ${createdUser.email}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error assigning default role to user ${createdUser.email}:`, error);
+        // Don't fail user creation if role assignment fails
+      }
+    }
     
     return createdUser;
   },
@@ -278,38 +441,248 @@ export const applicationUserService = {
         });
       }
     }
-    if (data.cvData && (data.cvData.fileName || data.cvData.storageUrl || data.cvData.file_name || data.cvData.storage_url)) {
-      prismaData.cvData = {
-        upsert: {
-          update: {
-            fileName: data.cvData.fileName || data.cvData.file_name,
-            storageUrl: data.cvData.storageUrl || data.cvData.storage_url,
+    if (data.cvData) {
+      const fileName = data.cvData.fileName || data.cvData.file_name;
+      const storageUrl = data.cvData.storageUrl || data.cvData.storage_url;
+      
+      // If both fileName and storageUrl are empty or null, delete the CVData
+      if ((!fileName || fileName.trim() === '') && (!storageUrl || storageUrl.trim() === '')) {
+        // Delete existing CVData
+        await prisma.cVData.deleteMany({ where: { applicationUserId: id } });
+      } else if (fileName || storageUrl) {
+        // Update or create CVData
+        prismaData.cvData = {
+          upsert: {
+            update: {
+              fileName: fileName,
+              storageUrl: storageUrl,
+            },
+            create: {
+              fileName: fileName,
+              storageUrl: storageUrl,
+              uploadDate: new Date(),
+            },
           },
-          create: {
-            fileName: data.cvData.fileName || data.cvData.file_name,
-            storageUrl: data.cvData.storageUrl || data.cvData.storage_url,
-            uploadDate: new Date(),
-          },
-        },
-      };
+        };
+      }
     }
     
     return prisma.applicationUser.update({ where: { id }, data: prismaData });
   },
 
   async remove(id: string) {
-    // Delete related experiences
-    await prisma.experience.deleteMany({ where: { applicationUserId: id } });
-    // Delete related hard skills
-    await prisma.employeeSkill.deleteMany({ where: { applicationUserHardId: id } });
-    // Delete related soft skills  
-    await prisma.employeeSkill.deleteMany({ where: { applicationUserSoftId: id } });
-    // Delete related CVData
-    await prisma.cVData.deleteMany({ where: { applicationUserId: id } });
-    // Delete related ProjectAssignments
-    await prisma.projectAssignment.deleteMany({ where: { applicationUserId: id } });
-    // Now delete the application user
-    return prisma.applicationUser.delete({ where: { id } });
+    try {
+      // First, get the user data to collect all file references
+      const user = await prisma.applicationUser.findUnique({
+        where: { id },
+        include: {
+          cvData: true,
+        }
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Collect all files to delete
+      const filesToDelete: string[] = [];
+
+      // Add avatar file if exists
+      if (user.avatar) {
+        try {
+          // Extract filename from avatar URL
+          const avatarFileName = this.extractFileNameFromUrl(user.avatar);
+          if (avatarFileName) {
+            filesToDelete.push(avatarFileName);
+          }
+        } catch (error) {
+          console.warn('Could not extract avatar filename:', error);
+        }
+      }
+
+      // Add CV file if exists
+      if (user.cvData?.storageUrl) {
+        try {
+          // Extract filename from CV storage URL
+          const cvFileName = this.extractFileNameFromUrl(user.cvData.storageUrl);
+          if (cvFileName) {
+            filesToDelete.push(cvFileName);
+          }
+        } catch (error) {
+          console.warn('Could not extract CV filename:', error);
+        }
+      }
+
+      // Delete all files from blob storage
+      if (filesToDelete.length > 0) {
+        try {
+          // Import blob storage service dynamically to avoid circular dependencies
+          const { blobStorageService } = await import('./blobstorage.service');
+          
+          // Delete files one by one, but don't fail if some don't exist
+          for (const fileName of filesToDelete) {
+            try {
+              await blobStorageService.deleteFile(fileName);
+              console.log(`Deleted file: ${fileName}`);
+            } catch (fileError) {
+              console.warn(`Failed to delete file ${fileName}:`, fileError);
+              // Continue with other files even if one fails
+            }
+          }
+        } catch (blobError) {
+          console.warn('Error accessing blob storage service:', blobError);
+          // Continue with database deletion even if file deletion fails
+        }
+      }
+
+      // Delete related experiences
+      await prisma.experience.deleteMany({ where: { applicationUserId: id } });
+      // Delete related hard skills
+      await prisma.employeeSkill.deleteMany({ where: { applicationUserHardId: id } });
+      // Delete related soft skills  
+      await prisma.employeeSkill.deleteMany({ where: { applicationUserSoftId: id } });
+      // Delete related CVData
+      await prisma.cVData.deleteMany({ where: { applicationUserId: id } });
+      // Delete related ProjectAssignments
+      await prisma.projectAssignment.deleteMany({ where: { applicationUserId: id } });
+      // Delete related UserRoles
+      await (prisma as any).userRole.deleteMany({ where: { userId: id } });
+      // Delete related UserActivityLogs
+      await (prisma as any).userActivityLog.deleteMany({ where: { userId: id } });
+      // Delete related Notifications (both sent and received)
+      await (prisma as any).notification.deleteMany({ 
+        where: { 
+          OR: [
+            { senderId: id },
+            { recipientId: id }
+          ]
+        } 
+      });
+      // Delete related Assets
+      await (prisma as any).asset.deleteMany({ where: { applicationUserId: id } });
+      
+      // Now delete the application user
+      return prisma.applicationUser.delete({ where: { id } });
+    } catch (error) {
+      console.error('Error in user removal process:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Extract filename from blob storage URL
+   */
+  extractFileNameFromUrl(url: string): string | null {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      
+      // For Azure Storage URLs like: http://127.0.0.1:10000/devstoreaccount1/skillup/path/to/file
+      // pathname will be: /devstoreaccount1/skillup/path/to/file
+      const parts = pathname.split('/').filter(part => part.length > 0);
+      
+      if (parts.length >= 3) {
+        // Skip account name (devstoreaccount1) and container name (skillup)
+        const fileName = parts.slice(2).join('/');
+        // Decode URL-encoded characters
+        return decodeURIComponent(fileName);
+      }
+      
+      // Fallback: just the last part
+      const fileName = parts[parts.length - 1] || '';
+      return decodeURIComponent(fileName);
+    } catch (error) {
+      console.error('Error extracting filename from URL:', url, error);
+      // Fallback: assume the filename is the last part of the URL
+      const fileName = url.split('/').pop() || '';
+      return decodeURIComponent(fileName);
+    }
+  },
+
+  /**
+   * Bulk remove multiple users and their associated files
+   */
+  async bulkRemove(userIds: string[]) {
+    try {
+      // Get all users with their file references
+      const users = await prisma.applicationUser.findMany({
+        where: { id: { in: userIds } },
+        include: {
+          cvData: true,
+        }
+      });
+
+      // Collect all files to delete
+      const filesToDelete: string[] = [];
+
+      for (const user of users) {
+        // Add avatar file if exists
+        if (user.avatar) {
+          try {
+            const avatarFileName = this.extractFileNameFromUrl(user.avatar);
+            if (avatarFileName) {
+              filesToDelete.push(avatarFileName);
+            }
+          } catch (error) {
+            console.warn(`Could not extract avatar filename for user ${user.id}:`, error);
+          }
+        }
+
+        // Add CV file if exists
+        if (user.cvData?.storageUrl) {
+          try {
+            const cvFileName = this.extractFileNameFromUrl(user.cvData.storageUrl);
+            if (cvFileName) {
+              filesToDelete.push(cvFileName);
+            }
+          } catch (error) {
+            console.warn(`Could not extract CV filename for user ${user.id}:`, error);
+          }
+        }
+      }
+
+      // Delete all files from blob storage in bulk
+      if (filesToDelete.length > 0) {
+        try {
+          const { blobStorageService } = await import('./blobstorage.service');
+          await blobStorageService.bulkDeleteFiles(filesToDelete);
+          console.log(`Bulk deleted ${filesToDelete.length} files for ${userIds.length} users`);
+        } catch (blobError) {
+          console.warn('Error in bulk file deletion:', blobError);
+          // Continue with database deletion even if file deletion fails
+        }
+      }
+
+      // Delete all related data from database
+      await prisma.experience.deleteMany({ where: { applicationUserId: { in: userIds } } });
+      await prisma.employeeSkill.deleteMany({ where: { applicationUserHardId: { in: userIds } } });
+      await prisma.employeeSkill.deleteMany({ where: { applicationUserSoftId: { in: userIds } } });
+      await prisma.cVData.deleteMany({ where: { applicationUserId: { in: userIds } } });
+      await prisma.projectAssignment.deleteMany({ where: { applicationUserId: { in: userIds } } });
+      await (prisma as any).userRole.deleteMany({ where: { userId: { in: userIds } } });
+      await (prisma as any).userActivityLog.deleteMany({ where: { userId: { in: userIds } } });
+      await (prisma as any).notification.deleteMany({ 
+        where: { 
+          OR: [
+            { senderId: { in: userIds } },
+            { recipientId: { in: userIds } }
+          ]
+        } 
+      });
+      await (prisma as any).asset.deleteMany({ where: { applicationUserId: { in: userIds } } });
+      
+      // Finally delete the users
+      const result = await prisma.applicationUser.deleteMany({ where: { id: { in: userIds } } });
+      
+      return {
+        deletedUsers: result.count,
+        deletedFiles: filesToDelete.length,
+        totalUsers: userIds.length
+      };
+    } catch (error) {
+      console.error('Error in bulk user removal process:', error);
+      throw error;
+    }
   },
 
   // Additional methods specific to ApplicationUser

@@ -22,6 +22,17 @@ const getAllRoles = (): Promise<Role[]> => {
     });
 };
 
+const getAvailableRolesForUser = (userId?: string): Promise<Role[]> => {
+  // Non inviamo il token dato che le API non richiedono autenticazione
+  const url = userId ? `roles/available/${userId}` : 'roles/available';
+  return ApiService.get(url)
+    .then(({ data }) => data as Role[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      throw new Error(response.data.message || response.data.error);
+    });
+};
+
 const getRoleById = (id: string): Promise<Role> => {
   ApiService.setHeader();
   return ApiService.get(`roles/${id}`)
@@ -77,8 +88,8 @@ const assignRoleToUser = (data: { userId: string; roleId: string; expiresAt?: st
   return ApiService.post('roles/assign', data)
     .then(({ data }) => data)
     .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      throw new Error(response.data.message || response.data.error);
+      store.setError(response.data.error || response.data.message, response.status);
+      throw { response }; // Lancia l'oggetto completo per gestire i codici di errore
     });
 };
 
@@ -87,13 +98,14 @@ const removeRoleFromUser = (userId: string, roleId: string): Promise<any> => {
   return ApiService.delete(`roles/assign/${userId}/${roleId}`)
     .then(({ data }) => data)
     .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      throw new Error(response.data.message || response.data.error);
+      store.setError(response.data.error || response.data.message, response.status);
+      throw { response }; // Lancia l'oggetto completo per gestire i codici di errore
     });
 };
 
 export {
   getAllRoles,
+  getAvailableRolesForUser,
   getRoleById,
   createRole,
   updateRole,

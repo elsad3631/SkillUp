@@ -5,7 +5,6 @@ type ApplicationUser = {
   id: string;
   username: string;
   email: string;
-  roles: string[];
   avatar?: string | null;
   firstName?: string | null;
   lastName?: string | null;
@@ -271,44 +270,7 @@ export async function applicationUserGetByEmail(request: HttpRequest, context: I
   }
 }
 
-// PATCH /api/applicationuser/{id}/roles - Update user roles
-export async function applicationUserUpdateRoles(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  context.log('HTTP trigger function processed a request.');
 
-  try {
-    if (request.method !== 'PATCH') {
-      return {
-        status: 405,
-        jsonBody: { error: 'Method not allowed' }
-      };
-    }
-
-    const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json() as { roles: string[] };
-    const { roles } = body;
-    
-    if (!Array.isArray(roles)) {
-      return {
-        status: 400,
-        jsonBody: { error: 'Roles must be an array' }
-      };
-    }
-
-    const user = await applicationUserService.updateRoles(id, roles);
-
-    return {
-      status: 200,
-      jsonBody: user
-    };
-
-  } catch (error: any) {
-    context.log('Update user roles error:', error);
-    return {
-      status: 500,
-      jsonBody: { error: error.message || 'Failed to update user roles' }
-    };
-  }
-}
 
 // GET /api/applicationuser/filter/available - Get available users
 export async function applicationUserGetAvailable(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -394,44 +356,7 @@ export async function applicationUserGetAdmins(request: HttpRequest, context: In
   }
 }
 
-// PATCH /api/applicationuser/admin/bulk-roles - Update multiple users roles
-export async function applicationUserUpdateMultipleRoles(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  context.log('HTTP trigger function processed a request.');
 
-  try {
-    if (request.method !== 'PATCH') {
-      return {
-        status: 405,
-        jsonBody: { error: 'Method not allowed' }
-      };
-    }
-
-    const body = await request.json() as { userIds: string[], roles: string[] };
-    const { userIds, roles } = body;
-    
-    if (!Array.isArray(userIds) || !Array.isArray(roles)) {
-      return {
-        status: 400,
-        jsonBody: { error: 'userIds and roles must be arrays' }
-      };
-    }
-
-    const promises = userIds.map((id: string) => applicationUserService.updateRoles(id, roles));
-    await Promise.all(promises);
-
-    return {
-      status: 200,
-      jsonBody: { message: 'Roles updated successfully', count: userIds.length }
-    };
-
-  } catch (error: any) {
-    context.log('Update multiple users roles error:', error);
-    return {
-      status: 500,
-      jsonBody: { error: error.message || 'Failed to update multiple users roles' }
-    };
-  }
-}
 
 // GET /api/applicationuser/admin/search - Search users
 export async function applicationUserSearch(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -455,7 +380,16 @@ export async function applicationUserSearch(request: HttpRequest, context: Invoc
     let users = await applicationUserService.getAll();
     
     if (role) {
-      users = users.filter((user: ApplicationUser) => user.roles.includes(role));
+      // Filter by role using the new role system
+      const usersWithRoles = await Promise.all(
+        users.map(async (user: any) => {
+          const userRoles = await applicationUserService.getUserRoles(user.id);
+          return { ...user, userRoles };
+        })
+      );
+      users = usersWithRoles.filter((user: any) => 
+        user.userRoles.some((r: any) => r.name === role)
+      );
     }
     
     if (department) {
@@ -513,12 +447,13 @@ export async function applicationUserGetStats(request: HttpRequest, context: Inv
       departments: {} as Record<string, number>,
     };
     
-    // Count by roles
-    allUsers.forEach((user: ApplicationUser) => {
-      user.roles.forEach((role: string) => {
-        stats.roles[role] = (stats.roles[role] || 0) + 1;
+    // Count by roles using the new role system
+    for (const user of allUsers) {
+      const userRoles = await applicationUserService.getUserRoles(user.id);
+      userRoles.forEach((role: any) => {
+        stats.roles[role.name] = (stats.roles[role.name] || 0) + 1;
       });
-    });
+    }
     
     // Count by departments
     allUsers.forEach((user: ApplicationUser) => {
@@ -631,12 +566,7 @@ app.http('applicationUserGetByEmail', {
   handler: applicationUserGetByEmail
 });
 
-app.http('applicationUserUpdateRoles', {
-  methods: ['PATCH'],
-  authLevel: 'anonymous',
-  route: 'applicationuser/{id}/roles',
-  handler: applicationUserUpdateRoles
-});
+
 
 app.http('applicationUserGetAvailable', {
   methods: ['GET'],
@@ -680,9 +610,4 @@ app.http('applicationUserSearch', {
   handler: applicationUserSearch
 });
 
-app.http('applicationUserUpdateMultipleRoles', {
-  methods: ['PATCH'],
-  authLevel: 'anonymous',
-  route: 'applicationuser/admin/bulk-roles',
-  handler: applicationUserUpdateMultipleRoles
-}); 
+ 

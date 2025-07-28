@@ -81,8 +81,7 @@ export const applicationUserService = {
     // Adatta skills, experiences e cvData per il nested create Prisma
     const prismaData: any = { ...data };
     
-    // Initialize with empty roles array - roles will be managed through UserRole table
-    prismaData.roles = [];
+
 
     // Hash password if provided (passwordHash field contains the plain password from frontend)
     if (data.passwordHash) {
@@ -105,33 +104,7 @@ export const applicationUserService = {
     // Create the user first
     const createdUser = await prisma.applicationUser.create({ data: prismaData });
     
-    // Handle role assignment if roles are provided
-    if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
-      try {
-        // Get all available roles
-        const allRoles = await (prisma as any).role.findMany();
-        
-        // Find roles that match the provided role names
-        const rolesToAssign = allRoles.filter((role: any) => data.roles.includes(role.name));
-        
-        // Assign roles to the user
-        for (const role of rolesToAssign) {
-          await (prisma as any).userRole.create({
-            data: {
-              userId: createdUser.id,
-              roleId: role.id,
-              assignedBy: null, // System assignment
-              isActive: true
-            }
-          });
-        }
-        
-        console.log(`✅ Assigned ${rolesToAssign.length} roles to user ${createdUser.email}`);
-      } catch (error) {
-        console.error(`❌ Error assigning roles to user ${createdUser.email}:`, error);
-        // Don't fail user creation if role assignment fails
-      }
-    }
+
     
     return createdUser;
   },
@@ -153,9 +126,7 @@ export const applicationUserService = {
       avatar: data.avatar, // Add avatar field mapping
     };
 
-    // Roles are managed through the UserRole table, not the roles field
-    // Remove roles from prismaData to prevent updates to the roles field
-    delete prismaData.roles;
+
 
     // Password hash update (if provided)
     if (data.passwordHash) {
@@ -364,30 +335,6 @@ export const applicationUserService = {
         cvData: true,
       },
     });
-  },
-
-  async updateRoles(id: string, roleNames: string[]) {
-    // Remove all existing roles for the user
-    await (prisma as any).userRole.deleteMany({
-      where: { userId: id }
-    });
-    
-    // Add new roles
-    const allRoles = await (prisma as any).role.findMany();
-    const rolesToAssign = allRoles.filter((role: any) => roleNames.includes(role.name));
-    
-    for (const role of rolesToAssign) {
-      await (prisma as any).userRole.create({
-        data: {
-          userId: id,
-          roleId: role.id,
-          assignedBy: null,
-          isActive: true
-        }
-      });
-    }
-    
-    return this.getById(id);
   },
 
   async getAvailableUsers() {

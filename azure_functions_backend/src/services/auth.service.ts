@@ -34,7 +34,6 @@ export const authService = {
         username: generatedUsername,
         email, 
         passwordHash, 
-        roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
         firstName: first_name,
         lastName: last_name,
         currentRole,
@@ -168,7 +167,6 @@ export const authService = {
         firstName: true,
         lastName: true,
         username: true,
-        roles: true,
         avatar: true,
         dateOfBirth: true,
         placeOfBirth: true,

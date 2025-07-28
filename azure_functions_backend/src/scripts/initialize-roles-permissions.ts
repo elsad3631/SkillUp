@@ -142,7 +142,6 @@ async function initializeRolesAndPermissions() {
           passwordHash,
           firstName: 'Super',
           lastName: 'Admin',
-          roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
           isAvailable: true
         }
       });

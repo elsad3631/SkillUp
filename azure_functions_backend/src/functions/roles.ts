@@ -211,7 +211,6 @@ app.http('debugUserRoles', {
         id: user.id,
         email: user.email,
         username: user.username,
-        roles: user.roles, // Old roles field
         userRoles: user.userRoles.map((ur: any) => ({
           roleId: ur.roleId,
           roleName: ur.role.name,

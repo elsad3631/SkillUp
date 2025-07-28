@@ -249,7 +249,6 @@ Lista di competenze valide (non generare altre competenze che non siano in quest
       username: finalUsername,
       email: extracted.email,
       passwordHash: passwordHash,
-      roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
       firstName: extracted.firstName,
       lastName: extracted.lastName,
       dateOfBirth: safeParseDate(extracted.dateOfBirth),

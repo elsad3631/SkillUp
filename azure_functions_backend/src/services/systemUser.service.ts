@@ -23,7 +23,6 @@ export const systemUserService = {
             username: 'system',
             email: 'system@skillup.local',
             passwordHash: passwordHash,
-            roles: [], // Initialize with empty roles array - roles will be managed through UserRole table
             firstName: 'System',
             lastName: 'User',
             isAvailable: false, // System user is never available for login

@@ -316,7 +316,7 @@ export default defineComponent({
             if (selectedIds.value.length === 0) return;
             const confirm = await Swal.fire({
                 title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.value.length} employees and all their associated files (CVs, avatars, etc.). This action cannot be undone!`,
+                text: `You are about to delete ${selectedIds.value.length} employees and all their associated files (CVs, avatars, documents, etc.). This action cannot be undone!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -336,7 +336,7 @@ export default defineComponent({
                             title: 'Deleted!',
                             html: `
                                 <p><strong>${result.deletedUsers} employees</strong> have been deleted successfully.</p>
-                                <p class="text-muted">Also deleted <strong>${result.deletedFiles} associated files</strong> (CVs, avatars, etc.).</p>
+                                <p class="text-muted">Also deleted <strong>${result.deletedFiles} associated files</strong> (CVs, avatars, documents, etc.).</p>
                             `
                         });
                     } else {
@@ -352,7 +352,7 @@ export default defineComponent({
         const deleteSingleEmployee = async (id: string) => {
             const confirm = await Swal.fire({
                 title: 'Are you sure?',
-                text: "This will delete the employee and all their associated files (CV, avatar, etc.). This action cannot be undone!",
+                text: "This will delete the employee and all their associated files (CV, avatar, documents, etc.). This action cannot be undone!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -365,7 +365,7 @@ export default defineComponent({
                     if (success) {
                         tableData.value = tableData.value.filter(e => e.id !== id);
                         initEmployees.value = initEmployees.value.filter(e => e.id !== id);
-                        Swal.fire('Deleted!', 'Employee and all associated files have been deleted.', 'success');
+                        Swal.fire('Deleted!', 'Employee and all associated files (CV, avatar, documents, etc.) have been deleted.', 'success');
                     } else {
                         Swal.fire('Error', 'Failed to delete employee.', 'error');
                     }

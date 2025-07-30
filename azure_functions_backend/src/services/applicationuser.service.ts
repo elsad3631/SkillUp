@@ -513,6 +513,31 @@ export const applicationUserService = {
         }
       }
 
+      // Delete all employee documents from blob storage
+      try {
+        // Import blob storage service dynamically to avoid circular dependencies
+        const { blobStorageService } = await import('./blobstorage.service');
+        
+        // Get all employee documents using the employee documents prefix
+        const employeeDocumentsPrefix = `employees/${id}/documents/`;
+        const employeeDocuments = await blobStorageService.listFiles(employeeDocumentsPrefix);
+        
+        if (employeeDocuments.length > 0) {
+          console.log(`Found ${employeeDocuments.length} employee documents to delete for user ${id}`);
+          
+          // Extract file names from blob items
+          const documentFileNames = employeeDocuments.map(blob => blob.name);
+          
+          // Add document files to the deletion list
+          filesToDelete.push(...documentFileNames);
+          
+          console.log(`Added ${documentFileNames.length} employee documents to deletion list`);
+        }
+      } catch (blobError) {
+        console.warn('Error accessing blob storage service for employee documents:', blobError);
+        // Continue with database deletion even if document deletion fails
+      }
+
       // Delete all files from blob storage
       if (filesToDelete.length > 0) {
         try {
@@ -639,6 +664,32 @@ export const applicationUserService = {
             console.warn(`Could not extract CV filename for user ${user.id}:`, error);
           }
         }
+      }
+
+      // Delete all employee documents from blob storage for all users
+      try {
+        const { blobStorageService } = await import('./blobstorage.service');
+        
+        for (const userId of userIds) {
+          // Get all employee documents using the employee documents prefix
+          const employeeDocumentsPrefix = `employees/${userId}/documents/`;
+          const employeeDocuments = await blobStorageService.listFiles(employeeDocumentsPrefix);
+          
+          if (employeeDocuments.length > 0) {
+            console.log(`Found ${employeeDocuments.length} employee documents to delete for user ${userId}`);
+            
+            // Extract file names from blob items
+            const documentFileNames = employeeDocuments.map(blob => blob.name);
+            
+            // Add document files to the deletion list
+            filesToDelete.push(...documentFileNames);
+            
+            console.log(`Added ${documentFileNames.length} employee documents to deletion list for user ${userId}`);
+          }
+        }
+      } catch (blobError) {
+        console.warn('Error accessing blob storage service for employee documents:', blobError);
+        // Continue with database deletion even if document deletion fails
       }
 
       // Delete all files from blob storage in bulk

@@ -229,7 +229,7 @@ export default defineComponent({
             if (selectedIds.value.length === 0) return;
             const confirm = await Swal.fire({
                 title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.value.length} projects. This action cannot be undone!`,
+                text: `You are about to delete ${selectedIds.value.length} projects and all their associated documents. This action cannot be undone!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -246,7 +246,7 @@ export default defineComponent({
                 initProjects.value = initProjects.value.filter(p => !selectedIds.value.includes(p.id));
                 selectedIds.value = [];
                 if (allSuccess) {
-                    Swal.fire('Deleted!', 'Selected projects have been deleted.', 'success');
+                    Swal.fire('Deleted!', 'Selected projects and all their associated documents have been deleted.', 'success');
                 } else {
                     Swal.fire('Error', 'Some projects could not be deleted.', 'error');
                 }
@@ -256,7 +256,7 @@ export default defineComponent({
         const deleteSingleProject = async (id: string) => {
             const confirm = await Swal.fire({
                 title: 'Are you sure?',
-                text: "This action cannot be undone!",
+                text: "This will delete the project and all its associated documents. This action cannot be undone!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -268,7 +268,7 @@ export default defineComponent({
                 if (success) {
                     tableData.value = tableData.value.filter(p => p.id !== id);
                     initProjects.value = initProjects.value.filter(p => p.id !== id);
-                    Swal.fire('Deleted!', 'Project has been deleted.', 'success');
+                    Swal.fire('Deleted!', 'Project and all associated documents have been deleted.', 'success');
                 } else {
                     Swal.fire('Error', 'Failed to delete project.', 'error');
                 }

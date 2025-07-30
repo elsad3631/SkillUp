@@ -159,7 +159,49 @@ export const projectService = {
     return prisma.project.update({ where: { id }, data: prismaData });
   },
   async remove(id: string) {
-    return prisma.project.delete({ where: { id } });
+    try {
+      // Delete all project documents from blob storage
+      try {
+        // Import blob storage service dynamically to avoid circular dependencies
+        const { blobStorageService } = await import('./blobstorage.service');
+        
+        // Get all project documents using the project documents prefix
+        const projectDocumentsPrefix = `projects/${id}/documents/`;
+        const projectDocuments = await blobStorageService.listFiles(projectDocumentsPrefix);
+        
+        if (projectDocuments.length > 0) {
+          console.log(`Found ${projectDocuments.length} project documents to delete for project ${id}`);
+          
+          // Extract file names from blob items
+          const documentFileNames = projectDocuments.map(blob => blob.name);
+          
+          // Delete files one by one, but don't fail if some don't exist
+          for (const fileName of documentFileNames) {
+            try {
+              await blobStorageService.deleteFile(fileName);
+              console.log(`Deleted project document: ${fileName}`);
+            } catch (fileError) {
+              console.warn(`Failed to delete project document ${fileName}:`, fileError);
+              // Continue with other files even if one fails
+            }
+          }
+          
+          console.log(`Deleted ${documentFileNames.length} project documents for project ${id}`);
+        }
+      } catch (blobError) {
+        console.warn('Error accessing blob storage service for project documents:', blobError);
+        // Continue with database deletion even if document deletion fails
+      }
+
+      // Delete related project assignments first
+      await prisma.projectAssignment.deleteMany({ where: { projectId: id } });
+      
+      // Now delete the project
+      return prisma.project.delete({ where: { id } });
+    } catch (error) {
+      console.error('Error in project removal process:', error);
+      throw error;
+    }
   },
 
   async getUserProjects(userId: string) {

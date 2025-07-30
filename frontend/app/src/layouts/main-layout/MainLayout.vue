@@ -40,9 +40,6 @@
   <KTActivityDrawer />
   <KTCreateApp />
   <KTInviteFriendsModal />
-
-  <KTToolButtons />
-  <KTHelpDrawer />
 </template>
 
 <script lang="ts">
@@ -62,8 +59,6 @@ import KTScrollTop from "@/layouts/main-layout/extras/ScrollTop.vue";
 import KTActivityDrawer from "@/layouts/main-layout/drawers/ActivityDrawer.vue";
 import KTCreateApp from "@/components/modals/wizards/create-app-modal/CreateAppModal.vue";
 import KTInviteFriendsModal from "@/components/modals/general/InviteFriendsModal.vue";
-import KTHelpDrawer from "@/layouts/main-layout/extras/HelpDrawer.vue";
-import KTToolButtons from "@/layouts/main-layout/extras/ToolButtons.vue";
 import KTDrawerMessenger from "@/layouts/main-layout/extras/MessengerDrawer.vue";
 import { reinitializeComponents } from "@/core/plugins/keenthemes";
 import {
@@ -89,8 +84,6 @@ export default defineComponent({
     KTCreateApp,
     KTInviteFriendsModal,
     KTActivityDrawer,
-    KTHelpDrawer,
-    KTToolButtons,
     KTDrawerMessenger,
   },
   setup() {

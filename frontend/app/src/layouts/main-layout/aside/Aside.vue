@@ -17,8 +17,9 @@
       <router-link to="/dashboard" class="d-flex align-items-center">
         <img
           alt="Logo"
-          :src="getAssetPath('media/logos/demo6.svg')"
-          class="h-45px logo"
+          :src="getAssetPath('media/logos/logohome.jpg')"
+          class="h-100px logo"
+          style="background: transparent;"
         />
       </router-link>
       <!--end::Logo-->

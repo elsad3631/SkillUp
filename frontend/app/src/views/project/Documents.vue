@@ -282,12 +282,12 @@ import CreateFolderModal from "@/components/project/CreateFolderModal.vue";
 import UploadFileModal from "@/components/project/UploadFileModal.vue";
 import AISearchModal from "@/components/project/AISearchModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
-import ProjectDocumentsService, {
-  projectDocumentsService,
-  type ProjectFolder,
-  type ProjectFile,
+import {
+  documentManagerService,
+  type FolderItem as ProjectFolder,
+  type FileItem as ProjectFile,
   type FolderStructure,
-} from "@/core/services/businessServices/ProjectDocuments";
+} from "@/core/services/businessServices/DocumentManager";
 
 export default defineComponent({
   name: "project-documents",
@@ -311,7 +311,7 @@ export default defineComponent({
     const projectId = computed(() => route.params.id as string);
     
          const breadcrumbs = computed(() => {
-       return currentPath.value ? projectDocumentsService.getBreadcrumb(currentPath.value) : [];
+       return currentPath.value ? documentManagerService.getBreadcrumb(currentPath.value) : [];
      });
 
     const filteredFolders = computed(() => {
@@ -354,7 +354,7 @@ export default defineComponent({
       
       try {
         isLoading.value = true;
-                 const result = await projectDocumentsService.getProjectDocuments(projectId.value, currentPath.value);
+                 const result = await documentManagerService.getEntityDocuments('projects', projectId.value, currentPath.value);
         folderStructure.value = result;
       } catch (error) {
         console.error('Error loading documents:', error);
@@ -403,7 +403,8 @@ export default defineComponent({
           name: project.value.name
         } : undefined;
         
-        const success = await projectDocumentsService.createProjectFolder(
+                         const success = await documentManagerService.createEntityFolder(
+          'projects',
           projectId.value, 
           data.name, 
           currentPath.value, 
@@ -444,12 +445,16 @@ export default defineComponent({
             name: project.value.name
           } : undefined;
           
-          return projectDocumentsService.uploadProjectFile(
+          return documentManagerService.uploadEntityFile(
+            'projects',
             projectId.value, 
             file, 
             currentPath.value, 
             undefined, 
-            projectInfo
+            {
+              projectId: projectInfo?.id,
+              uploadedBy: projectInfo?.id
+            }
           );
         });
         
@@ -528,7 +533,7 @@ export default defineComponent({
 
     const deleteFile = async (file: ProjectFile) => {
       try {
-                 const success = await projectDocumentsService.deleteProjectFile(projectId.value, file.fullPath);
+                 const success = await documentManagerService.deleteEntityFile('projects', projectId.value, file.fullPath);
         
         if (success) {
           Swal.fire({
@@ -557,7 +562,7 @@ export default defineComponent({
 
     const deleteFolderWithContents = async (folder: ProjectFolder) => {
       try {
-                 const success = await projectDocumentsService.deleteProjectFolder(projectId.value, folder.path);
+                 const success = await documentManagerService.deleteEntityFolder('projects', projectId.value, folder.path);
         
         if (success) {
           Swal.fire({
@@ -585,7 +590,7 @@ export default defineComponent({
     };
 
     const downloadFile = (file: ProjectFile) => {
-             const downloadUrl = projectDocumentsService.getFileDownloadUrl(file.fullPath);
+             const downloadUrl = documentManagerService.getFileDownloadUrl(file.fullPath);
       
       // Create a temporary link and click it to start download
       const link = document.createElement('a');
@@ -646,8 +651,8 @@ export default defineComponent({
        confirmDeleteFolder,
        downloadFile,
        formatDate,
-       getFileTypeIcon: projectDocumentsService.getFileTypeIcon,
-       formatFileSize: projectDocumentsService.formatFileSize,
+       getFileTypeIcon: documentManagerService.getFileTypeIcon,
+       formatFileSize: documentManagerService.formatFileSize,
     };
   },
 });

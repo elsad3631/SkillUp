@@ -37,6 +37,42 @@ model ApplicationUser {
   userRoles          UserRole[]
   roleAssignments    UserRole[] @relation("RoleAssignment")
   permissionGrants   RolePermission[] @relation("PermissionGrant")
+  
+  // Relazioni per il calendario
+  calendarEvents     CalendarEvent[]
+  createdEvents      CalendarEvent[] @relation("EventCreator")
+  
+  // Relazioni per Performance Review
+  employeeReviews    PerformanceReview[] @relation("EmployeeReviews")
+  reviewerReviews    PerformanceReview[] @relation("ReviewerReviews")
+  
+  // Relazioni per Training e Certificazioni
+  trainingEnrollments TrainingEnrollment[]
+  certifications     Certification[]
+  
+  // Relazioni per Task Management
+  assignedTasks      Task[] @relation("TaskAssignee")
+  createdTasks       Task[] @relation("TaskCreator")
+  
+  // Relazioni per Mentorship
+  mentorRelations    Mentorship[] @relation("MentorRelations")
+  menteeRelations    Mentorship[] @relation("MenteeRelations")
+  
+  // Relazioni per Comments
+  comments           Comment[]
+  
+  // Relazioni per Objectives
+  assignedObjectives Objective[] @relation("ObjectiveAssignee")
+  
+  // Relazioni per Documents
+  uploadedDocuments  Document[] @relation("DocumentUploader")
+  userDocuments      Document[] @relation("DocumentOwner")
+  
+  // Relazioni per Audit Log
+  auditLogs          AuditLog[] @relation("AuditLogUser")
+  
+  // Relazioni per User Settings
+  userSettings       UserSetting?
 }
 
 model CVData {
@@ -83,9 +119,17 @@ model Project {
   managerId          String?
   budget             Float?
   priority           String?
+  customerId         String?             // Collegamento opzionale al cliente
   assignments        ProjectAssignment[]
   requiredHardSkills ProjectSkill[]      @relation("ProjectHardSkills")
   requiredSoftSkills ProjectSkill[]      @relation("ProjectSoftSkills")
+  calendarEvents     CalendarEvent[]
+  
+  // Relazioni
+  customer           Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  tasks              Task[]
+  objectives         Objective[]
+  documents          Document[]
 }
 
 model ProjectSkill {
@@ -125,6 +169,9 @@ model SkillTraining {
   skillsDeveloped        String[]
   level                  String?
   cost                   Float?
+  
+  // Relazioni
+  enrollments            TrainingEnrollment[]
 }
 
 model Asset {
@@ -230,4 +277,281 @@ model RolePermission {
   grantedByUser ApplicationUser? @relation("PermissionGrant", fields: [grantedBy], references: [id], onDelete: SetNull)
   
   @@unique([roleId, permissionId])
+}
+
+// Tabella Clienti
+model Customer {
+  id                String    @id @default(uuid())
+  name              String
+  companyName       String?
+  email             String?
+  phone             String?
+  address           String?
+  city              String?
+  country           String?
+  vatNumber         String?   // Partita IVA
+  fiscalCode        String?   // Codice Fiscale
+  contactPerson     String?
+  contactPhone      String?
+  contactEmail      String?
+  notes             String?
+  status            String    @default("ACTIVE") // ACTIVE, INACTIVE, PROSPECT
+  industry          String?
+  website           String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  projects          Project[]
+  calendarEvents    CalendarEvent[]
+}
+
+// Tabella Calendario
+model CalendarEvent {
+  id                String    @id @default(uuid())
+  title             String
+  description       String?
+  startDate         DateTime
+  endDate           DateTime
+  allDay            Boolean   @default(false)
+  eventType         String    // APPOINTMENT, PERMISSION, SICK_LEAVE, HOLIDAY, MEETING, TASK, OTHER
+  status            String    @default("CONFIRMED") // CONFIRMED, PENDING, CANCELLED, COMPLETED
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  location          String?
+  attendees         String[]  // Array di ID utenti
+  createdBy         String
+  customerId        String?   // Collegamento opzionale al cliente
+  projectId         String?   // Collegamento opzionale al progetto
+  userId            String?   // Utente associato all'evento (per permessi, ferie, etc.)
+  color             String?   // Colore per la visualizzazione nel calendario
+  recurrence        String?   // Pattern di ricorrenza (DAILY, WEEKLY, MONTHLY, YEARLY)
+  recurrenceEndDate DateTime?
+  isPrivate         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  customer          Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  project           Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user              ApplicationUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdByUser     ApplicationUser @relation("EventCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+// 🟢 1. Performance Review
+model PerformanceReview {
+  id                String    @id @default(uuid())
+  employeeId        String    // Utente valutato
+  reviewerId        String    // Utente che effettua la valutazione
+  reviewPeriod      String    // es. "Q1 2024", "Annual 2024"
+  reviewDate        DateTime  @default(now())
+  overallScore      Float?    // Punteggio complessivo (es. 1-5)
+  technicalScore    Float?    // Competenze tecniche
+  softSkillScore    Float?    // Competenze trasversali
+  leadershipScore   Float?    // Leadership (se applicabile)
+  feedback          String?   // Feedback dettagliato
+  strengths         String[]  // Punti di forza
+  areasForImprovement String[] // Aree di miglioramento
+  goals             String?   // Obiettivi per il prossimo periodo
+  status            String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, COMPLETED
+  nextReviewDate    DateTime? // Data della prossima review
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  employee          ApplicationUser @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Cascade)
+  reviewer          ApplicationUser @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+}
+
+// 🟢 2. Training Enrollment
+model TrainingEnrollment {
+  id                String    @id @default(uuid())
+  userId            String
+  trainingId        String
+  enrollmentDate    DateTime  @default(now())
+  status            String    @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  completionDate    DateTime?
+  score             Float?    // Punteggio finale (se applicabile)
+  certificateUrl    String?   // URL del certificato ottenuto
+  notes             String?   // Note aggiuntive
+  progress          Int?      // Percentuale di completamento (0-100)
+  
+  // Relazioni
+  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  training          SkillTraining @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, trainingId])
+}
+
+// 🟢 2. Certification
+model Certification {
+  id                String    @id @default(uuid())
+  userId            String
+  name              String
+  issuingAuthority  String    // Autorità emittente
+  certificateNumber String?   // Numero del certificato
+  issueDate         DateTime
+  expiryDate        DateTime?
+  status            String    @default("ACTIVE") // ACTIVE, EXPIRED, REVOKED
+  credentialUrl     String?   // URL per verificare il certificato
+  description       String?
+  tags              String[]  // Tag per categorizzazione
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 🟢 3. Task Management
+model Task {
+  id                String    @id @default(uuid())
+  title             String
+  description       String?
+  assignedTo        String?   // ID utente assegnato
+  projectId         String?   // Progetto associato (opzionale)
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status            String    @default("TODO") // TODO, IN_PROGRESS, REVIEW, COMPLETED, CANCELLED
+  dueDate           DateTime?
+  startDate         DateTime?
+  completedDate     DateTime?
+  estimatedHours    Float?
+  actualHours       Float?
+  tags              String[]  // Tag per categorizzazione
+  attachments       String[]  // Array di URL file allegati
+  createdBy         String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  assignedUser      ApplicationUser? @relation("TaskAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdByUser     ApplicationUser @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+// 🟢 4. Mentorship
+model Mentorship {
+  id                String    @id @default(uuid())
+  mentorId          String    // ID del mentor
+  menteeId          String    // ID del mentee
+  startDate         DateTime  @default(now())
+  endDate           DateTime?
+  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  goals             String?   // Obiettivi del programma
+  notes             String?   // Note aggiuntive
+  meetingFrequency  String?   // Frequenza degli incontri
+  lastMeetingDate   DateTime?
+  nextMeetingDate   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  mentor            ApplicationUser @relation("MentorRelations", fields: [mentorId], references: [id], onDelete: Cascade)
+  mentee            ApplicationUser @relation("MenteeRelations", fields: [menteeId], references: [id], onDelete: Cascade)
+  
+  @@unique([mentorId, menteeId])
+}
+
+// 🟢 5. Comments and Collaboration
+model Comment {
+  id                String    @id @default(uuid())
+  content           String
+  entityType        String    // Tipo di entità (PROJECT, TASK, EXPERIENCE, etc.)
+  entityId          String    // ID dell'entità
+  authorId          String
+  parentCommentId    String?  // Per commenti annidati
+  isPrivate         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  author            ApplicationUser @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentComment     Comment? @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: SetNull)
+  replies           Comment[] @relation("CommentReplies")
+}
+
+// 🟢 6. Objectives and KPIs
+model Objective {
+  id                String    @id @default(uuid())
+  title             String
+  description       String?
+  targetValue       Float?    // Valore target da raggiungere
+  currentValue      Float?    // Valore attuale
+  unit              String?   // Unità di misura
+  startDate         DateTime
+  endDate           DateTime
+  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED, OVERDUE
+  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH
+  assignedTo        String?   // Utente responsabile
+  projectId         String?   // Progetto associato (opzionale)
+  category          String?   // Categoria (PERSONAL, TEAM, COMPANY)
+  progress          Int?      // Percentuale di completamento (0-100)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  assignedUser      ApplicationUser? @relation("ObjectiveAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+}
+
+// 🟢 7. Document Management
+model Document {
+  id                String    @id @default(uuid())
+  fileName          String
+  originalFileName  String
+  fileUrl           String
+  fileSize          Int       // Dimensione in bytes
+  mimeType          String
+  uploadedBy        String
+  userId            String?   // Utente associato (opzionale)
+  projectId         String?   // Progetto associato (opzionale)
+  category          String?   // Categoria del documento
+  tags              String[]  // Tag per categorizzazione
+  isPublic          Boolean   @default(false)
+  description       String?
+  uploadedAt        DateTime  @default(now())
+  
+  // Relazioni
+  uploadedByUser    ApplicationUser @relation("DocumentUploader", fields: [uploadedBy], references: [id], onDelete: Cascade)
+  user              ApplicationUser? @relation("DocumentOwner", fields: [userId], references: [id], onDelete: SetNull)
+  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+}
+
+// 🟢 8. Advanced Audit Log
+model AuditLog {
+  id                String    @id @default(uuid())
+  userId            String?   // Utente che ha effettuato l'azione
+  action            String    // Tipo di azione (CREATE, UPDATE, DELETE, LOGIN, etc.)
+  entityType        String    // Tipo di entità modificata
+  entityId          String?   // ID dell'entità
+  oldValues         Json?     // Valori precedenti
+  newValues         Json?     // Nuovi valori
+  ipAddress         String?
+  userAgent         String?
+  sessionId         String?
+  description       String?
+  severity          String    @default("INFO") // INFO, WARNING, ERROR, CRITICAL
+  timestamp         DateTime  @default(now())
+  
+  // Relazioni
+  user              ApplicationUser? @relation("AuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// 🟢 9. User Settings
+model UserSetting {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  theme             String    @default("LIGHT") // LIGHT, DARK, AUTO
+  language          String    @default("IT") // IT, EN, etc.
+  timezone          String    @default("Europe/Rome")
+  dateFormat        String    @default("DD/MM/YYYY")
+  timeFormat        String    @default("24H") // 12H, 24H
+  notificationPreferences Json? // Preferenze notifiche in JSON
+  dashboardLayout   Json?     // Layout personalizzato dashboard
+  emailNotifications Boolean  @default(true)
+  pushNotifications Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relazioni
+  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 } 

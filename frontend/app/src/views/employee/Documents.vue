@@ -290,11 +290,11 @@ import UploadEmployeeFileModal from "@/components/employee/UploadEmployeeFileMod
 import AISearchModal from "@/components/employee/AISearchModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import {
-  employeeDocumentsService,
-  type EmployeeFolder,
-  type EmployeeFile,
+  documentManagerService,
+  type FolderItem as EmployeeFolder,
+  type FileItem as EmployeeFile,
   type FolderStructure,
-} from "@/core/services/businessServices/EmployeeDocuments";
+} from "@/core/services/businessServices/DocumentManager";
 
 export default defineComponent({
   name: "employee-documents",
@@ -318,7 +318,7 @@ export default defineComponent({
     const employeeId = computed(() => route.params.id as string);
     
     const breadcrumbs = computed(() => {
-      return currentPath.value ? employeeDocumentsService.getBreadcrumb(currentPath.value) : [];
+      return currentPath.value ? documentManagerService.getBreadcrumb(currentPath.value) : [];
     });
 
     const filteredFolders = computed(() => {
@@ -361,7 +361,7 @@ export default defineComponent({
       
       try {
         isLoading.value = true;
-        const result = await employeeDocumentsService.getEmployeeDocuments(employeeId.value, currentPath.value);
+        const result = await documentManagerService.getEntityDocuments('employees', employeeId.value, currentPath.value);
         folderStructure.value = result;
       } catch (error) {
         console.error('Error loading documents:', error);
@@ -407,7 +407,8 @@ export default defineComponent({
           lastName: employee.value.lastName || employee.value.last_name
         } : undefined;
         
-        const success = await employeeDocumentsService.createEmployeeFolder(
+        const success = await documentManagerService.createEntityFolder(
+          'employees',
           employeeId.value, 
           data.name, 
           currentPath.value, 
@@ -449,12 +450,16 @@ export default defineComponent({
             lastName: employee.value.lastName || employee.value.last_name
           } : undefined;
           
-          return employeeDocumentsService.uploadEmployeeFile(
+          return documentManagerService.uploadEntityFile(
+            'employees',
             employeeId.value, 
             file, 
             currentPath.value, 
             undefined, 
-            employeeInfo
+            {
+              uploadedBy: employeeInfo?.id,
+              userId: employeeInfo?.id
+            }
           );
         });
         
@@ -533,7 +538,7 @@ export default defineComponent({
 
     const deleteFile = async (file: EmployeeFile) => {
       try {
-        const success = await employeeDocumentsService.deleteEmployeeFile(employeeId.value, file.fullPath);
+        const success = await documentManagerService.deleteEntityFile('employees', employeeId.value, file.fullPath);
         
         if (success) {
           Swal.fire({
@@ -562,7 +567,7 @@ export default defineComponent({
 
     const deleteFolderWithContents = async (folder: EmployeeFolder) => {
       try {
-        const success = await employeeDocumentsService.deleteEmployeeFolder(employeeId.value, folder.path);
+        const success = await documentManagerService.deleteEntityFolder('employees', employeeId.value, folder.path);
         
         if (success) {
           Swal.fire({
@@ -590,7 +595,7 @@ export default defineComponent({
     };
 
     const downloadFile = (file: EmployeeFile) => {
-      const downloadUrl = employeeDocumentsService.getFileDownloadUrl(file.fullPath);
+      const downloadUrl = documentManagerService.getFileDownloadUrl(file.fullPath);
       
       // Create a temporary link and click it to start download
       const link = document.createElement('a');
@@ -650,8 +655,8 @@ export default defineComponent({
       confirmDeleteFolder,
       downloadFile,
       formatDate,
-      getFileTypeIcon: employeeDocumentsService.getFileTypeIcon,
-      formatFileSize: employeeDocumentsService.formatFileSize,
+      getFileTypeIcon: documentManagerService.getFileTypeIcon,
+      formatFileSize: documentManagerService.formatFileSize,
     };
   },
 });

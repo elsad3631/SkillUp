@@ -1,296 +1,240 @@
 <template>
-  <!--begin::Wrapper-->
-  <div class="w-lg-500px p-10">
-    <!--begin::Form-->
-    <VForm
-      class="form w-100 fv-plugins-bootstrap5 fv-plugins-framework"
-      novalidate
-      @submit="onSubmitRegister"
-      id="kt_login_signup_form"
-      :validation-schema="registration"
-    >
-      <!--begin::Heading-->
-      <div class="mb-10 text-center">
-        <!--begin::Title-->
-        <h1 class="text-dark mb-3">Join Our Community</h1>
-        <!--end::Title-->
+  <!--begin::Form-->
+  <VForm
+    class="form w-100 fv-plugins-bootstrap5 fv-plugins-framework"
+    novalidate
+    @submit="onSubmitRegister"
+    id="kt_login_signup_form"
+    :validation-schema="registration"
+  >
+    <!--begin::Heading-->
+    <div class="text-center mb-8">
+      <!--begin::Title-->
+      <h1 class="auth-title">Join Our Community</h1>
+      <!--end::Title-->
 
-        <!--begin::Subtitle-->
-        <p class="text-gray-600 fs-6 mb-5">Create your account to get started</p>
-        <!--end::Subtitle-->
+      <!--begin::Subtitle-->
+      <p class="auth-subtitle">Create your account to get started</p>
+      <!--end::Subtitle-->
 
-        <!--begin::Link-->
-        <div class="text-gray-400 fw-semobold fs-4">
-          Already have an account?
-
-          <router-link to="/sign-in" class="link-primary fw-bold">
-            Sign in here
-          </router-link>
-        </div>
-        <!--end::Link-->
+      <!--begin::Link-->
+      <div class="auth-link-container">
+        Already have an account?
+        <router-link to="/sign-in" class="auth-link">
+          Sign in here
+        </router-link>
       </div>
-      <!--end::Heading-->
+      <!--end::Link-->
+    </div>
+    <!--end::Heading-->
 
-      <!--begin::Social Login Section-->
-      <div class="mb-10">
-        <!--begin::Action-->
-        <button 
-          type="button" 
-          class="btn btn-light-primary fw-bold w-100 mb-3"
-          @click="handleSocialLogin('google')"
-          :disabled="isLoading"
-        >
-          <img
-            alt="Google"
-            :src="getAssetPath('media/svg/brand-logos/google-icon.svg')"
-            class="h-20px me-3"
-          />
-          Sign up with Google
-        </button>
-        <!--end::Action-->
-
-        <!--begin::Separator-->
-        <div class="d-flex align-items-center mb-5">
-          <div class="border-bottom border-gray-300 mw-50 w-100"></div>
-          <span class="fw-semobold text-gray-400 fs-7 mx-2">OR</span>
-          <div class="border-bottom border-gray-300 mw-50 w-100"></div>
-        </div>
-        <!--end::Separator-->
-      </div>
-      <!--end::Social Login Section-->
-
-      <!--begin::Input group-->
-      <div class="row fv-row mb-7">
-        <!--begin::Col-->
-        <div class="col-xl-6">
-          <label class="form-label fw-bold text-dark fs-6">
-            <i class="ki-duotone ki-user fs-5 text-primary me-2"></i>
-            First Name
-          </label>
-          <Field
-            class="form-control form-control-lg form-control-solid"
-            type="text"
-            placeholder="Enter your first name"
-            name="first_name"
-            autocomplete="given-name"
-          />
-          <div class="fv-plugins-message-container">
-            <div class="fv-help-block">
-              <ErrorMessage name="first_name" />
-            </div>
-          </div>
-        </div>
-        <!--end::Col-->
-
-        <!--begin::Col-->
-        <div class="col-xl-6">
-          <label class="form-label fw-bold text-dark fs-6">
-            <i class="ki-duotone ki-user fs-5 text-primary me-2"></i>
-            Last Name
-          </label>
-          <Field
-            class="form-control form-control-lg form-control-solid"
-            type="text"
-            placeholder="Enter your last name"
-            name="last_name"
-            autocomplete="family-name"
-          />
-          <div class="fv-plugins-message-container">
-            <div class="fv-help-block">
-              <ErrorMessage name="last_name" />
-            </div>
-          </div>
-        </div>
-        <!--end::Col-->
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="fv-row mb-7">
-        <label class="form-label fw-bold text-dark fs-6">
-          <i class="ki-duotone ki-sms fs-5 text-primary me-2"></i>
-          Email Address
+    <!--begin::Input group-->
+    <div class="row form-row mb-6">
+      <!--begin::Col-->
+      <div class="col-xl-6">
+        <label class="form-label">
+          First Name
         </label>
         <Field
-          class="form-control form-control-lg form-control-solid"
-          type="email"
-          placeholder="Enter your email address"
-          name="email"
-          autocomplete="email"
+          class="form-input"
+          type="text"
+          placeholder="Enter your first name"
+          name="first_name"
+          autocomplete="given-name"
         />
-        <div class="fv-plugins-message-container">
-          <div class="fv-help-block">
-            <ErrorMessage name="email" />
-          </div>
+        <div class="error-container">
+          <ErrorMessage name="first_name" />
         </div>
       </div>
-      <!--end::Input group-->
+      <!--end::Col-->
 
-      <!--begin::Input group-->
-      <div class="fv-row mb-7">
-        <label class="form-label fw-bold text-dark fs-6">
-          <i class="ki-duotone ki-briefcase fs-5 text-primary me-2"></i>
-          Settore della Società
+      <!--begin::Col-->
+      <div class="col-xl-6">
+        <label class="form-label">
+          Last Name
         </label>
         <Field
-          name="sector"
-          class="form-select form-select-lg form-select-solid"
-          data-control="select2"
-          data-placeholder="Seleziona il settore della tua società..."
-          data-allow-clear="true"
-          as="select"
-        >
-          <option></option>
-          <option value="Settore_Tecnologia_Informazione">Tecnologia e Informazione</option>
-          <option value="Settore_Finanza_e_Bancario">Finanza e Bancario</option>
-          <option value="Settore_Sanitario_e_Biomedicale">Sanitario e Biomedicale</option>
-          <option value="Settore_Industriale_e_Manifatturiero">Industriale e Manifatturiero</option>
-          <option value="Settore_Vendite_e_Marketing">Vendite e Marketing</option>
-          <option value="Settore_Amministrazione_e_Risorse_Umane">Amministrazione e Risorse Umane</option>
-          <option value="Settore_Educazione_e_Formazione">Educazione e Formazione</option>
-          <option value="Settore_Hospitality_e_Turismo">Hospitality e Turismo</option>
-          <option value="Settore_Logistica_e_Trasporti">Logistica e Trasporti</option>
-        </Field>
-        <div class="fv-plugins-message-container">
-          <div class="fv-help-block">
-            <ErrorMessage name="sector" />
-          </div>
-        </div>
-        <div class="form-text">
-          <i class="ki-duotone ki-information-5 fs-6 text-primary me-2"></i>
-          La selezione del settore permetterà di assegnare automaticamente le competenze specifiche del settore al tuo profilo.
+          class="form-input"
+          type="text"
+          placeholder="Enter your last name"
+          name="last_name"
+          autocomplete="family-name"
+        />
+        <div class="error-container">
+          <ErrorMessage name="last_name" />
         </div>
       </div>
-      <!--end::Input group-->
+      <!--end::Col-->
+    </div>
+    <!--end::Input group-->
 
-      <!--begin::Input group-->
-      <div class="mb-10 fv-row" data-kt-password-meter="true">
-        <!--begin::Wrapper-->
-        <div class="mb-1">
-          <!--begin::Label-->
-          <label class="form-label fw-bold text-dark fs-6">
-            <i class="ki-duotone ki-lock fs-5 text-primary me-2"></i>
-            Password
-          </label>
-          <!--end::Label-->
+    <!--begin::Input group-->
+    <div class="form-group mb-6">
+      <label class="form-label">
+        Email Address
+      </label>
+      <Field
+        class="form-input"
+        type="email"
+        placeholder="Enter your email address"
+        name="email"
+        autocomplete="email"
+      />
+      <div class="error-container">
+        <ErrorMessage name="email" />
+      </div>
+    </div>
+    <!--end::Input group-->
 
-          <!--begin::Input wrapper-->
-          <div class="position-relative mb-3">
-            <Field
-              class="form-control form-control-lg form-control-solid"
-              type="password"
-              placeholder="Create a strong password"
-              name="password"
-              autocomplete="new-password"
-            />
-            <div class="fv-plugins-message-container">
-              <div class="fv-help-block">
-                <ErrorMessage name="password" />
-              </div>
-            </div>
+    <!--begin::Input group-->
+    <div class="form-group mb-6">
+      <label class="form-label">
+        Settore della Società
+      </label>
+      <Field
+        name="sector"
+        class="form-select"
+        data-control="select2"
+        data-placeholder="Seleziona il settore della tua società..."
+        data-allow-clear="true"
+        as="select"
+      >
+        <option></option>
+        <option value="Settore_Tecnologia_Informazione">Tecnologia e Informazione</option>
+        <option value="Settore_Finanza_e_Bancario">Finanza e Bancario</option>
+        <option value="Settore_Sanitario_e_Biomedicale">Sanitario e Biomedicale</option>
+        <option value="Settore_Industriale_e_Manifatturiero">Industriale e Manifatturiero</option>
+        <option value="Settore_Vendite_e_Marketing">Vendite e Marketing</option>
+        <option value="Settore_Amministrazione_e_Risorse_Umane">Amministrazione e Risorse Umane</option>
+        <option value="Settore_Educazione_e_Formazione">Educazione e Formazione</option>
+        <option value="Settore_Hospitality_e_Turismo">Hospitality e Turismo</option>
+        <option value="Settore_Logistica_e_Trasporti">Logistica e Trasporti</option>
+      </Field>
+      <div class="error-container">
+        <ErrorMessage name="sector" />
+      </div>
+      <div class="form-hint">
+        La selezione del settore permetterà di assegnare automaticamente le competenze specifiche del settore al tuo profilo.
+      </div>
+    </div>
+    <!--end::Input group-->
+
+    <!--begin::Input group-->
+    <div class="form-group mb-6" data-kt-password-meter="true">
+      <!--begin::Wrapper-->
+      <div class="mb-1">
+        <!--begin::Label-->
+        <label class="form-label">
+          Password
+        </label>
+        <!--end::Label-->
+
+        <!--begin::Input wrapper-->
+        <div class="position-relative mb-3">
+          <Field
+            class="form-input"
+            type="password"
+            placeholder="Create a strong password"
+            name="password"
+            autocomplete="new-password"
+          />
+          <div class="error-container">
+            <ErrorMessage name="password" />
           </div>
-          <!--end::Input wrapper-->
-          
-          <!--begin::Meter-->
-          <div
-            class="d-flex align-items-center mb-3"
-            data-kt-password-meter-control="highlight"
-          >
-            <div
-              class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"
-            ></div>
-            <div
-              class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"
-            ></div>
-            <div
-              class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"
-            ></div>
-            <div
-              class="flex-grow-1 bg-secondary bg-active-success rounded h-5px"
-            ></div>
-          </div>
-          <!--end::Meter-->
         </div>
-        <!--end::Wrapper-->
+        <!--end::Input wrapper-->
         
-        <!--begin::Hint-->
-        <div class="text-muted fs-7">
-          <i class="ki-duotone ki-information-5 fs-6 text-info me-1"></i>
-          Use 8 or more characters with a mix of letters, numbers & symbols for better security.
-        </div>
-        <!--end::Hint-->
-      </div>
-      <!--end::Input group--->
-
-      <!--begin::Input group-->
-      <div class="fv-row mb-5">
-        <label class="form-label fw-bold text-dark fs-6">
-          <i class="ki-duotone ki-lock fs-5 text-primary me-2"></i>
-          Confirm Password
-        </label>
-        <Field
-          class="form-control form-control-lg form-control-solid"
-          type="password"
-          placeholder="Confirm your password"
-          name="password_confirmation"
-          autocomplete="new-password"
-        />
-        <div class="fv-plugins-message-container">
-          <div class="fv-help-block">
-            <ErrorMessage name="password_confirmation" />
-          </div>
-        </div>
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Input group-->
-      <div class="fv-row mb-10">
-        <label class="form-check form-check-custom form-check-solid">
-          <Field
-            class="form-check-input"
-            type="checkbox"
-            name="toc"
-            value="1"
-          />
-          <span class="form-check-label fw-semobold text-gray-700 fs-6">
-            I agree to the
-            <a href="#" class="ms-1 link-primary">Terms and Conditions</a>
-            and
-            <a href="#" class="ms-1 link-primary">Privacy Policy</a>
-          </span>
-        </label>
-        <div class="fv-plugins-message-container">
-          <div class="fv-help-block">
-            <ErrorMessage name="toc" />
-          </div>
-        </div>
-      </div>
-      <!--end::Input group-->
-
-      <!--begin::Actions-->
-      <div class="text-center">
-        <button
-          id="kt_sign_up_submit"
-          ref="submitButton"
-          type="submit"
-          class="btn btn-lg btn-primary w-100"
-          :disabled="isLoading"
+        <!--begin::Meter-->
+        <div
+          class="d-flex align-items-center mb-3"
+          data-kt-password-meter-control="highlight"
         >
-          <span class="indicator-label">
-            <i class="ki-duotone ki-user-plus fs-3 me-2"></i>
-            Create Account
-          </span>
-          <span class="indicator-progress">
-            <span class="spinner-border spinner-border-sm align-middle me-2"></span>
-            Creating your account...
-          </span>
-        </button>
+          <div
+            class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"
+          ></div>
+          <div
+            class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"
+          ></div>
+          <div
+            class="flex-grow-1 bg-secondary bg-active-success rounded h-5px me-2"
+          ></div>
+          <div
+            class="flex-grow-1 bg-secondary bg-active-success rounded h-5px"
+          ></div>
+        </div>
+        <!--end::Meter-->
       </div>
-      <!--end::Actions-->
-    </VForm>
-    <!--end::Form-->
-  </div>
-  <!--end::Wrapper-->
+      <!--end::Wrapper-->
+      
+      <!--begin::Hint-->
+      <div class="form-hint">
+        Use 8 or more characters with a mix of letters, numbers & symbols for better security.
+      </div>
+      <!--end::Hint-->
+    </div>
+    <!--end::Input group--->
+
+    <!--begin::Input group-->
+    <div class="form-group mb-6">
+      <label class="form-label">
+        Confirm Password
+      </label>
+      <Field
+        class="form-input"
+        type="password"
+        placeholder="Confirm your password"
+        name="password_confirmation"
+        autocomplete="new-password"
+      />
+      <div class="error-container">
+        <ErrorMessage name="password_confirmation" />
+      </div>
+    </div>
+    <!--end::Input group-->
+
+    <!--begin::Input group-->
+    <div class="form-group mb-8">
+      <label class="form-check form-check-custom form-check-solid">
+        <Field
+          class="form-check-input"
+          type="checkbox"
+          name="toc"
+          value="1"
+        />
+        <span class="form-check-label">
+          I agree to the
+          <a href="#" class="ms-1 link-primary">Terms and Conditions</a>
+          and
+          <a href="#" class="ms-1 link-primary">Privacy Policy</a>
+        </span>
+      </label>
+      <div class="error-container">
+        <ErrorMessage name="toc" />
+      </div>
+    </div>
+    <!--end::Input group-->
+
+    <!--begin::Actions-->
+    <div class="text-center">
+      <button
+        id="kt_sign_up_submit"
+        ref="submitButton"
+        type="submit"
+        class="submit-button"
+        :disabled="isLoading"
+      >
+        <span class="indicator-label">
+          Create Account
+        </span>
+        <span class="indicator-progress">
+          <span class="spinner-border spinner-border-sm align-middle me-2"></span>
+          Creating your account...
+        </span>
+      </button>
+    </div>
+    <!--end::Actions-->
+  </VForm>
+  <!--end::Form-->
 </template>
 
 <script lang="ts">
@@ -355,20 +299,6 @@ export default defineComponent({
         PasswordMeterComponent.bootstrap();
       });
     });
-
-    // Handle social login
-    const handleSocialLogin = (provider: string) => {
-      Swal.fire({
-        title: 'Coming Soon!',
-        text: `${provider.charAt(0).toUpperCase() + provider.slice(1)} sign up will be available soon.`,
-        icon: 'info',
-        buttonsStyling: false,
-        confirmButtonText: 'Got it!',
-        customClass: {
-          confirmButton: 'btn fw-semobold btn-light-primary',
-        },
-      });
-    };
 
     const onSubmitRegister = async (values: any) => {
       values = values as User;
@@ -446,8 +376,231 @@ export default defineComponent({
       submitButton,
       isLoading,
       getAssetPath,
-      handleSocialLogin,
     };
   },
 });
 </script>
+
+<style scoped>
+.auth-title {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-link-container {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.auth-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.form-row {
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-input:focus::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-select option {
+  background: #1f2937;
+  color: white;
+}
+
+.form-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.error-container {
+  margin-top: 0.25rem;
+}
+
+.error-container :deep(.fv-help-block) {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.form-check-input {
+  margin: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background: #6366f1;
+  border-color: #6366f1;
+}
+
+.form-check-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.link-primary {
+  color: #6366f1;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.link-primary:hover {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.indicator-progress {
+  display: none;
+}
+
+.submit-button[data-kt-indicator="on"] .indicator-label {
+  display: none;
+}
+
+.submit-button[data-kt-indicator="on"] .indicator-progress {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .auth-title {
+    font-size: 1.75rem;
+  }
+  
+  .form-input,
+  .form-select {
+    padding: 0.75rem 0.875rem;
+  }
+  
+  .submit-button {
+    padding: 0.75rem 1.25rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-row .col-xl-6 {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .form-row .col-xl-6:last-child {
+    margin-bottom: 0;
+  }
+}
+</style>

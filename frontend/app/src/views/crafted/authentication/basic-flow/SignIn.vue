@@ -1,214 +1,116 @@
 <template>
-  <!--begin::Wrapper-->
-  <div class="w-lg-500px p-10">
-    <!--begin::Form-->
-    <VForm
-      class="form w-100"
-      id="kt_login_signin_form"
-      @submit="onSubmitLogin"
-      :validation-schema="login"
-      :initial-values="{ email: '', password: '' }"
-    >
-      <!--begin::Heading-->
-      <div class="text-center mb-10">
-        <!--begin::Title-->
-        <h1 class="text-dark mb-3">Welcome Back!</h1>
-        <!--end::Title-->
+  <!--begin::Form-->
+  <VForm
+    class="form w-100"
+    id="kt_login_signin_form"
+    @submit="onSubmitLogin"
+    :validation-schema="login"
+    :initial-values="{ email: '', password: '' }"
+  >
+    <!--begin::Heading-->
+    <div class="text-center mb-8">
+      <!--begin::Title-->
+      <h1 class="auth-title">Welcome Back!</h1>
+      <!--end::Title-->
 
-        <!--begin::Subtitle-->
-        <p class="text-gray-600 fs-6 mb-5">Sign in to your account to continue</p>
-        <!--end::Subtitle-->
+      <!--begin::Subtitle-->
+      <p class="auth-subtitle">Sign in to your account to continue</p>
+      <!--end::Subtitle-->
 
-        <!--begin::Link-->
-        <div class="text-gray-400 fw-semobold fs-4">
-          New Here?
-
-          <router-link to="/sign-up" class="link-primary fw-bold">
-            Create an Account
-          </router-link>
-        </div>
-        <!--end::Link-->
+      <!--begin::Link-->
+      <div class="auth-link-container">
+        New Here?
+        <router-link to="/sign-up" class="auth-link">
+          Create an Account
+        </router-link>
       </div>
-      <!--begin::Heading-->
+      <!--end::Link-->
+    </div>
+    <!--begin::Heading-->
 
-      <!--begin::Demo Account Info-->
-      <div class="mb-10 bg-light-info p-8 rounded border border-info border-dashed">
-        <div class="d-flex align-items-center mb-3">
-          <i class="ki-duotone ki-information-5 fs-2 text-info me-3">
-            <span class="path1"></span>
-            <span class="path2"></span>
-            <span class="path3"></span>
-          </i>
-          <h6 class="text-info mb-0">Demo Account</h6>
-        </div>
-        <div class="text-info fs-7">
-          <p class="mb-2">Use these credentials to test the application:</p>
-          <div class="d-flex flex-column gap-1">
-            <span><strong>Email:</strong> s@demo.com</span>
-            <span><strong>Password:</strong> demo</span>
-          </div>
-          <button 
-            type="button" 
-            class="btn btn-sm btn-outline-info mt-3"
-            @click="fillDemoCredentials"
-          >
-            <i class="ki-duotone ki-copy fs-6 me-2"></i>
-            Fill Demo Credentials
-          </button>
-        </div>
+    <!--begin::Input group-->
+    <div class="form-group mb-6">
+      <!--begin::Label-->
+      <label class="form-label">
+        Email Address
+      </label>
+      <!--end::Label-->
+
+      <!--begin::Input-->
+      <Field
+        tabindex="1"
+        class="form-input"
+        type="email"
+        name="email"
+        placeholder="Enter your email address"
+        autocomplete="email"
+      />
+      <!--end::Input-->
+      <div class="error-container">
+        <ErrorMessage name="email" />
       </div>
-      <!--end::Demo Account Info-->
+    </div>
+    <!--end::Input group-->
 
-      <!--begin::Input group-->
-      <div class="fv-row mb-10">
+    <!--begin::Input group-->
+    <div class="form-group mb-8">
+      <!--begin::Wrapper-->
+      <div class="label-container">
         <!--begin::Label-->
-        <label class="form-label fs-6 fw-bold text-dark">
-          <i class="ki-duotone ki-sms fs-5 text-primary me-2"></i>
-          Email Address
+        <label class="form-label">
+          Password
         </label>
         <!--end::Label-->
 
-        <!--begin::Input-->
-        <Field
-          tabindex="1"
-          class="form-control form-control-lg form-control-solid"
-          type="email"
-          name="email"
-          placeholder="Enter your email address"
-          autocomplete="email"
-        />
-        <!--end::Input-->
-        <div class="fv-plugins-message-container">
-          <div class="fv-help-block">
-            <ErrorMessage name="email" />
-          </div>
-        </div>
+        <!--begin::Link-->
+        <router-link to="/password-reset" class="forgot-link">
+          Forgot Password?
+        </router-link>
+        <!--end::Link-->
       </div>
-      <!--end::Input group-->
+      <!--end::Wrapper-->
 
-      <!--begin::Input group-->
-      <div class="fv-row mb-10">
-        <!--begin::Wrapper-->
-        <div class="d-flex flex-stack mb-2">
-          <!--begin::Label-->
-          <label class="form-label fw-bold text-dark fs-6 mb-0">
-            <i class="ki-duotone ki-lock fs-5 text-primary me-2"></i>
-            Password
-          </label>
-          <!--end::Label-->
-
-          <!--begin::Link-->
-          <router-link to="/password-reset" class="link-primary fs-6 fw-bold">
-            Forgot Password?
-          </router-link>
-          <!--end::Link-->
-        </div>
-        <!--end::Wrapper-->
-
-        <!--begin::Input-->
-        <Field
-          tabindex="2"
-          class="form-control form-control-lg form-control-solid"
-          type="password"
-          name="password"
-          placeholder="Enter your password"
-          autocomplete="current-password"
-        />
-        <!--end::Input-->
-        <div class="fv-plugins-message-container">
-          <div class="fv-help-block">
-            <ErrorMessage name="password" />
-          </div>
-        </div>
+      <!--begin::Input-->
+      <Field
+        tabindex="2"
+        class="form-input"
+        type="password"
+        name="password"
+        placeholder="Enter your password"
+        autocomplete="current-password"
+      />
+      <!--end::Input-->
+      <div class="error-container">
+        <ErrorMessage name="password" />
       </div>
-      <!--end::Input group-->
+    </div>
+    <!--end::Input group-->
 
-      <!--begin::Actions-->
-      <div class="text-center">
-        <!--begin::Submit button-->
-        <button
-          tabindex="3"
-          type="submit"
-          ref="submitButton"
-          id="kt_sign_in_submit"
-          class="btn btn-lg btn-primary w-100 mb-5"
-          :disabled="isLoading"
-        >
-          <span class="indicator-label">
-            <i class="ki-duotone ki-arrow-right fs-3 me-2"></i>
-            Sign In
-          </span>
+    <!--begin::Actions-->
+    <div class="text-center">
+      <!--begin::Submit button-->
+      <button
+        tabindex="3"
+        type="submit"
+        ref="submitButton"
+        id="kt_sign_in_submit"
+        class="submit-button"
+        :disabled="isLoading"
+      >
+        <span class="indicator-label">
+          Sign In
+        </span>
 
-          <span class="indicator-progress">
-            <span class="spinner-border spinner-border-sm align-middle me-2"></span>
-            Signing in...
-          </span>
-        </button>
-        <!--end::Submit button-->
-
-        <!--begin::Separator-->
-        <div class="text-center text-muted text-uppercase fw-bold mb-5">
-          <span class="bg-white px-3">or continue with</span>
-        </div>
-        <!--end::Separator-->
-
-        <!--begin::Social Login Buttons-->
-        <div class="d-flex flex-column gap-3">
-          <!--begin::Google link-->
-          <button
-            type="button"
-            class="btn btn-flex flex-center btn-light btn-lg w-100"
-            @click="handleSocialLogin('google')"
-            :disabled="isLoading"
-          >
-            <img
-              alt="Google"
-              :src="getAssetPath('media/svg/brand-logos/google-icon.svg')"
-              class="h-20px me-3"
-            />
-            Continue with Google
-          </button>
-          <!--end::Google link-->
-
-          <!--begin::Facebook link-->
-          <button
-            type="button"
-            class="btn btn-flex flex-center btn-light btn-lg w-100"
-            @click="handleSocialLogin('facebook')"
-            :disabled="isLoading"
-          >
-            <img
-              alt="Facebook"
-              :src="getAssetPath('media/svg/brand-logos/facebook-4.svg')"
-              class="h-20px me-3"
-            />
-            Continue with Facebook
-          </button>
-          <!--end::Facebook link-->
-
-          <!--begin::Apple link-->
-          <button
-            type="button"
-            class="btn btn-flex flex-center btn-light btn-lg w-100"
-            @click="handleSocialLogin('apple')"
-            :disabled="isLoading"
-          >
-            <img
-              alt="Apple"
-              :src="getAssetPath('media/svg/brand-logos/apple-black.svg')"
-              class="h-20px me-3"
-            />
-            Continue with Apple
-          </button>
-          <!--end::Apple link-->
-        </div>
-        <!--end::Social Login Buttons-->
-      </div>
-      <!--end::Actions-->
-    </VForm>
-    <!--end::Form-->
-  </div>
-  <!--end::Wrapper-->
+        <span class="indicator-progress">
+          <span class="spinner-border spinner-border-sm align-middle me-2"></span>
+          Signing in...
+        </span>
+      </button>
+      <!--end::Submit button-->
+    </div>
+    <!--end::Actions-->
+  </VForm>
+  <!--end::Form-->
 </template>
 
 <script lang="ts">
@@ -239,29 +141,6 @@ export default defineComponent({
       email: Yup.string().email("Please enter a valid email address").required("Email is required").label("Email"),
       password: Yup.string().min(4, "Password must be at least 4 characters").required("Password is required").label("Password"),
     });
-
-    // Get form instance for programmatic access
-    const { setFieldValue } = useForm();
-
-    // Fill demo credentials
-    const fillDemoCredentials = () => {
-      setFieldValue('email', 's@demo.com');
-      setFieldValue('password', 'demo');
-    };
-
-    // Handle social login
-    const handleSocialLogin = (provider: string) => {
-      Swal.fire({
-        title: 'Coming Soon!',
-        text: `${provider.charAt(0).toUpperCase() + provider.slice(1)} login will be available soon.`,
-        icon: 'info',
-        buttonsStyling: false,
-        confirmButtonText: 'Got it!',
-        customClass: {
-          confirmButton: 'btn fw-semobold btn-light-primary',
-        },
-      });
-    };
 
     //Form submit function
     const onSubmitLogin = async (values: any) => {
@@ -337,9 +216,163 @@ export default defineComponent({
       submitButton,
       isLoading,
       getAssetPath,
-      fillDemoCredentials,
-      handleSocialLogin,
     };
   },
 });
 </script>
+
+<style scoped>
+.auth-title {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-link-container {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.auth-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-input:focus::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.label-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.forgot-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.error-container {
+  margin-top: 0.25rem;
+}
+
+.error-container :deep(.fv-help-block) {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.indicator-progress {
+  display: none;
+}
+
+.submit-button[data-kt-indicator="on"] .indicator-label {
+  display: none;
+}
+
+.submit-button[data-kt-indicator="on"] .indicator-progress {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .auth-title {
+    font-size: 1.75rem;
+  }
+  
+  .form-input {
+    padding: 0.75rem 0.875rem;
+  }
+  
+  .submit-button {
+    padding: 0.75rem 1.25rem;
+  }
+}
+</style>

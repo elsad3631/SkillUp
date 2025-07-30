@@ -1,92 +1,36 @@
 <template>
   <!--begin::Authentication Layout -->
-  <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-    <!--begin::Body-->
-    <div
-      class="d-flex flex-column flex-lg-row-fluid w-lg-50 p-10 order-2 order-lg-1"
-    >
-      <!--begin::Form-->
-      <div class="d-flex flex-center flex-column flex-lg-row-fluid">
-        <!--begin::Wrapper-->
-        <div class="w-lg-500px p-10">
-          <router-view></router-view>
-        </div>
-        <!--end::Wrapper-->
+  <div class="auth-layout-container">
+    <!--begin::Background Image-->
+    <div class="auth-background">
+      <img 
+        :src="getAssetPath('media/logos/logobackground.jpg')" 
+        alt="Background" 
+        class="background-image"
+      />
+      <div class="background-overlay"></div>
+    </div>
+    <!--end::Background Image-->
+
+    <!--begin::Content Container-->
+    <div class="auth-content">
+      <!--begin::Form Container-->
+      <div class="form-container">
+        <router-view></router-view>
       </div>
-      <!--end::Form-->
+      <!--end::Form Container-->
 
       <!--begin::Footer-->
-      <div class="d-flex flex-center flex-wrap px-5">
-        <!--begin::Links-->
-        <div class="d-flex fw-semibold text-primary fs-base">
-          <a href="#" class="px-5" target="_blank">Terms</a>
-
-          <a href="#" class="px-5" target="_blank">Plans</a>
-
-          <a href="#" class="px-5" target="_blank">Contact Us</a>
+      <div class="auth-footer">
+        <div class="footer-links">
+          <a href="#" class="footer-link" target="_blank">Terms</a>
+          <a href="#" class="footer-link" target="_blank">Plans</a>
+          <a href="#" class="footer-link" target="_blank">Contact Us</a>
         </div>
-        <!--end::Links-->
       </div>
       <!--end::Footer-->
     </div>
-    <!--end::Body-->
-
-    <!--begin::Aside-->
-    <div
-      class="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2"
-      :style="`background-image: url('${getAssetPath('media/misc/auth-bg.png')}')`"
-    >
-      <!--begin::Content-->
-      <div
-        class="d-flex flex-column flex-center py-7 py-lg-15 px-5 px-md-15 w-100"
-      >
-        <!--begin::Logo-->
-        <router-link to="/" class="mb-0 mb-lg-12">
-          <img
-            alt="Logo"
-            :src="getAssetPath('media/logos/custom-1.png')"
-            class="h-60px h-lg-75px"
-          />
-        </router-link>
-        <!--end::Logo-->
-
-        <!--begin::Image-->
-        <img
-          class="d-none d-lg-block mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20"
-          :src="getAssetPath('media/misc/auth-screens.png')"
-          alt=""
-        />
-        <!--end::Image-->
-
-        <!--begin::Title-->
-        <h1
-          class="d-none d-lg-block text-white fs-2qx fw-bolder text-center mb-7"
-        >
-          Fast, Efficient and Productive
-        </h1>
-        <!--end::Title-->
-
-        <!--begin::Text-->
-        <div class="d-none d-lg-block text-white fs-base text-center">
-          In this kind of post,
-          <a href="#" class="opacity-75-hover text-warning fw-bold me-1"
-            >the blogger</a
-          >
-
-          introduces a person they’ve interviewed <br />
-          and provides some background information about
-
-          <a href="#" class="opacity-75-hover text-warning fw-bold me-1"
-            >the interviewee</a
-          >
-          and their <br />
-          work following this is a transcript of the interview.
-        </div>
-        <!--end::Text-->
-      </div>
-      <!--end::Content-->
-    </div>
-    <!--end::Aside-->
+    <!--end::Content Container-->
   </div>
   <!--end::Authentication Layout -->
 </template>
@@ -116,3 +60,104 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.auth-layout-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.auth-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.auth-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 450px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.form-container {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.auth-footer {
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: rgba(255, 255, 255, 1);
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .auth-content {
+    padding: 1rem;
+    max-width: 100%;
+  }
+  
+  .form-container {
+    padding: 2rem;
+  }
+  
+  .footer-links {
+    gap: 1rem;
+  }
+}
+</style>

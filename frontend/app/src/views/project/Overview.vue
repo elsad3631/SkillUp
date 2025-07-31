@@ -14,319 +14,405 @@
 
   <!--begin::Overview Content-->
   <div v-else>
-    <!--begin::details View-->
-    <div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
-      <!--begin::Card header-->
-      <div class="card-header cursor-pointer">
-        <!--begin::Card title-->
-        <div class="d-flex align-items-center">          
-          <!--begin::Title-->
-          <div>
-            <h3 class="fw-bold m-0">Project Details</h3>
-            <div class="text-muted fs-7" v-if="project?.name">
-              {{ project?.name }}
+    <!--begin::Project Header Card-->
+    <div class="card mb-5 mb-xl-10">
+      <div class="card-body p-0">
+        <!--begin::Project Header-->
+        <div class="d-flex flex-column flex-md-row align-items-center p-8">
+          <!--begin::Project Icon-->
+          <div class="symbol symbol-100px symbol-circle mb-5 mb-md-0 me-md-8">
+            <div class="symbol-label bg-light-primary">
+              <i class="ki-duotone ki-briefcase fs-2x text-primary">
+                <span class="path1"></span>
+                <span class="path2"></span>
+              </i>
             </div>
           </div>
-          <!--end::Title-->
-        </div>
-        <!--end::Card title-->
+          <!--end::Project Icon-->
 
-        <!--begin::Action-->
-        <div v-if="project && project.id" class="d-flex gap-2">
-          <router-link
-            :to="`/projects/${project.id}/documents`"
-            class="btn btn-light align-self-center"
-            >
-            <KTIcon icon-name="folder" icon-class="fs-2" />
-            Documents
-          </router-link>
-          <router-link
-            :to="`/projects/${project.id}/settings`"
-            class="btn btn-primary align-self-center"
-            >Edit Project</router-link>
+          <!--begin::Project Info-->
+          <div class="flex-grow-1 text-center text-md-start">
+            <h2 class="fw-bold fs-1 text-dark mb-2">
+              {{ project?.name || 'Project Name' }}
+            </h2>
+            <div class="d-flex flex-column flex-md-row align-items-center gap-3 mb-3">
+              <span :class="getStatusBadgeClass(project?.status)" class="badge fw-bold fs-7">
+                {{ project?.status || 'Status not set' }}
+              </span>
+              <span :class="getPriorityBadgeClass(project?.priority)" class="badge fw-bold fs-7">
+                {{ project?.priority || 'Priority not set' }}
+              </span>
+              <span v-if="project?.budget" class="badge badge-light-info fw-bold fs-7">
+                Budget: ${{ project.budget.toLocaleString() }}
+              </span>
+            </div>
+            <p class="text-muted fs-6 mb-3" v-if="project?.description">
+              {{ project.description }}
+            </p>
+            <div class="d-flex flex-column flex-md-row align-items-center gap-4 text-muted">
+              <div class="d-flex align-items-center" v-if="project?.startDate">
+                <i class="ki-duotone ki-calendar fs-5 me-2"></i>
+                <span>Started: {{ formatDate(project.startDate) }}</span>
+              </div>
+              <div class="d-flex align-items-center" v-if="project?.endDate">
+                <i class="ki-duotone ki-calendar fs-5 me-2"></i>
+                <span>Ends: {{ formatDate(project.endDate) }}</span>
+              </div>
+              <div class="d-flex align-items-center" v-if="project?.managerId">
+                <i class="ki-duotone ki-user fs-5 me-2"></i>
+                <span>Manager: {{ project.managerId }}</span>
+              </div>
+            </div>
+          </div>
+          <!--end::Project Info-->
+
+          <!--begin::Actions-->
+          <div class="mt-5 mt-md-0 d-flex flex-column gap-2">
+            <router-link
+              v-if="project && project.id"
+              :to="`/projects/${project.id}/documents`"
+              class="btn btn-light btn-lg"
+              >
+              <i class="ki-duotone ki-folder fs-5 me-2"></i>
+              Documents
+            </router-link>
+            <router-link
+              v-if="project && project.id"
+              :to="`/projects/${project.id}/settings`"
+              class="btn btn-primary btn-lg"
+              >
+              <i class="ki-duotone ki-pencil fs-5 me-2"></i>
+              Edit Project
+            </router-link>
+          </div>
+          <!--end::Actions-->
         </div>
-        <!--end::Action-->
+        <!--end::Project Header-->
       </div>
-      <!--begin::Card header-->
+    </div>
+    <!--end::Project Header Card-->
 
-      <!--begin::Card body-->
-      <div class="card-body pt-9 pb-0">
-          <!--begin::Details-->
-          <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
-            <!--begin::Info-->
-            <div class="flex-grow-1">
-              <!--begin::Row-->
-              <div class="row mb-7">
-                <!--begin::Label-->
-                <label class="col-lg-4 fw-semobold text-muted">Project Name</label>
-                <!--end::Label-->
-
-                <!--begin::Col-->
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ project?.name || '' }}</span>
-                </div>
-                <!--end::Col-->
-              </div>
-              <!--end::Row-->
-
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Description</label>
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ project?.description || 'No description provided' }}</span>
+    <!--begin::Project Details Cards-->
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+      <!--begin::Project Information-->
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="ki-duotone ki-information-5 fs-2 me-2 text-primary"></i>
+              <h3 class="fw-bold m-0">Project Information</h3>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-column gap-4">
+              <div class="d-flex align-items-center p-4 bg-light-primary rounded">
+                <i class="ki-duotone ki-document fs-2 me-3 text-primary"></i>
+                <div>
+                  <div class="text-muted fs-7 fw-semibold">Description</div>
+                  <div class="fw-bold fs-6">{{ project?.description || 'No description provided' }}</div>
                 </div>
               </div>
 
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Status</label>
-                <div class="col-lg-8">
-                  <span :class="getStatusBadgeClass(project?.status)" class="badge fw-bold">
-                    {{ project?.status || '' }}
-                  </span>
+              <div class="d-flex align-items-center p-4 bg-light-info rounded" v-if="project?.budget">
+                <i class="ki-duotone ki-dollar fs-2 me-3 text-info"></i>
+                <div>
+                  <div class="text-muted fs-7 fw-semibold">Budget</div>
+                  <div class="fw-bold fs-6">${{ project.budget.toLocaleString() }}</div>
                 </div>
               </div>
 
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Priority</label>
-                <div class="col-lg-8">
-                  <span :class="getPriorityBadgeClass(project?.priority)" class="badge fw-bold">
-                    {{ project?.priority || 'Not set' }}
-                  </span>
+              <div class="d-flex align-items-center p-4 bg-light-success rounded" v-if="project?.startDate">
+                <i class="ki-duotone ki-calendar fs-2 me-3 text-success"></i>
+                <div>
+                  <div class="text-muted fs-7 fw-semibold">Start Date</div>
+                  <div class="fw-bold fs-6">{{ formatDate(project.startDate) }}</div>
                 </div>
               </div>
 
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Budget</label>
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">
-                    {{ project?.budget ? `$${project.budget.toLocaleString()}` : 'Not specified' }}
-                  </span>
+              <div class="d-flex align-items-center p-4 bg-light-warning rounded" v-if="project?.endDate">
+                <i class="ki-duotone ki-calendar fs-2 me-3 text-warning"></i>
+                <div>
+                  <div class="text-muted fs-7 fw-semibold">End Date</div>
+                  <div class="fw-bold fs-6">{{ formatDate(project.endDate) }}</div>
                 </div>
               </div>
 
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Start Date</label>
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ project?.startDate ? formatDate(project.startDate) : 'Not set' }}</span>
-                </div>
-              </div>
-
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">End Date</label>
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ project?.endDate ? formatDate(project.endDate) : 'Not set' }}</span>
-                </div>
-              </div>
-
-              <div class="row mb-7">
-                <label class="col-lg-4 fw-semobold text-muted">Manager ID</label>
-                <div class="col-lg-8">
-                  <span class="fw-bold fs-6 text-dark">{{ project?.managerId || 'Not assigned' }}</span>
-                </div>
-              </div>
-
-                              <!-- Required Skills -->
-                <div v-if="project">
-                  <div class="card mb-6">
-                    <div class="card-header">
-                      <h3 class="card-title">Required Skills</h3>
-                    </div>
-                    <div class="card-body">
-                      <div v-if="project.requiredHardSkills && project.requiredHardSkills.length">
-                        <h4 class="mb-4">Technical Skills</h4>
-                        <div class="table-responsive">
-                          <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
-                            <thead>
-                              <tr class="fw-bold text-muted">
-                                <th class="min-w-150px">Skill Name</th>
-                                <th class="min-w-100px">Min Level</th>
-                                <th class="min-w-120px">Certification</th>
-                                <th class="min-w-100px">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(skill, i) in project.requiredHardSkills" :key="'hard-' + i">
-                                <td>
-                                  <div class="d-flex align-items-center">
-                                    <div class="fw-bold text-dark">{{ skill.name }}</div>
-                                  </div>
-                                </td>
-                                <td>
-                                  <span class="fw-bold text-muted">{{ skill.minProficiencyLevel || 'Not specified' }}</span>
-                                </td>
-                                <td>
-                                  <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
-                                </td>
-                                <td>
-                                  <span v-if="skill.isMandatory" class="badge badge-light-danger">Mandatory</span>
-                                  <span v-else class="badge badge-light-success">Optional</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      
-                      <div v-if="project.requiredSoftSkills && project.requiredSoftSkills.length" class="mt-6">
-                        <h4 class="mb-4">Soft Skills</h4>
-                        <div class="table-responsive">
-                          <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
-                            <thead>
-                              <tr class="fw-bold text-muted">
-                                <th class="min-w-150px">Skill Name</th>
-                                <th class="min-w-100px">Level</th>
-                                <th class="min-w-120px">Certification</th>
-                                <th class="min-w-100px">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr v-for="(skill, i) in project.requiredSoftSkills" :key="'soft-' + i">
-                                <td>
-                                  <div class="d-flex align-items-center">
-                                    <div class="fw-bold text-dark">{{ skill.name }}</div>
-                                  </div>
-                                </td>
-                                <td>
-                                  <span class="fw-bold text-muted">{{ skill.proficiencyLevel || 'Not specified' }}</span>
-                                </td>
-                                <td>
-                                  <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
-                                </td>
-                                <td>
-                                  <span v-if="skill.isMandatory" class="badge badge-light-danger">Mandatory</span>
-                                  <span v-else class="badge badge-light-success">Optional</span>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      <div v-if="(!project.requiredHardSkills || !project.requiredHardSkills.length) && 
-                                 (!project.requiredSoftSkills || !project.requiredSoftSkills.length)">
-                        <div class="text-center py-10">
-                          <i class="ki-duotone ki-information-5 fs-3x text-muted mb-4">
-                            <span class="path1"></span>
-                            <span class="path2"></span>
-                            <span class="path3"></span>
-                          </i>
-                          <div class="text-muted fw-semibold fs-6">No required skills specified.</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                <!-- Team Assignments -->
-                <div class="card mb-6">
-                  <div class="card-header">
-                    <h3 class="card-title">Team Assignments</h3>
-                  </div>
-                  <div class="card-body">
-                    <div v-if="project.assignments && project.assignments.length">
-                      <div class="table-responsive">
-                        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
-                          <thead>
-                            <tr class="fw-bold text-muted">
-                              <th class="min-w-120px">User ID</th>
-                              <th class="min-w-120px">Role</th>
-                              <th class="min-w-100px">Allocation</th>
-                              <th class="min-w-100px">Start Date</th>
-                              <th class="min-w-100px">End Date</th>
-                              <th class="min-w-100px">Status</th>
-                              <th class="min-w-200px">Feedback</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr v-for="(assignment, i) in project.assignments" :key="'assignment-' + i">
-                              <td>
-                                <div class="fw-bold text-dark">{{ assignment.applicationUserId }}</div>
-                              </td>
-                              <td>
-                                <div class="fw-semibold text-muted">{{ assignment.roleOnProject }}</div>
-                              </td>
-                              <td>
-                                <span class="badge badge-light-primary">{{ assignment.allocationPercentage }}%</span>
-                              </td>
-                              <td>
-                                <div class="text-muted">{{ formatDate(assignment.assignmentStartDate) }}</div>
-                              </td>
-                              <td>
-                                <div class="text-muted">{{ assignment.assignmentEndDate ? formatDate(assignment.assignmentEndDate) : 'Ongoing' }}</div>
-                              </td>
-                              <td>
-                                <span :class="getAssignmentStatusBadgeClass(assignment.status)" class="badge">
-                                  {{ assignment.status }}
-                                </span>
-                              </td>
-                              <td>
-                                <div class="text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="assignment.feedbackReceived">
-                                  {{ assignment.feedbackReceived || 'No feedback' }}
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    <div v-else>
-                      <div class="text-center py-10">
-                        <i class="ki-duotone ki-users fs-3x text-muted mb-4">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                        <div class="text-muted fw-semibold fs-6">No team members assigned yet.</div>
-                      </div>
-                    </div>
-                  </div>
+              <div class="d-flex align-items-center p-4 bg-light-danger rounded" v-if="project?.managerId">
+                <i class="ki-duotone ki-user fs-2 me-3 text-danger"></i>
+                <div>
+                  <div class="text-muted fs-7 fw-semibold">Project Manager</div>
+                  <div class="fw-bold fs-6">{{ project.managerId }}</div>
                 </div>
               </div>
             </div>
-            <!--end::Info-->
           </div>
-          <!--end::Details-->
         </div>
-        <!--end::Card body-->
       </div>
-      <!--end::details View-->
+      <!--end::Project Information-->
 
-    <!--begin::Row-->
+      <!--begin::Team Overview-->
+      <div class="col-xl-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="ki-duotone ki-users fs-2 me-2 text-primary"></i>
+              <h3 class="fw-bold m-0">Team Overview</h3>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-column gap-4">
+              <!-- Team Members Summary -->
+              <div v-if="project?.assignments && project.assignments.length" class="p-4 bg-light-primary rounded">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="ki-duotone ki-users fs-2 me-2 text-primary"></i>
+                  <h5 class="fw-bold m-0">Team Members</h5>
+                  <span class="badge badge-primary ms-auto">{{ project.assignments.length }}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <span v-for="assignment in project.assignments.slice(0, 5)" :key="assignment.applicationUserId" 
+                        class="badge badge-light-primary fs-7">
+                    {{ assignment.applicationUserId }} ({{ assignment.roleOnProject }})
+                  </span>
+                  <span v-if="project.assignments.length > 5" class="badge badge-light-secondary fs-7">
+                    +{{ project.assignments.length - 5 }} more
+                  </span>
+                </div>
+              </div>
+
+              <!-- Required Skills Summary -->
+              <div v-if="project?.requiredHardSkills && project.requiredHardSkills.length" class="p-4 bg-light-success rounded">
+                <div class="d-flex align-items-center mb-3">
+                  <i class="ki-duotone ki-cpu fs-2 me-2 text-success"></i>
+                  <h5 class="fw-bold m-0">Required Technical Skills</h5>
+                  <span class="badge badge-success ms-auto">{{ project.requiredHardSkills.length }}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <span v-for="skill in project.requiredHardSkills.slice(0, 5)" :key="skill.name" 
+                        class="badge badge-light-success fs-7">
+                    {{ skill.name }}
+                  </span>
+                  <span v-if="project.requiredHardSkills.length > 5" class="badge badge-light-secondary fs-7">
+                    +{{ project.requiredHardSkills.length - 5 }} more
+                  </span>
+                </div>
+              </div>
+
+              <!-- No Team Message -->
+              <div v-if="(!project?.assignments || !project.assignments.length) && 
+                         (!project?.requiredHardSkills || !project.requiredHardSkills.length)" 
+                   class="text-center py-8">
+                <i class="ki-duotone ki-users fs-3x text-muted mb-4">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+                <div class="text-muted fw-semibold fs-6">No team members assigned yet.</div>
+                <div class="text-muted fs-7 mt-2">Assign team members and define required skills</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--end::Team Overview-->
+    </div>
+    <!--end::Project Details Cards-->
+
+    <!--begin::Required Skills Section-->
+    <div v-if="project" class="card mb-5 mb-xl-10">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ki-duotone ki-technology-4 fs-2 me-2 text-primary"></i>
+          <h3 class="fw-bold m-0">Required Skills</h3>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Technical Skills Table -->
+        <div v-if="project.requiredHardSkills && project.requiredHardSkills.length" class="mb-8">
+          <h4 class="fw-bold mb-4">
+            <i class="ki-duotone ki-cpu fs-3 me-2 text-primary"></i>
+            Technical Skills
+          </h4>
+          <div class="table-responsive">
+            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+              <thead>
+                <tr class="fw-bold text-muted bg-light-primary">
+                  <th class="min-w-150px ps-4">Skill Name</th>
+                  <th class="min-w-100px">Min Level</th>
+                  <th class="min-w-120px">Certification</th>
+                  <th class="min-w-100px">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(skill, i) in project.requiredHardSkills" :key="'hard-' + i">
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                      <div class="fw-bold text-dark">{{ skill.name }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="progress h-6px w-100px me-3">
+                        <div class="progress-bar bg-primary" :style="{ width: (skill.minProficiencyLevel / 5) * 100 + '%' }"></div>
+                      </div>
+                      <span class="fw-bold text-muted">Level {{ skill.minProficiencyLevel || 'Not specified' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
+                  </td>
+                  <td>
+                    <span v-if="skill.isMandatory" class="badge badge-light-danger">Mandatory</span>
+                    <span v-else class="badge badge-light-success">Optional</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Soft Skills Table -->
+        <div v-if="project.requiredSoftSkills && project.requiredSoftSkills.length">
+          <h4 class="fw-bold mb-4">
+            <i class="ki-duotone ki-users fs-3 me-2 text-success"></i>
+            Soft Skills
+          </h4>
+          <div class="table-responsive">
+            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+              <thead>
+                <tr class="fw-bold text-muted bg-light-success">
+                  <th class="min-w-150px ps-4">Skill Name</th>
+                  <th class="min-w-100px">Level</th>
+                  <th class="min-w-120px">Certification</th>
+                  <th class="min-w-100px">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(skill, i) in project.requiredSoftSkills" :key="'soft-' + i">
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                      <div class="fw-bold text-dark">{{ skill.name }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="progress h-6px w-100px me-3">
+                        <div class="progress-bar bg-success" :style="{ width: (skill.proficiencyLevel / 5) * 100 + '%' }"></div>
+                      </div>
+                      <span class="fw-bold text-muted">Level {{ skill.proficiencyLevel || 'Not specified' }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-muted">{{ skill.certification || 'No certification' }}</span>
+                  </td>
+                  <td>
+                    <span v-if="skill.isMandatory" class="badge badge-light-danger">Mandatory</span>
+                    <span v-else class="badge badge-light-success">Optional</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div v-if="(!project.requiredHardSkills || !project.requiredHardSkills.length) && 
+                   (!project.requiredSoftSkills || !project.requiredSoftSkills.length)">
+          <div class="text-center py-10">
+            <i class="ki-duotone ki-information-5 fs-3x text-muted mb-4">
+              <span class="path1"></span>
+              <span class="path2"></span>
+              <span class="path3"></span>
+            </i>
+            <div class="text-muted fw-semibold fs-6">No required skills specified.</div>
+            <div class="text-muted fs-7 mt-2">Define required skills to help match the right team members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end::Required Skills Section-->
+
+    <!--begin::Team Assignments Section-->
+    <div v-if="project" class="card mb-5 mb-xl-10">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="ki-duotone ki-users fs-2 me-2 text-primary"></i>
+          <h3 class="fw-bold m-0">Team Assignments</h3>
+        </div>
+      </div>
+      <div class="card-body">
+        <div v-if="project.assignments && project.assignments.length">
+          <div class="assignment-timeline">
+            <div v-for="(assignment, i) in project.assignments" :key="'assignment-' + i" class="assignment-item">
+              <div class="assignment-badge">
+                <i class="ki-duotone ki-user fs-2 text-white"></i>
+              </div>
+              <div class="assignment-content">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <h5 class="fw-bold text-dark mb-1">{{ assignment.applicationUserId }}</h5>
+                  <span class="badge badge-light-primary">{{ assignment.roleOnProject }}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                  <div class="d-flex align-items-center text-muted fs-7">
+                    <i class="ki-duotone ki-calendar fs-5 me-1"></i>
+                    <span>{{ formatDate(assignment.assignmentStartDate) }} - {{ assignment.assignmentEndDate ? formatDate(assignment.assignmentEndDate) : 'Ongoing' }}</span>
+                  </div>
+                  <div class="d-flex align-items-center text-muted fs-7">
+                    <i class="ki-duotone ki-chart-simple fs-5 me-1"></i>
+                    <span>{{ assignment.allocationPercentage }}% allocation</span>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span :class="getAssignmentStatusBadgeClass(assignment.status)" class="badge">
+                    {{ assignment.status }}
+                  </span>
+                  <div v-if="assignment.feedbackReceived" class="text-muted fs-7" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="assignment.feedbackReceived">
+                    <i class="ki-duotone ki-message-text-2 fs-5 me-1"></i>
+                    {{ assignment.feedbackReceived }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          <div class="text-center py-10">
+            <i class="ki-duotone ki-users fs-3x text-muted mb-4">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+            <div class="text-muted fw-semibold fs-6">No team members assigned yet.</div>
+            <div class="text-muted fs-7 mt-2">Assign team members to start working on this project</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end::Team Assignments Section-->
+
+    <!--begin::Dashboard Widgets-->
     <div class="row gy-10 gx-xl-10">
-      <!--begin::Col-->
       <div class="col-xl-6">
         <KTChartWidget1
           widget-classes="card-xxl-stretch mb-5 mb-xl-10"
         ></KTChartWidget1>
       </div>
-      <!--end::Col-->
-
-      <!--begin::Col-->
       <div class="col-xl-6">
         <KTListWidget1
-          widget-classes="card-xxl-stretch mb-5 mb-xl-10'"
+          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
         ></KTListWidget1>
       </div>
-      <!--end::Col-->
     </div>
-    <!--end::Row-->
 
-    <!--begin::Row-->
     <div class="row gy-10 gx-xl-10">
-      <!--begin::Col-->
       <div class="col-xl-6">
         <KTListWidget5
           widget-classes="card-xxl-stretch mb-5 mb-xl-10"
         ></KTListWidget5>
       </div>
-      <!--end::Col-->
-
-      <!--begin::Col-->
       <div class="col-xl-6">
         <KTTableWidget5
           widget-classes="card-xxl-stretch mb-5 mb-xl-10"
         ></KTTableWidget5>
       </div>
-      <!--end::Col-->
     </div>
-    <!--end::Row-->
+    <!--end::Dashboard Widgets-->
   </div>
   <!--end::Overview Content-->
 </template>
@@ -405,3 +491,59 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.assignment-timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.assignment-item {
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.assignment-badge {
+  position: absolute;
+  left: -45px;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--kt-primary);
+  z-index: 2;
+}
+
+.assignment-content {
+  background: var(--kt-card-bg);
+  border: 1px solid var(--kt-border-color);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid var(--kt-primary);
+  position: relative;
+}
+
+.assignment-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: -30px;
+  top: 30px;
+  width: 2px;
+  height: calc(100% + 30px);
+  background: var(--kt-border-color);
+  z-index: 1;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .assignment-content {
+  background: var(--kt-dark-card-bg);
+  border-color: var(--kt-dark-border-color);
+}
+
+[data-theme="dark"] .assignment-item:not(:last-child)::after {
+  background: var(--kt-dark-border-color);
+}
+</style>

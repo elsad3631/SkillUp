@@ -6,7 +6,7 @@
         <span class="visually-hidden">Loading...</span>
       </div>
       <div class="mt-3">
-        <span class="fw-semobold text-gray-600">Loading settings...</span>
+        <span class="fw-semobold text-gray-600">Loading employee settings...</span>
       </div>
     </div>
   </div>
@@ -14,6 +14,23 @@
 
   <!--begin::Settings Content-->
   <div v-else>
+    <!--begin::Page Header-->
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-5">
+      <div class="d-flex align-items-center">
+        <KTIcon icon-name="setting-2" icon-class="fs-2x text-primary me-3" />
+        <div>
+          <h1 class="fw-bold mb-1">Employee Settings</h1>
+          <p class="text-muted mb-0">Manage employee profile, skills, and preferences</p>
+        </div>
+      </div>
+      <div class="d-flex align-items-center mt-3 mt-sm-0">
+        <span class="badge badge-light-primary fs-7 me-2">
+          <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+          Auto-save enabled
+        </span>
+      </div>
+    </div>
+    <!--end::Page Header-->
     <!--begin::Basic info-->
     <div class="card mb-5 mb-xl-10">
     <!--begin::Card header-->
@@ -27,9 +44,21 @@
     >
       <!--begin::Card title-->
       <div class="card-title m-0">
-        <h3 class="fw-bold m-0">Profile Details</h3>
+        <div class="d-flex align-items-center">
+          <KTIcon icon-name="user" icon-class="fs-2 text-primary me-3" />
+          <h3 class="fw-bold m-0">Profile Details</h3>
+        </div>
       </div>
       <!--end::Card title-->
+      
+      <!--begin::Card toolbar-->
+      <div class="card-toolbar">
+        <span class="badge badge-light-info fs-7">
+          <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+          Required fields marked with *
+        </span>
+      </div>
+      <!--end::Card toolbar-->
     </div>
     <!--begin::Card header-->
 
@@ -46,7 +75,10 @@
           <!--begin::Input group-->
           <div class="row mb-6">
             <!--begin::Label-->
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6">First Name</label>
+            <label class="col-lg-4 col-form-label required fw-semobold fs-6">
+              <KTIcon icon-name="user" icon-class="fs-6 me-2" />
+              First Name
+            </label>
             <!--end::Label-->
 
             <!--begin::Col-->
@@ -55,23 +87,42 @@
                 type="text"
                 name="firstName"
                 class="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                placeholder="First name"
+                placeholder="Enter first name"
                 v-model="profileDetails.firstName"
+                :class="{ 'is-invalid': !profileDetails.firstName }"
               />
+              <div class="invalid-feedback" v-if="!profileDetails.firstName">
+                First name is required
+              </div>
+              <div class="form-text">
+                <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                Enter your legal first name as it appears on official documents
+              </div>
             </div>
           </div>
           <!--end::Input group-->
 
           <div class="row mb-6">
-            <label class="col-lg-4 col-form-label required fw-semobold fs-6">Last Name</label>
+            <label class="col-lg-4 col-form-label required fw-semobold fs-6">
+              <KTIcon icon-name="user" icon-class="fs-6 me-2" />
+              Last Name
+            </label>
             <div class="col-lg-8 fv-row">
               <input
                 type="text"
                 name="lastName"
                 class="form-control form-control-lg form-control-solid"
-                placeholder="Last name"
+                placeholder="Enter last name"
                 v-model="profileDetails.lastName"
+                :class="{ 'is-invalid': !profileDetails.lastName }"
               />
+              <div class="invalid-feedback" v-if="!profileDetails.lastName">
+                Last name is required
+              </div>
+              <div class="form-text">
+                <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                Enter your legal last name as it appears on official documents
+              </div>
             </div>
           </div>
           <!--end::Input group-->
@@ -79,9 +130,10 @@
           <!--begin::Input group-->
           <div class="row mb-6">
             <!--begin::Label-->
-            <label class="col-lg-4 col-form-label fw-semobold fs-6"
-              >Department</label
-            >
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">
+              <KTIcon icon-name="building" icon-class="fs-6 me-2" />
+              Department
+            </label>
             <!--end::Label-->
 
             <!--begin::Col-->
@@ -90,52 +142,84 @@
                 type="text"
                 name="department"
                 class="form-control form-control-lg form-control-solid"
-                placeholder="Department"
+                placeholder="e.g., Engineering, Marketing, HR"
                 v-model="profileDetails.department"
               />
+              <div class="form-text">
+                <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                Your organizational department or team
+              </div>
             </div>
             <!--end::Col-->
           </div>
           <!--end::Input group-->
 
           <div class="row mb-6">
-            <label class="col-lg-4 col-form-label fw-semobold fs-6">Contact Phone</label>
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">
+              <KTIcon icon-name="phone" icon-class="fs-6 me-2" />
+              Contact Phone
+            </label>
             <div class="col-lg-8 fv-row">
               <input
                 type="tel"
                 name="phone"
                 class="form-control form-control-lg form-control-solid"
-                placeholder="Phone number"
+                placeholder="+1 (555) 123-4567"
                 v-model="profileDetails.phone"
               />
+              <div class="form-text">
+                <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                Your primary contact number for work-related communications
+              </div>
             </div>
           </div>
           <!--end::Input group-->
 
           <div class="row mb-6">
-            <label class="col-lg-4 col-form-label fw-semobold fs-6">Current Role</label>
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">
+              <KTIcon icon-name="briefcase" icon-class="fs-6 me-2" />
+              Current Role
+            </label>
             <div class="col-lg-8 fv-row">
               <input
                 type="text"
                 name="currentRole"
                 class="form-control form-control-lg form-control-solid"
-                placeholder="Current role"
+                placeholder="e.g., Senior Developer, Project Manager"
                 v-model="profileDetails.currentRole"
               />
+              <div class="form-text">
+                <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                Your current job title or position within the organization
+              </div>
             </div>
           </div>
           <!--end::Input group-->
 
           <div class="row mb-6">
-            <label class="col-lg-4 col-form-label fw-semobold fs-6">Available for assignments</label>
+            <label class="col-lg-4 col-form-label fw-semobold fs-6">
+              <KTIcon icon-name="check-circle" icon-class="fs-6 me-2" />
+              Available for assignments
+            </label>
             <div class="col-lg-8 fv-row d-flex align-items-center">
-              <input
-                type="checkbox"
-                name="isAvailable"
-                class="form-check-input me-2"
-                v-model="profileDetails.isAvailable"
-              />
-              <span class="form-check-label">Available</span>
+              <div class="form-check form-switch">
+                <input
+                  type="checkbox"
+                  name="isAvailable"
+                  class="form-check-input"
+                  v-model="profileDetails.isAvailable"
+                  id="availabilitySwitch"
+                />
+                <label class="form-check-label" for="availabilitySwitch">
+                  <span :class="profileDetails.isAvailable ? 'text-success' : 'text-muted'">
+                    {{ profileDetails.isAvailable ? 'Available' : 'Not Available' }}
+                  </span>
+                </label>
+              </div>
+              <div class="form-text ms-3">
+                <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                Indicates if you're available for new project assignments
+              </div>
             </div>
           </div>
           <!--end::Input group-->
@@ -245,13 +329,15 @@
             id="kt_account_profile_details_submit"
             ref="submitButton1"
             class="btn btn-primary"
+            :disabled="!isFormValid"
           >
-            <span class="indicator-label"> Save Changes </span>
+            <span class="indicator-label">
+              <KTIcon icon-name="check" icon-class="fs-2 me-2" />
+              Save Changes
+            </span>
             <span class="indicator-progress">
-              Please wait...
-              <span
-                class="spinner-border spinner-border-sm align-middle ms-2"
-              ></span>
+              <span class="spinner-border spinner-border-sm align-middle me-2"></span>
+              Saving...
             </span>
           </button>
         </div>
@@ -822,6 +908,11 @@ export default defineComponent({
     const route = useRoute();
     const submitButton1 = ref<HTMLElement | null>(null);
 
+    // Form validation
+    const isFormValid = computed(() => {
+      return profileDetails.value.firstName && profileDetails.value.lastName && profileDetails.value.email;
+    });
+
     // Reactive states
     const editingHardSkillIndex = ref<number | null>(null);
     const editingSoftSkillIndex = ref<number | null>(null);
@@ -1034,7 +1125,7 @@ export default defineComponent({
     }, { immediate: true });
 
     const saveChanges1 = async () => {
-      if (submitButton1.value) {
+      if (submitButton1.value && isFormValid.value) {
         // Activate indicator
         submitButton1.value.setAttribute("data-kt-indicator", "on");
         
@@ -1106,21 +1197,33 @@ export default defineComponent({
           // Show success message
           Swal.fire({
             icon: 'success',
-            title: 'Profile updated!',
-            text: 'Your profile has been updated successfully.'
+            title: 'Profile updated successfully!',
+            text: 'Your profile settings have been saved.',
+            confirmButtonText: 'Great!',
+            confirmButtonColor: '#3699FF'
           });
         } catch (error) {
           console.error("Error updating profile:", error);
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: 'There was an error updating your profile.'
+            title: 'Update failed',
+            text: 'There was an error updating your profile. Please try again.',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#F64E60'
           });
         } finally {
           setTimeout(() => {
             submitButton1.value?.removeAttribute("data-kt-indicator");
           }, 1000);
         }
+      } else if (!isFormValid.value) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing required fields',
+          text: 'Please fill in all required fields (marked with *) before saving.',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#FFA800'
+        });
       }
     };
 
@@ -1810,6 +1913,7 @@ export default defineComponent({
       profileDetails,
       employee: userData, // Unified reference
       getAssetPath,
+      isFormValid,
       // Skills management
       addHardSkill,
       addSoftSkill,
@@ -1868,5 +1972,75 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Avatar management has been moved to Account.vue */
+/* Custom styles for better UX */
+.card-header {
+  transition: all 0.3s ease;
+}
+
+.card-header:hover {
+  background-color: rgba(54, 153, 255, 0.05);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #3699FF;
+  box-shadow: 0 0 0 0.2rem rgba(54, 153, 255, 0.25);
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.alert {
+  border-left: 4px solid #3699FF;
+}
+
+.badge {
+  font-weight: 500;
+}
+
+/* Form validation styling */
+.is-invalid {
+  border-color: #F64E60 !important;
+}
+
+.invalid-feedback {
+  display: block;
+  color: #F64E60;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-text {
+  color: #6C757D;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Switch styling */
+.form-switch .form-check-input {
+  width: 3rem;
+  height: 1.5rem;
+  margin-top: 0.125rem;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: #3699FF;
+  border-color: #3699FF;
+}
+
+/* Skill cards styling */
+.bg-light {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e9ecef !important;
+}
+
+.bg-light:hover {
+  background-color: #e9ecef !important;
+  border-color: #dee2e6 !important;
+}
 </style>

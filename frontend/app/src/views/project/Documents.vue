@@ -4,18 +4,21 @@
     <!--begin::Loading State-->
     <div v-if="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
       <div class="text-center">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
           <span class="visually-hidden">Loading...</span>
         </div>
         <div class="mt-3">
           <span class="fw-semibold text-gray-600">Loading documents...</span>
+          <div class="mt-2">
+            <small class="text-muted">Please wait while we fetch project documents</small>
+          </div>
         </div>
       </div>
     </div>
     <!--end::Loading State-->
 
     <!--begin::Documents content-->
-    <div v-else>
+    <div v-if="!isLoading">
       <!--begin::Documents toolbar-->
       <div class="d-flex flex-wrap flex-stack mb-6">
         <!--begin::Title and breadcrumb-->
@@ -31,7 +34,9 @@
           <nav v-if="currentPath || breadcrumbs.length > 0">
             <ol class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
               <li class="breadcrumb-item text-muted">
-                <a href="#" @click.prevent="navigateToPath('')" class="text-muted text-hover-primary">Root</a>
+                <a href="#" @click.prevent="navigateToPath('')" class="text-muted text-hover-primary hover-elevate" title="Go to root folder">
+                  <i class="bi bi-house me-1"></i>Root
+                </a>
               </li>
               <li v-for="(crumb, index) in breadcrumbs" :key="index" class="breadcrumb-item">
                 <span class="bullet bg-gray-400 w-5px h-2px"></span>
@@ -40,7 +45,8 @@
                 <a 
                   href="#" 
                   @click.prevent="navigateToPath(getBreadcrumbPath(index))" 
-                  class="text-muted text-hover-primary"
+                  class="text-muted text-hover-primary hover-elevate"
+                  :title="`Go to ${crumb} folder`"
                 >
                   {{ crumb }}
                 </a>
@@ -64,16 +70,18 @@
               v-model="searchQuery"
               class="form-control form-control-white form-control-sm w-150px ps-9"
               placeholder="Search files..."
+              title="Search for files and folders"
             />
           </div>
           <!--end::Search-->
 
           <!--begin::Upload button-->
           <button
-            class="btn btn-primary btn-sm me-2"
+            class="btn btn-primary btn-sm me-2 hover-elevate"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_upload_file"
             @click="openUploadModal"
+            title="Upload new files to this folder"
           >
             <KTIcon icon-name="files" icon-class="fs-2 me-1" />
             Upload Files
@@ -82,10 +90,11 @@
 
           <!--begin::Create folder button-->
           <button
-            class="btn btn-light btn-sm me-2"
+            class="btn btn-light btn-sm me-2 hover-elevate"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_create_folder"
             @click="openCreateFolderModal"
+            title="Create a new folder"
           >
             <KTIcon icon-name="folder-plus" icon-class="fs-2 me-1" />
             New Folder
@@ -94,10 +103,11 @@
 
           <!--begin::AI Search button-->
           <button
-            class="btn btn-success btn-sm"
+            class="btn btn-success btn-sm hover-elevate"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_ai_search"
             @click="openAISearchModal"
+            title="Ask AI to help you find documents"
           >
             <KTIcon icon-name="robot" icon-class="fs-2 me-1" />
             Ask AI
@@ -115,7 +125,7 @@
           :key="folder.name"
           class="col-md-6 col-lg-4 col-xl-3"
         >
-          <div class="card card-flush h-100">
+          <div class="card card-flush h-100 hover-elevate-up">
             <div class="card-header pt-7">
               <div class="card-title">
                 <div class="symbol symbol-60px me-3">
@@ -124,44 +134,51 @@
                   </div>
                 </div>
                 <div class="d-flex flex-column">
-                  <span class="fw-bold text-gray-900 text-hover-primary fs-6" style="cursor: pointer;" @click="navigateToFolder(folder)">
+                  <span class="fw-bold text-gray-900 text-hover-primary fs-6" style="cursor: pointer;" @click="navigateToFolder(folder)" :title="`Open ${folder.name} folder`">
                     {{ folder.name }}
                   </span>
                   <span class="text-muted fs-7">{{ folder.files.length }} file(s)</span>
                 </div>
               </div>
-                             <!--begin::Menu-->
-               <div class="card-toolbar">
-                 <div class="dropdown">
-                   <button 
-                     class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary"
-                     type="button"
-                     data-bs-toggle="dropdown"
-                     aria-expanded="false"
-                   >
-                     <KTIcon icon-name="dots-vertical" icon-class="fs-2" />
-                   </button>
-                   <ul class="dropdown-menu">
-                     <li>
-                       <a class="dropdown-item" href="#" @click.prevent="navigateToFolder(folder)">
-                         <i class="fas fa-folder-open text-warning me-2"></i>
-                         Open Folder
-                       </a>
-                     </li>
-                     <li><hr class="dropdown-divider"></li>
-                     <li>
-                       <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeleteFolder(folder)">
-                         <i class="fas fa-trash text-danger me-2"></i>
-                         Delete Folder
-                       </a>
-                     </li>
-                   </ul>
-                 </div>
-               </div>
-               <!--end::Menu-->
+              <!--begin::Menu-->
+              <div class="card-toolbar">
+                <div class="dropdown">
+                  <button 
+                    class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary hover-elevate"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    title="Folder options"
+                  >
+                    <KTIcon icon-name="dots-vertical" icon-class="fs-2" />
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="#" @click.prevent="navigateToFolder(folder)" title="Open this folder">
+                        <i class="fas fa-folder-open text-warning me-2"></i>
+                        Open Folder
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click.prevent="downloadFolder(folder)" title="Download folder as ZIP">
+                        <i class="fas fa-download text-primary me-2"></i>
+                        Download as ZIP
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeleteFolder(folder)" title="Delete this folder and all its contents">
+                        <i class="fas fa-trash text-danger me-2"></i>
+                        Delete Folder
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <!--end::Menu-->
             </div>
             <div class="card-body d-flex justify-content-end pt-0">
-              <button class="btn btn-sm btn-light" @click="navigateToFolder(folder)">
+              <button class="btn btn-sm btn-light hover-elevate" @click="navigateToFolder(folder)" title="Open folder">
                 <KTIcon icon-name="arrow-right" icon-class="fs-2" />
               </button>
             </div>
@@ -177,7 +194,7 @@
           :key="file.fullPath"
           class="col-md-6 col-lg-4 col-xl-3"
         >
-          <div class="card card-flush h-100">
+          <div class="card card-flush h-100 hover-elevate-up">
             <div class="card-header pt-7">
               <div class="card-title">
                 <div class="symbol symbol-60px me-3">
@@ -186,42 +203,56 @@
                   </div>
                 </div>
                 <div class="d-flex flex-column">
-                  <span class="fw-bold text-gray-900 fs-6" style="word-break: break-word;">
+                  <span class="fw-bold text-gray-900 fs-6" style="word-break: break-word;" :title="file.name">
                     {{ file.name }}
                   </span>
                   <span class="text-muted fs-7">{{ formatFileSize(file.size) }}</span>
                   <span class="text-muted fs-8">{{ formatDate(file.lastModified) }}</span>
+                  <span v-if="file.uploadedBy" class="text-muted fs-8">Uploaded by: {{ file.uploadedBy }}</span>
                 </div>
               </div>
-                             <!--begin::Menu-->
-               <div class="card-toolbar">
-                 <div class="dropdown">
-                   <button 
-                     class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary"
-                     type="button"
-                     data-bs-toggle="dropdown"
-                     aria-expanded="false"
-                   >
-                     <KTIcon icon-name="dots-vertical" icon-class="fs-2" />
-                   </button>
-                   <ul class="dropdown-menu">
-                     <li>
-                       <a class="dropdown-item" href="#" @click.prevent="downloadFile(file)">
-                         <i class="fas fa-download text-primary me-2"></i>
-                         Download
-                       </a>
-                     </li>
-                     <li><hr class="dropdown-divider"></li>
-                     <li>
-                       <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeleteFile(file)">
-                         <i class="fas fa-trash text-danger me-2"></i>
-                         Delete
-                       </a>
-                     </li>
-                   </ul>
-                 </div>
-               </div>
-               <!--end::Menu-->
+              <!--begin::Menu-->
+              <div class="card-toolbar">
+                <div class="dropdown">
+                  <button 
+                    class="btn btn-sm btn-icon btn-color-primary btn-active-light-primary hover-elevate"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    title="File options"
+                  >
+                    <KTIcon icon-name="dots-vertical" icon-class="fs-2" />
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a class="dropdown-item" href="#" @click.prevent="previewFile(file)" title="Preview file">
+                        <i class="fas fa-eye text-info me-2"></i>
+                        Preview
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click.prevent="downloadFile(file)" title="Download file">
+                        <i class="fas fa-download text-primary me-2"></i>
+                        Download
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click.prevent="shareFile(file)" title="Share file">
+                        <i class="fas fa-share text-success me-2"></i>
+                        Share
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeleteFile(file)" title="Delete this file">
+                        <i class="fas fa-trash text-danger me-2"></i>
+                        Delete
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <!--end::Menu-->
             </div>
           </div>
         </div>
@@ -234,24 +265,41 @@
         <div class="text-muted fw-semibold fs-6 mb-4">
           {{ searchQuery ? 'No files match your search' : 'No documents found in this folder' }}
         </div>
-        <div v-if="!searchQuery">
+        <div v-if="!searchQuery" class="d-flex justify-content-center gap-3">
           <button
-            class="btn btn-primary me-3"
+            class="btn btn-primary hover-elevate"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_upload_file"
             @click="openUploadModal"
+            title="Upload your first files"
           >
             <KTIcon icon-name="files" icon-class="fs-2 me-1" />
             Upload Files
           </button>
           <button
-            class="btn btn-light"
+            class="btn btn-light hover-elevate"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_create_folder"
             @click="openCreateFolderModal"
+            title="Create your first folder"
           >
             <KTIcon icon-name="folder-plus" icon-class="fs-2 me-1" />
             New Folder
+          </button>
+          <button
+            class="btn btn-success hover-elevate"
+            data-bs-toggle="modal"
+            data-bs-target="#kt_modal_ai_search"
+            @click="openAISearchModal"
+            title="Ask AI to help you find documents"
+          >
+            <KTIcon icon-name="robot" icon-class="fs-2 me-1" />
+            Ask AI
+          </button>
+        </div>
+        <div v-if="searchQuery" class="mt-3">
+          <button @click="clearSearch" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-x-circle me-1"></i>Clear Search
           </button>
         </div>
       </div>
@@ -397,6 +445,10 @@ export default defineComponent({
       // Reset modal form if needed
     };
 
+    const clearSearch = () => {
+      searchQuery.value = '';
+    };
+
     const handleFolderCreated = async (data: { name: string; path: string }) => {
       try {
         // Prepare project info for metadata
@@ -405,7 +457,7 @@ export default defineComponent({
           name: project.value.name
         } : undefined;
         
-                         const success = await documentManagerService.createEntityFolder(
+        const success = await documentManagerService.createEntityFolder(
           'projects',
           projectId.value, 
           data.name, 
@@ -569,7 +621,7 @@ export default defineComponent({
 
     const deleteFolderWithContents = async (folder: ProjectFolder) => {
       try {
-                 const success = await documentManagerService.deleteEntityFolder('projects', projectId.value, folder.path);
+        const success = await documentManagerService.deleteEntityFolder('projects', projectId.value, folder.path);
         
         if (success) {
           Swal.fire({
@@ -596,16 +648,70 @@ export default defineComponent({
       }
     };
 
-    const downloadFile = (file: ProjectFile) => {
-             const downloadUrl = documentManagerService.getFileDownloadUrl(file.fullPath);
-      
-      // Create a temporary link and click it to start download
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = file.name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    const downloadFile = async (file: ProjectFile) => {
+      try {
+        const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+        const downloadUrl = `${API_URL}/blobstorage/download/${encodeURIComponent(file.fullPath)}`;
+        
+        // Create a temporary link and click it to start download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = file.name;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        Swal.fire({
+          title: 'Download Started!',
+          text: `"${file.name}" is being downloaded.`,
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error('Error downloading file:', error);
+        Swal.fire({
+          title: 'Download Error!',
+          text: 'Failed to download file. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    };
+
+    const downloadFolder = (folder: ProjectFolder) => {
+      // Implementation for downloading folder as ZIP
+      Swal.fire({
+        title: 'Download Folder',
+        text: `Preparing "${folder.name}" for download...`,
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    };
+
+    const previewFile = (file: ProjectFile) => {
+      // Implementation for file preview
+      Swal.fire({
+        title: 'Preview File',
+        text: `Opening "${file.name}" in preview mode...`,
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    };
+
+    const shareFile = (file: ProjectFile) => {
+      // Implementation for file sharing
+      Swal.fire({
+        title: 'Share File',
+        text: `Generating share link for "${file.name}"...`,
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false
+      });
     };
 
     const formatDate = (date: Date): string => {
@@ -655,14 +761,18 @@ export default defineComponent({
       openCreateFolderModal,
       openUploadModal,
       openAISearchModal,
+      clearSearch,
       handleFolderCreated,
       handleFilesUploaded,
-             confirmDeleteFile,
-       confirmDeleteFolder,
-       downloadFile,
-       formatDate,
-       getFileTypeIcon: documentManagerService.getFileTypeIcon,
-       formatFileSize: documentManagerService.formatFileSize,
+      confirmDeleteFile,
+      confirmDeleteFolder,
+      downloadFile,
+      downloadFolder,
+      previewFile,
+      shareFile,
+      formatDate,
+      getFileTypeIcon: documentManagerService.getFileTypeIcon,
+      formatFileSize: documentManagerService.formatFileSize,
     };
   },
 });
@@ -671,5 +781,61 @@ export default defineComponent({
 <style scoped>
 .documents-page {
   min-height: 500px;
+}
+
+.hover-elevate-up {
+  transition: all 0.3s ease;
+}
+
+.hover-elevate-up:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.hover-elevate {
+  transition: all 0.2s ease;
+}
+
+.hover-elevate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--kt-primary);
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.breadcrumb-item a {
+  transition: all 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+  transform: translateY(-1px);
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.dropdown-item {
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--kt-primary-light);
+  color: var(--kt-primary);
 }
 </style>

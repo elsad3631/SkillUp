@@ -7,6 +7,9 @@
       </div>
       <div class="mt-3">
         <span class="fw-semobold text-gray-600">Loading project data...</span>
+        <div class="mt-2">
+          <small class="text-muted">Please wait while we fetch the latest information</small>
+        </div>
       </div>
     </div>
   </div>
@@ -19,12 +22,21 @@
         <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
       </div>
       <div class="mb-3">
-        <h4 class="text-danger">Error Loading Project</h4>
-        <p class="text-gray-600">{{ error }}</p>
+        <h4 class="text-danger">Unable to Load Project</h4>
+        <p class="text-gray-600 mb-3">{{ error }}</p>
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle me-2"></i>
+          <small>This might be due to network issues or the project may have been moved/deleted.</small>
+        </div>
       </div>
-      <button @click="handleRefreshClick" class="btn btn-primary">
-        <i class="bi bi-arrow-clockwise me-2"></i>Try Again
-      </button>
+      <div class="d-flex gap-2 justify-content-center">
+        <button @click="handleRefreshClick" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+        </button>
+        <button @click="goBack" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-2"></i>Go Back
+        </button>
+      </div>
     </div>
   </div>
   <!--end::Error State-->
@@ -41,12 +53,13 @@
             <div
               class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative"
             >
-              <div class="symbol-label fs-2 fw-semobold text-success">
+              <div class="symbol-label fs-2 fw-semobold text-success d-flex align-items-center justify-content-center">
                 {{ project?.name?.charAt(0)?.toUpperCase() || 'P' }}
               </div>
               <div
                 :class="getStatusIndicatorClass(project?.status)"
                 class="position-absolute translate-middle bottom-0 start-100 mb-6 rounded-circle border border-4 border-white h-20px w-20px"
+                :title="`Project Status: ${project?.status || 'Unknown'}`"
               ></div>
             </div>
           </div>
@@ -68,25 +81,41 @@
                   <span :class="getStatusBadgeClass(project?.status)" class="badge fs-8 fw-bold ms-2">
                     {{ project?.status || 'Unknown' }}
                   </span>
+                  <span v-if="project?.isActive" class="badge badge-light-success fs-8 fw-bold ms-2">
+                    <i class="bi bi-check-circle me-1"></i>Active
+                  </span>
                 </div>
                 <!--end::Name-->
 
                 <!--begin::Info-->
                 <div class="d-flex flex-wrap fw-semobold fs-6 mb-4 pe-2">
-                  <span v-if="project?.priority" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="project?.priority" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Priority Level: ${project?.priority}`">
                     <KTIcon icon-name="tag" icon-class="fs-4 me-1" />
                     Priority: {{ project?.priority }}
                   </span>
-                  <span v-if="project?.budget" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="project?.budget" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Project Budget: $${project?.budget?.toLocaleString()}`">
                     <KTIcon icon-name="dollar" icon-class="fs-4 me-1" />
                     Budget: ${{ project?.budget?.toLocaleString() }}
                   </span>
-                  <span v-if="project?.managerId" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
+                  <span v-if="project?.managerId" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2" :title="`Project Manager ID: ${project?.managerId}`">
                     <KTIcon icon-name="profile-circle" icon-class="fs-4 me-1" />
                     Manager ID: {{ project?.managerId }}
                   </span>
                 </div>
                 <!--end::Info-->
+
+                <!--begin::Project Dates-->
+                <div v-if="project?.startDate || project?.endDate" class="d-flex flex-wrap fw-semobold fs-6 mb-4 pe-2">
+                  <span v-if="project?.startDate" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Project Start Date: ${formatDate(project?.startDate)}`">
+                    <KTIcon icon-name="calendar" icon-class="fs-4 me-1" />
+                    Start: {{ formatDate(project?.startDate) }}
+                  </span>
+                  <span v-if="project?.endDate" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2" :title="`Project End Date: ${formatDate(project?.endDate)}`">
+                    <KTIcon icon-name="calendar" icon-class="fs-4 me-1" />
+                    End: {{ formatDate(project?.endDate) }}
+                  </span>
+                </div>
+                <!--end::Project Dates-->
               </div>
               <!--end::Project-->
 
@@ -95,7 +124,9 @@
                 <router-link
                   :to="`/projects/${route.params.id}/settings`"
                   class="btn btn-sm btn-primary me-3"
+                  title="Edit project details and settings"
                 >
+                  <i class="bi bi-pencil me-1"></i>
                   Edit Project
                 </router-link>
 
@@ -106,6 +137,7 @@
                     data-kt-menu-trigger="click"
                     data-kt-menu-placement="bottom-end"
                     data-kt-menu-flip="top-end"
+                    title="More options"
                   >
                     <i class="bi bi-three-dots fs-3"></i>
                   </button>
@@ -125,7 +157,8 @@
                 <div class="d-flex flex-wrap">
                   <!--begin::Stat-->
                   <div
-                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3"
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Project Duration: ${getProjectDuration()} days`"
                   >
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
@@ -145,7 +178,8 @@
 
                   <!--begin::Stat-->
                   <div
-                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3"
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Team Members: ${project?.assignments?.length || 0} assigned`"
                   >
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
@@ -167,7 +201,8 @@
 
                   <!--begin::Stat-->
                   <div
-                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3"
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Required Skills: ${(project?.requiredHardSkills?.length || 0) + (project?.requiredSoftSkills?.length || 0)} total`"
                   >
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
@@ -183,6 +218,29 @@
 
                     <!--begin::Label-->
                     <div class="fw-semobold fs-6 text-gray-400">Required Skills</div>
+                    <!--end::Label-->
+                  </div>
+                  <!--end::Stat-->
+
+                  <!--begin::Stat-->
+                  <div
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Project Progress: ${getProjectProgress()}%`"
+                  >
+                    <!--begin::Number-->
+                    <div class="d-flex align-items-center">
+                      <KTIcon
+                        icon-name="chart-simple"
+                        icon-class="fs-3 text-success me-2"
+                      />
+                      <div class="fs-2 fw-bold">
+                        {{ getProjectProgress() }}%
+                      </div>
+                    </div>
+                    <!--end::Number-->
+
+                    <!--begin::Label-->
+                    <div class="fw-semobold fs-6 text-gray-400">Progress</div>
                     <!--end::Label-->
                   </div>
                   <!--end::Stat-->
@@ -208,7 +266,9 @@
                 :to="`/projects/${route.params.id}/overview`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="View project overview and summary"
               >
+                <i class="bi bi-eye me-1"></i>
                 Overview
               </router-link>
             </li>
@@ -219,7 +279,9 @@
                 :to="`/projects/${route.params.id}/employee`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="Manage project team members"
               >
+                <i class="bi bi-people me-1"></i>
                 Employee
               </router-link>
             </li>
@@ -230,7 +292,9 @@
                 :to="`/projects/${route.params.id}/documents`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="View and manage project documents"
               >
+                <i class="bi bi-file-earmark-text me-1"></i>
                 Documents
               </router-link>
             </li>
@@ -241,7 +305,9 @@
                 :to="`/projects/${route.params.id}/settings`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="Configure project settings"
               >
+                <i class="bi bi-gear me-1"></i>
                 Settings
               </router-link>
             </li>
@@ -258,7 +324,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, provide, watch, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
@@ -269,6 +335,7 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const project = ref<any>(null);
     const loading = ref(true);
     const error = ref<string | null>(null);
@@ -327,6 +394,10 @@ export default defineComponent({
       }
     };
 
+    const goBack = () => {
+      router.go(-1);
+    };
+
     const getStatusIndicatorClass = (status: string) => {
       switch (status?.toLowerCase()) {
         case 'active': return 'bg-success';
@@ -356,16 +427,71 @@ export default defineComponent({
       return diffDays.toString();
     };
 
+    const getProjectProgress = () => {
+      // Simple progress calculation based on current date vs project dates
+      if (!project.value?.startDate || !project.value?.endDate) return 0;
+      
+      const start = new Date(project.value.startDate);
+      const end = new Date(project.value.endDate);
+      const now = new Date();
+      
+      if (now < start) return 0;
+      if (now > end) return 100;
+      
+      const totalDuration = end.getTime() - start.getTime();
+      const elapsed = now.getTime() - start.getTime();
+      return Math.round((elapsed / totalDuration) * 100);
+    };
+
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'N/A';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    };
+
     return {
       route,
       project,
       loading,
       error,
       handleRefreshClick,
+      goBack,
       getStatusIndicatorClass,
       getStatusBadgeClass,
       getProjectDuration,
+      getProjectProgress,
+      formatDate,
     };
   },
 });
 </script>
+
+<style scoped>
+.hover-elevate-up {
+  transition: all 0.3s ease;
+}
+
+.hover-elevate-up:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.nav-link {
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  transform: translateY(-1px);
+}
+
+.badge {
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+</style>

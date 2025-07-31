@@ -7,6 +7,9 @@
       </div>
       <div class="mt-3">
         <span class="fw-semobold text-gray-600">Loading employee data...</span>
+        <div class="mt-2">
+          <small class="text-muted">Please wait while we fetch the latest information</small>
+        </div>
       </div>
     </div>
   </div>
@@ -19,12 +22,21 @@
         <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
       </div>
       <div class="mb-3">
-        <h4 class="text-danger">Error Loading Employee</h4>
-        <p class="text-gray-600">{{ error }}</p>
+        <h4 class="text-danger">Unable to Load Employee</h4>
+        <p class="text-gray-600 mb-3">{{ error }}</p>
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle me-2"></i>
+          <small>This might be due to network issues or the employee may have been moved/deleted.</small>
+        </div>
       </div>
-      <button @click="handleRefreshClick" class="btn btn-primary">
-        <i class="bi bi-arrow-clockwise me-2"></i>Try Again
-      </button>
+      <div class="d-flex gap-2 justify-content-center">
+        <button @click="handleRefreshClick" class="btn btn-primary">
+          <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+        </button>
+        <button @click="goBack" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-2"></i>Go Back
+        </button>
+      </div>
     </div>
   </div>
   <!--end::Error State-->
@@ -55,16 +67,18 @@
                 @load="handleImageLoad"
                 :class="{ 'opacity-50': imageLoading }"
                 style="object-fit: cover;"
+                class="hover-zoom"
               />
               <div
                 class="position-absolute translate-middle bottom-0 start-100 mb-6 bg-success rounded-circle border border-4 border-white h-20px w-20px"
+                :title="`Employee Status: ${employee?.status || 'Active'}`"
               ></div>
               
               <!--begin::Avatar controls-->
               <div class="position-absolute bottom-0 end-0">
                 <!--begin::Change avatar button-->
                 <label
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow hover-elevate"
                   data-bs-toggle="tooltip"
                   title="Change avatar"
                   :class="{ 'disabled': avatarComposable.isProcessing.value }"
@@ -87,7 +101,7 @@
                 <!--begin::Remove avatar button-->
                 <span
                   v-if="employee?.avatar && currentAvatarUrl !== getAssetPath('media/avatars/blank.png')"
-                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow ms-1"
+                  class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow ms-1 hover-elevate"
                   data-bs-toggle="tooltip"
                   @click="handleAvatarRemove"
                   title="Remove avatar"
@@ -118,15 +132,16 @@
                   <span class="text-gray-800 fs-2 fw-bold me-1">
                     {{ employee?.name || employee?.firstName || '' }} {{ employee?.surname || employee?.lastName || '' }}
                   </span>
-                  <a href="#">
+                  <a href="#" title="Verified Employee">
                     <KTIcon icon-name="verify" icon-class="fs-1 text-primary" />
                   </a>
 
                   <a
                     href="#"
-                    class="btn btn-sm btn-light-success fw-bold ms-2 fs-8 py-1 px-3"
+                    class="btn btn-sm btn-light-success fw-bold ms-2 fs-8 py-1 px-3 hover-elevate"
                     data-bs-toggle="modal"
                     data-bs-target="#kt_modal_upgrade_plan"
+                    title="Upgrade to premium features"
                     >Upgrade to Pro</a
                   >
                 </div>
@@ -134,20 +149,37 @@
 
                 <!--begin::Info-->
                 <div class="d-flex flex-wrap fw-semobold fs-6 mb-4 pe-2">
-                  <span v-if="employee?.currentRole || employee?.role" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="employee?.currentRole || employee?.role" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Current Role: ${employee?.currentRole || employee?.role}`">
                     <KTIcon icon-name="profile-circle" icon-class="fs-4 me-1" />
                     {{ employee?.currentRole || employee?.role }}
                   </span>
-                  <span v-if="employee?.location || employee?.placeOfBirth" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2">
+                  <span v-if="employee?.location || employee?.placeOfBirth" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Location: ${employee?.location || employee?.placeOfBirth}`">
                     <KTIcon icon-name="geolocation" icon-class="fs-4 me-1" />
                     {{ employee?.location || employee?.placeOfBirth }}
                   </span>
-                  <span v-if="employee?.email" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2">
+                  <span v-if="employee?.email" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2" :title="`Email: ${employee?.email}`">
                     <KTIcon icon-name="sms" icon-class="fs-4 me-1" />
                     {{ employee?.email }}
                   </span>
                 </div>
                 <!--end::Info-->
+
+                <!--begin::Additional Info-->
+                <div v-if="employee?.phone || employee?.department || employee?.hireDate" class="d-flex flex-wrap fw-semobold fs-6 mb-4 pe-2">
+                  <span v-if="employee?.phone" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Phone: ${employee?.phone}`">
+                    <KTIcon icon-name="phone" icon-class="fs-4 me-1" />
+                    {{ employee?.phone }}
+                  </span>
+                  <span v-if="employee?.department" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2" :title="`Department: ${employee?.department}`">
+                    <KTIcon icon-name="building" icon-class="fs-4 me-1" />
+                    {{ employee?.department }}
+                  </span>
+                  <span v-if="employee?.hireDate" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2" :title="`Hire Date: ${formatDate(employee?.hireDate)}`">
+                    <KTIcon icon-name="calendar" icon-class="fs-4 me-1" />
+                    Hired: {{ formatDate(employee?.hireDate) }}
+                  </span>
+                </div>
+                <!--end::Additional Info-->
               </div>
               <!--end::User-->
 
@@ -155,8 +187,9 @@
               <div class="d-flex my-4">
                 <a
                   href="#"
-                  class="btn btn-sm btn-light me-2"
+                  class="btn btn-sm btn-light me-2 hover-elevate"
                   id="kt_user_follow_button"
+                  title="Follow this employee"
                 >
                   <KTIcon icon-name="check" icon-class="fs-3 d-none" />
                   Follow
@@ -164,19 +197,21 @@
 
                 <a
                   href="#"
-                  class="btn btn-sm btn-primary me-3"
+                  class="btn btn-sm btn-primary me-3 hover-elevate"
                   data-bs-toggle="modal"
                   data-bs-target="#kt_modal_offer_a_deal"
+                  title="Hire this employee for a project"
                   >Hire Me</a
                 >
 
                 <!--begin::Menu-->
                 <div class="me-0">
                   <button
-                    class="btn btn-sm btn-icon btn-bg-light btn-active-color-primary"
+                    class="btn btn-sm btn-icon btn-bg-light btn-active-color-primary hover-elevate"
                     data-kt-menu-trigger="click"
                     data-kt-menu-placement="bottom-end"
                     data-kt-menu-flip="top-end"
+                    title="More options"
                   >
                     <i class="bi bi-three-dots fs-3"></i>
                   </button>
@@ -196,7 +231,8 @@
                 <div class="d-flex flex-wrap">
                   <!--begin::Stat-->
                   <div
-                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3"
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Total Earnings: $${getEmployeeEarnings()}`"
                   >
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
@@ -204,7 +240,7 @@
                         icon-name="arrow-up"
                         icon-class="fs-3 text-success me-2"
                       />
-                      <div class="fs-2 fw-bold">4500$</div>
+                      <div class="fs-2 fw-bold">{{ getEmployeeEarnings() }}</div>
                     </div>
                     <!--end::Number-->
 
@@ -216,7 +252,8 @@
 
                   <!--begin::Stat-->
                   <div
-                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3"
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Total Projects: ${getEmployeeProjects()}`"
                   >
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
@@ -229,7 +266,7 @@
                         data-kt-countup="true"
                         data-kt-countup-value="75"
                       >
-                        75
+                        {{ getEmployeeProjects() }}
                       </div>
                     </div>
                     <!--end::Number-->
@@ -242,7 +279,8 @@
 
                   <!--begin::Stat-->
                   <div
-                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3"
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Success Rate: ${getEmployeeSuccessRate()}%`"
                   >
                     <!--begin::Number-->
                     <div class="d-flex align-items-center">
@@ -256,13 +294,36 @@
                         data-kt-countup-value="60"
                         data-kt-countup-prefix="%"
                       >
-                        %60
+                        %{{ getEmployeeSuccessRate() }}
                       </div>
                     </div>
                     <!--end::Number-->
 
                     <!--begin::Label-->
                     <div class="fw-semobold fs-6 text-gray-400">Success Rate</div>
+                    <!--end::Label-->
+                  </div>
+                  <!--end::Stat-->
+
+                  <!--begin::Stat-->
+                  <div
+                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3 hover-elevate-up"
+                    :title="`Experience: ${getEmployeeExperience()} years`"
+                  >
+                    <!--begin::Number-->
+                    <div class="d-flex align-items-center">
+                      <KTIcon
+                        icon-name="star"
+                        icon-class="fs-3 text-warning me-2"
+                      />
+                      <div class="fs-2 fw-bold">
+                        {{ getEmployeeExperience() }}
+                      </div>
+                    </div>
+                    <!--end::Number-->
+
+                    <!--begin::Label-->
+                    <div class="fw-semobold fs-6 text-gray-400">Experience (yrs)</div>
                     <!--end::Label-->
                   </div>
                   <!--end::Stat-->
@@ -288,7 +349,9 @@
                 :to="overviewUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="View employee overview and summary"
               >
+                <i class="bi bi-eye me-1"></i>
                 Overview
               </router-link>
             </li>
@@ -299,7 +362,9 @@
                 :to="projectsUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="View employee projects and assignments"
               >
+                <i class="bi bi-briefcase me-1"></i>
                 Projects
               </router-link>
             </li>
@@ -310,7 +375,9 @@
                 :to="documentsUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="View and manage employee documents"
               >
+                <i class="bi bi-file-earmark-text me-1"></i>
                 Documents
               </router-link>
             </li>
@@ -321,7 +388,9 @@
                 :to="settingsUrl"
                 class="nav-link text-active-primary me-6"
                 active-class="active"
+                title="Configure employee settings"
               >
+                <i class="bi bi-gear me-1"></i>
                 Settings
               </router-link>
             </li>
@@ -339,7 +408,7 @@
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
 import { defineComponent, ref, onMounted, onUnmounted, provide, watch, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
 import { useAvatar } from "@/core/composables/useAvatar";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
@@ -354,6 +423,7 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const employee = ref<any>(null);
     const loading = ref(true);
     const error = ref<string | null>(null);
@@ -531,6 +601,29 @@ export default defineComponent({
 
       const file = input.files[0];
       
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          title: 'File Too Large',
+          text: 'Please select an image smaller than 5MB',
+          icon: 'warning'
+        });
+        input.value = '';
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        Swal.fire({
+          title: 'Invalid File Type',
+          text: 'Please select a valid image file (JPG, PNG, or WebP)',
+          icon: 'warning'
+        });
+        input.value = '';
+        return;
+      }
+      
       try {
         // Clear cache for old avatar URL if exists
         if (employee.value?.avatar) {
@@ -563,7 +656,7 @@ export default defineComponent({
         // Show error message
         Swal.fire({
           title: 'Error!',
-          text: 'Failed to update avatar',
+          text: 'Failed to update avatar. Please try again.',
           icon: 'error'
         });
       }
@@ -575,6 +668,18 @@ export default defineComponent({
     // Avatar removal handler (immediate delete)
     const handleAvatarRemove = async () => {
       if (!employee.value?.id) return;
+      
+      // Confirm deletion
+      const result = await Swal.fire({
+        title: 'Remove Avatar?',
+        text: 'Are you sure you want to remove the current avatar?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (!result.isConfirmed) return;
       
       try {
         // Clear cache for current avatar URL if exists
@@ -614,7 +719,7 @@ export default defineComponent({
         // Show error message
         Swal.fire({
           title: 'Error!',
-          text: 'Failed to remove avatar',
+          text: 'Failed to remove avatar. Please try again.',
           icon: 'error'
         });
       }
@@ -626,6 +731,45 @@ export default defineComponent({
       } else if (!isEmployeeView.value) {
         refreshEmployeeData();
       }
+    };
+
+    const goBack = () => {
+      router.go(-1);
+    };
+
+    // Helper functions for employee stats
+    const getEmployeeEarnings = () => {
+      // Mock earnings calculation - replace with actual logic
+      return employee.value?.earnings || '4500';
+    };
+
+    const getEmployeeProjects = () => {
+      // Mock projects count - replace with actual logic
+      return employee.value?.projectCount || '75';
+    };
+
+    const getEmployeeSuccessRate = () => {
+      // Mock success rate - replace with actual logic
+      return employee.value?.successRate || '60';
+    };
+
+    const getEmployeeExperience = () => {
+      if (!employee.value?.hireDate) return '0';
+      
+      const hireDate = new Date(employee.value.hireDate);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - hireDate.getTime());
+      const diffYears = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 365));
+      return diffYears.toString();
+    };
+
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'N/A';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
     };
 
     // Navigation URLs based on mode
@@ -665,6 +809,7 @@ export default defineComponent({
       getAvatarUrl,
       refreshEmployeeData,
       handleRefreshClick,
+      goBack,
       error,
       dataUpdateTrigger,
       avatarComposable,
@@ -676,7 +821,72 @@ export default defineComponent({
       projectsUrl,
       documentsUrl,
       settingsUrl,
+      getEmployeeEarnings,
+      getEmployeeProjects,
+      getEmployeeSuccessRate,
+      getEmployeeExperience,
+      formatDate,
     };
   },
 });
 </script>
+
+<style scoped>
+.hover-elevate-up {
+  transition: all 0.3s ease;
+}
+
+.hover-elevate-up:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.hover-elevate {
+  transition: all 0.2s ease;
+}
+
+.hover-elevate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hover-zoom {
+  transition: all 0.3s ease;
+}
+
+.hover-zoom:hover {
+  transform: scale(1.05);
+}
+
+.nav-link {
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  transform: translateY(-1px);
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.badge {
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+.symbol {
+  transition: all 0.3s ease;
+}
+
+.symbol:hover {
+  transform: scale(1.02);
+}
+</style>

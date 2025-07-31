@@ -440,9 +440,8 @@ class DocumentManagerService {
    * Get file download URL
    */
   getFileDownloadUrl(filePath: string): string {
-    // For now, return the direct storage URL
-    // In the future, this could use the database generateDownloadUrl method
-    return `https://your-storage-account.blob.core.windows.net/container/${filePath}`;
+    const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:3000';
+    return `${API_URL}/blobstorage/download/${encodeURIComponent(filePath)}`;
   }
   
   /**

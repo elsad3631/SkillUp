@@ -10,6 +10,7 @@ import {
   getDocuments, 
   getDocumentById, 
   getDocumentsByUploader, 
+  getDocumentsByUser,
   getDocumentsByProject, 
   getDocumentsByType, 
   getRecentDocuments, 
@@ -272,7 +273,7 @@ class DocumentManagerService {
   /**
    * Delete file from storage and database
    */
-  async deleteEntityFile(entityType: string, entityId: string, filePath: string): Promise<boolean> {
+  async deleteEntityFile(entityType: string, entityId: string, filePath: string, documentId?: string): Promise<boolean> {
     try {
       // Delete from storage
       const storageResult = await deleteFile(filePath);
@@ -281,14 +282,53 @@ class DocumentManagerService {
         return false;
       }
       
-      // Find and delete from database
-      const fileName = filePath.split('/').pop();
-      if (fileName) {
-        const documents = await getDocumentsByUploader(entityId);
-        const document = documents?.find(doc => doc.fileName === fileName);
+      // Delete from database using document ID if provided
+      if (documentId) {
+        try {
+          await deleteDocument(documentId);
+          console.log(`Deleted document from database: ${documentId}`);
+        } catch (error) {
+          console.error('Error deleting document from database:', error);
+          // Continue even if database deletion fails
+        }
+      } else {
+        // Fallback: Find and delete from database (legacy method)
+        console.warn('No document ID provided, using fallback method to find document');
+        let documents;
+        if (entityType === 'employees') {
+          documents = await getDocumentsByUser(entityId);
+          if (!documents || documents.length === 0) {
+            documents = await getDocumentsByUploader(entityId);
+          }
+        } else if (entityType === 'projects') {
+          documents = await getDocumentsByProject(entityId);
+        } else {
+          documents = await getDocumentsByUploader(entityId);
+        }
         
-        if (document) {
-          await deleteDocument(document.id);
+        if (documents && documents.length > 0) {
+          const document = documents.find(doc => {
+            if (doc.fileUrl === filePath) {
+              return true;
+            }
+            const fileName = filePath.split('/').pop();
+            if (fileName && doc.fileName === fileName) {
+              if (entityType === 'employees' && doc.userId === entityId) {
+                return true;
+              }
+              if (entityType === 'projects' && doc.projectId === entityId) {
+                return true;
+              }
+            }
+            return false;
+          });
+          
+          if (document) {
+            await deleteDocument(document.id);
+            console.log(`Deleted document from database: ${document.id}`);
+          } else {
+            console.warn(`No database record found for file: ${filePath}`);
+          }
         }
       }
       
@@ -313,7 +353,7 @@ class DocumentManagerService {
       }
       
       // Delete all files
-      const deletePromises = result!.files.map(file => deleteFile(file.name));
+      const deletePromises = result.files.map(file => deleteFile(file.name));
       const results = await Promise.all(deletePromises);
       
       // Delete database records for files in this folder
@@ -349,7 +389,7 @@ class DocumentManagerService {
   async fileExists(filePath: string): Promise<boolean> {
     try {
       const result = await listFiles(filePath);
-      return result !== null && result.files.length > 0;
+      return result !== null && result !== undefined && result.files && result.files.length > 0;
     } catch (error) {
       return false;
     }

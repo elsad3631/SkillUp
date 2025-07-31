@@ -136,7 +136,7 @@ export async function certificationGetExpiring(request: HttpRequest, context: In
     }
 
     const days = parseInt(request.url.split('?days=')[1] || '30');
-    const certifications = await certificationService.getExpiringCertifications(days);
+    const certifications = await certificationService.getExpiringSoon(days);
 
     return {
       status: 200,
@@ -280,9 +280,9 @@ export async function certificationRenew(request: HttpRequest, context: Invocati
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const newExpiryDate = body.expiryDate;
-    const certification = await certificationService.renewCertification(id, newExpiryDate);
+    const certification = await certificationService.renew(id, newExpiryDate);
 
     return {
       status: 200,
@@ -311,10 +311,13 @@ export async function certificationVerify(request: HttpRequest, context: Invocat
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const verificationDate = body.verificationDate;
     const verifiedBy = body.verifiedBy;
-    const certification = await certificationService.verifyCertification(id, verificationDate, verifiedBy);
+    const certification = await certificationService.update(id, { 
+      verificationDate, 
+      verifiedBy 
+    });
 
     return {
       status: 200,

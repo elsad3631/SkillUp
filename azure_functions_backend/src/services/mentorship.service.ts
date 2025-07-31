@@ -261,12 +261,147 @@ export const mentorshipService = {
     });
   },
 
-  async completeMentorship(id: string) {
+  async completeMentorship(id: string, completionNotes?: string) {
     return prisma.mentorship.update({
       where: { id },
       data: {
         status: 'COMPLETED',
-        endDate: new Date()
+        endDate: new Date(),
+        notes: completionNotes // Use existing notes field
+      },
+      include: {
+        mentor: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        mentee: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        }
+      }
+    });
+  },
+
+  async getCompletedMentorships() {
+    return prisma.mentorship.findMany({
+      where: { status: 'COMPLETED' },
+      include: {
+        mentor: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        mentee: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        }
+      },
+      orderBy: {
+        endDate: 'desc'
+      }
+    });
+  },
+
+  async startMentorship(id: string) {
+    return prisma.mentorship.update({
+      where: { id },
+      data: {
+        status: 'ACTIVE',
+        startDate: new Date()
+      },
+      include: {
+        mentor: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        mentee: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        }
+      }
+    });
+  },
+
+  async pauseMentorship(id: string, pauseReason?: string) {
+    return prisma.mentorship.update({
+      where: { id },
+      data: {
+        status: 'CANCELLED', // Use CANCELLED since PAUSED doesn't exist
+        notes: pauseReason // Use existing notes field
+      },
+      include: {
+        mentor: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        mentee: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        }
+      }
+    });
+  },
+
+  async resumeMentorship(id: string) {
+    return prisma.mentorship.update({
+      where: { id },
+      data: {
+        status: 'ACTIVE'
       },
       include: {
         mentor: {

@@ -308,7 +308,7 @@ export async function trainingEnrollmentUpdateProgress(request: HttpRequest, con
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const progress = body.progress || 0;
     const enrollment = await trainingEnrollmentService.updateProgress(id, progress);
 
@@ -339,7 +339,7 @@ export async function trainingEnrollmentComplete(request: HttpRequest, context: 
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const score = body.score;
     const certificateUrl = body.certificateUrl;
     const enrollment = await trainingEnrollmentService.completeEnrollment(id, score, certificateUrl);

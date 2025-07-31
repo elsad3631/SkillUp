@@ -74,6 +74,16 @@ const getDocumentsByUploader = (uploaderId: string): Promise<Array<Document> | u
     });
 };
 
+const getDocumentsByUser = (userId: string): Promise<Array<Document> | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get(`document/user/${userId}`)
+    .then(({ data }) => data as Document[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 const getDocumentsByProject = (projectId: string): Promise<Array<Document> | undefined> => {
   ApiService.setHeader();
   return ApiService.get(`document/project/${projectId}`)
@@ -218,6 +228,7 @@ export {
   getDocuments,
   getDocumentById,
   getDocumentsByUploader,
+  getDocumentsByUser,
   getDocumentsByProject,
   getDocumentsByType,
   getRecentDocuments,

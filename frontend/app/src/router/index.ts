@@ -147,6 +147,14 @@ const routes: Array<RouteRecordRaw> = [
               pageTitle: "Projects",
             },
           },
+          {
+            path: "documents",
+            name: "account-documents",
+            component: () => import("@/views/employee/Documents.vue"),
+            meta: {
+              pageTitle: "Documents",
+            },
+          },
         ],
       },
       {

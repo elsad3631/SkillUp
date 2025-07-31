@@ -123,6 +123,35 @@ export async function documentGetByProject(request: HttpRequest, context: Invoca
   }
 }
 
+// GET /api/document/user/{userId} - Get documents by user
+export async function documentGetByUser(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  context.log('HTTP trigger function processed a request.');
+
+  try {
+    if (request.method !== 'GET') {
+      return {
+        status: 405,
+        jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    const userId = (context.triggerMetadata?.userId as string) || request.url.split('/').pop() || '';
+    const documents = await documentService.getByUserId(userId);
+
+    return {
+      status: 200,
+      jsonBody: documents
+    };
+
+  } catch (error: any) {
+    context.log('Get documents by user error:', error);
+    return {
+      status: 500,
+      jsonBody: { error: error.message || 'Failed to retrieve documents' }
+    };
+  }
+}
+
 // GET /api/document/type/{type} - Get documents by type
 export async function documentGetByType(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
@@ -528,6 +557,13 @@ app.http('document-get-by-project', {
   authLevel: 'anonymous',
   handler: documentGetByProject,
   route: 'document/project/{projectId}'
+});
+
+app.http('document-get-by-user', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  handler: documentGetByUser,
+  route: 'document/user/{userId}'
 });
 
 app.http('document-get-by-type', {

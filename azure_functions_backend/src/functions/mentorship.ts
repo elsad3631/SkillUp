@@ -337,7 +337,7 @@ export async function mentorshipComplete(request: HttpRequest, context: Invocati
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const completionNotes = body.completionNotes;
     const mentorship = await mentorshipService.completeMentorship(id, completionNotes);
 
@@ -368,7 +368,7 @@ export async function mentorshipPause(request: HttpRequest, context: InvocationC
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const pauseReason = body.pauseReason;
     const mentorship = await mentorshipService.pauseMentorship(id, pauseReason);
 

@@ -223,7 +223,8 @@ export async function userSettingUpdateTheme(request: HttpRequest, context: Invo
     }
 
     const userId = (context.triggerMetadata?.userId as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
+    const body = await request.json() as any;
     const theme = body.theme;
     const userSettings = await userSettingService.updateTheme(userId, theme);
 
@@ -254,7 +255,7 @@ export async function userSettingUpdateLanguage(request: HttpRequest, context: I
     }
 
     const userId = (context.triggerMetadata?.userId as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const language = body.language;
     const userSettings = await userSettingService.updateLanguage(userId, language);
 
@@ -285,7 +286,7 @@ export async function userSettingUpdateTimezone(request: HttpRequest, context: I
     }
 
     const userId = (context.triggerMetadata?.userId as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const timezone = body.timezone;
     const userSettings = await userSettingService.updateTimezone(userId, timezone);
 
@@ -316,7 +317,7 @@ export async function userSettingUpdateNotifications(request: HttpRequest, conte
     }
 
     const userId = (context.triggerMetadata?.userId as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const preferences = body.preferences;
     const userSettings = await userSettingService.updateNotificationPreferences(userId, preferences);
 
@@ -347,7 +348,7 @@ export async function userSettingUpdateDashboard(request: HttpRequest, context: 
     }
 
     const userId = (context.triggerMetadata?.userId as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const layout = body.layout;
     const userSettings = await userSettingService.updateDashboardLayout(userId, layout);
 

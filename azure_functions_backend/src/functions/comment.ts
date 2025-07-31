@@ -282,7 +282,7 @@ export async function commentLike(request: HttpRequest, context: InvocationConte
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const userId = body.userId;
     const comment = await commentService.likeComment(id, userId);
 
@@ -313,7 +313,7 @@ export async function commentUnlike(request: HttpRequest, context: InvocationCon
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const userId = body.userId;
     const comment = await commentService.unlikeComment(id, userId);
 
@@ -344,7 +344,7 @@ export async function commentReply(request: HttpRequest, context: InvocationCont
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const reply = await commentService.replyToComment(id, body);
 
     return {

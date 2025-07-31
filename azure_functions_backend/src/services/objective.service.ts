@@ -75,6 +75,163 @@ export const objectiveService = {
     });
   },
 
+  async getByAssignedTo(userId: string) {
+    return this.getByAssignedUser(userId);
+  },
+
+  async getByPriority(priority: string) {
+    return prisma.objective.findMany({
+      where: { priority },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        }
+      },
+      orderBy: {
+        endDate: 'asc'
+      }
+    });
+  },
+
+  async getObjectivesDueSoon(days: number = 7) {
+    const today = new Date();
+    const thresholdDate = new Date();
+    thresholdDate.setDate(today.getDate() + days);
+
+    return prisma.objective.findMany({
+      where: {
+        status: 'IN_PROGRESS',
+        endDate: {
+          gte: today,
+          lte: thresholdDate
+        }
+      },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        }
+      },
+      orderBy: {
+        endDate: 'asc'
+      }
+    });
+  },
+
+  async assignObjective(id: string, assignedTo: string) {
+    return prisma.objective.update({
+      where: { id },
+      data: { assignedTo },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        }
+      }
+    });
+  },
+
+  async updateStatus(id: string, status: string) {
+    return prisma.objective.update({
+      where: { id },
+      data: { status },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        }
+      }
+    });
+  },
+
+  async completeObjective(id: string, completionNotes?: string) {
+    return prisma.objective.update({
+      where: { id },
+      data: {
+        status: 'COMPLETED',
+        progress: 100,
+        description: completionNotes ? `${completionNotes}` : undefined // Use description field
+      },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        }
+      }
+    });
+  },
+
   async getByProjectId(projectId: string) {
     return prisma.objective.findMany({
       where: { projectId },
@@ -330,36 +487,6 @@ export const objectiveService = {
         currentValue,
         progress,
         status
-      },
-      include: {
-        assignedUser: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            currentRole: true,
-            department: true,
-          }
-        },
-        project: {
-          select: {
-            id: true,
-            name: true,
-            status: true,
-          }
-        }
-      }
-    });
-  },
-
-  async completeObjective(id: string) {
-    return prisma.objective.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        progress: 100
       },
       include: {
         assignedUser: {

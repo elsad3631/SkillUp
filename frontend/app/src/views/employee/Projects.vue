@@ -597,21 +597,26 @@ export default defineComponent({
 
     // Funzione per formattare la data
     const formatDate = (date: Date | string | undefined) => {
-      if (!date) return "";
+      if (!date) return 'N/A';
       
       let dateObj: Date;
       
       if (typeof date === 'string') {
-        // Se è già una stringa ISO completa, usala direttamente
-        if (date.includes('T') || date.includes('Z')) {
-          dateObj = new Date(date);
-        } else {
-          // Se è solo una data (YYYY-MM-DD), aggiungi l'ora locale
-          dateObj = new Date(date + 'T00:00:00');
+        // Estrai solo la parte della data (YYYY-MM-DD) se è una stringa ISO
+        let dateOnly = date;
+        if (date.includes('T')) {
+          dateOnly = date.split('T')[0];
         }
+        
+        // Crea la data locale senza timezone conversion
+        const [year, month, day] = dateOnly.split('-').map(Number);
+        dateObj = new Date(year, month - 1, day); // month - 1 perché i mesi in JS sono 0-based
       } else {
-        // Se è già un oggetto Date
-        dateObj = new Date(date);
+        // Se è già un oggetto Date, estrai solo la parte della data
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const day = date.getDate();
+        dateObj = new Date(year, month, day);
       }
       
       // Verifica che la data sia valida

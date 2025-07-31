@@ -367,7 +367,7 @@ export async function taskAssign(request: HttpRequest, context: InvocationContex
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const assignedTo = body.assignedTo;
     const task = await taskService.assignTask(id, assignedTo);
 
@@ -398,7 +398,7 @@ export async function taskUpdateStatus(request: HttpRequest, context: Invocation
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const status = body.status;
     const task = await taskService.updateStatus(id, status);
 
@@ -429,7 +429,7 @@ export async function taskUpdatePriority(request: HttpRequest, context: Invocati
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const priority = body.priority;
     const task = await taskService.updatePriority(id, priority);
 

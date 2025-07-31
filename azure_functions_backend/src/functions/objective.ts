@@ -338,7 +338,7 @@ export async function objectiveAssign(request: HttpRequest, context: InvocationC
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const assignedTo = body.assignedTo;
     const objective = await objectiveService.assignObjective(id, assignedTo);
 
@@ -369,7 +369,7 @@ export async function objectiveUpdateStatus(request: HttpRequest, context: Invoc
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const status = body.status;
     const objective = await objectiveService.updateStatus(id, status);
 
@@ -400,7 +400,7 @@ export async function objectiveUpdateProgress(request: HttpRequest, context: Inv
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const progress = body.progress || 0;
     const objective = await objectiveService.updateProgress(id, progress);
 
@@ -431,7 +431,7 @@ export async function objectiveComplete(request: HttpRequest, context: Invocatio
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
+    const body = await request.json() as any;
     const completionNotes = body.completionNotes;
     const objective = await objectiveService.completeObjective(id, completionNotes);
 

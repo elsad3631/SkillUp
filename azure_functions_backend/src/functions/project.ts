@@ -24,11 +24,11 @@ app.http('getAllProjects', {
   }
 });
 
-// GET /api/projects/my-projects - Get user's projects (authenticated)
+// GET /api/projects/user/my-projects - Get user's projects (authenticated)
 app.http('getUserProjects', {
   methods: ['GET'],
   authLevel: 'anonymous',
-  route: 'projects/my-projects',
+  route: 'projects/user/my-projects',
   handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     try {
       const authHeader = request.headers.get('authorization');
@@ -38,7 +38,7 @@ app.http('getUserProjects', {
           jsonBody: { message: 'User not authenticated' }
         };
       }
-
+      console.log('----------------------------------------authHeader', authHeader);
       const token = authHeader.substring(7);
       const user = authService.verifyToken(token);
       

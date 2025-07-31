@@ -157,6 +157,94 @@ export const commentService = {
     });
   },
 
+  async getByAuthorId(authorId: string) {
+    return this.getByAuthor(authorId);
+  },
+
+  async getRootComments() {
+    return prisma.comment.findMany({
+      where: { parentCommentId: null },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        replies: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+  },
+
+  async likeComment(id: string, userId: string) {
+    // Likes functionality not implemented in schema
+    throw new Error('Likes functionality not available');
+  },
+
+  async unlikeComment(id: string, userId: string) {
+    // Likes functionality not implemented in schema
+    throw new Error('Likes functionality not available');
+  },
+
+  async replyToComment(parentId: string, data: any) {
+    return prisma.comment.create({
+      data: {
+        content: data.content,
+        authorId: data.authorId,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        parentCommentId: parentId,
+        isPrivate: data.isPrivate || false,
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        parentComment: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              }
+            }
+          }
+        }
+      }
+    });
+  },
+
   async getReplies(parentCommentId: string) {
     return prisma.comment.findMany({
       where: { parentCommentId },

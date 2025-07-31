@@ -288,6 +288,7 @@ import {
   type FileItem as ProjectFile,
   type FolderStructure,
 } from "@/core/services/businessServices/DocumentManager";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
   name: "project-documents",
@@ -300,6 +301,7 @@ export default defineComponent({
   setup() {
     const route = useRoute();
     const project = inject<any>('project');
+    const { currentUser, fetchCurrentUser } = useCurrentUser();
     
     // Reactive data
     const isLoading = ref(true);
@@ -310,9 +312,9 @@ export default defineComponent({
     // Computed properties
     const projectId = computed(() => route.params.id as string);
     
-         const breadcrumbs = computed(() => {
-       return currentPath.value ? documentManagerService.getBreadcrumb(currentPath.value) : [];
-     });
+    const breadcrumbs = computed(() => {
+      return currentPath.value ? documentManagerService.getBreadcrumb(currentPath.value) : [];
+    });
 
     const filteredFolders = computed(() => {
       if (!folderStructure.value) return [];
@@ -354,7 +356,7 @@ export default defineComponent({
       
       try {
         isLoading.value = true;
-                 const result = await documentManagerService.getEntityDocuments('projects', projectId.value, currentPath.value);
+        const result = await documentManagerService.getEntityDocuments('projects', projectId.value, currentPath.value);
         folderStructure.value = result;
       } catch (error) {
         console.error('Error loading documents:', error);
@@ -438,6 +440,11 @@ export default defineComponent({
 
     const handleFilesUploaded = async (data: { files: File[]; path: string }) => {
       try {
+        // Ensure current user is loaded
+        if (!currentUser.value) {
+          await fetchCurrentUser();
+        }
+        
         const uploadPromises = data.files.map(file => {
           // Prepare project info for metadata
           const projectInfo = project.value ? {
@@ -453,7 +460,7 @@ export default defineComponent({
             undefined, 
             {
               projectId: projectInfo?.id,
-              uploadedBy: projectInfo?.id
+              uploadedBy: currentUser.value?.id
             }
           );
         });
@@ -533,7 +540,7 @@ export default defineComponent({
 
     const deleteFile = async (file: ProjectFile) => {
       try {
-                 const success = await documentManagerService.deleteEntityFile('projects', projectId.value, file.fullPath);
+        const success = await documentManagerService.deleteEntityFile('projects', projectId.value, file.fullPath, file.id);
         
         if (success) {
           Swal.fire({
@@ -618,7 +625,10 @@ export default defineComponent({
     });
 
     // Load documents on mount
-    onMounted(() => {
+    onMounted(async () => {
+      // Load current user first
+      await fetchCurrentUser();
+      
       if (projectId.value) {
         loadDocuments();
       }

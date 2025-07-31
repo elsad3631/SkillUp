@@ -62,7 +62,7 @@ const getUserProjects = (): Promise<Array<Project> | undefined> => {
   // Imposta l'header di autenticazione prima della chiamata
   ApiService.setHeader();
   
-  return ApiService.query(`projects/my-projects`, {})
+  return ApiService.query(`projects/user/my-projects`, {})
     .then(({ data }) => data as Project[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -92,7 +92,7 @@ const assignProjectToEmployee = (assignmentData: {
   status: string;
 }): Promise<any | undefined> => {
   ApiService.setHeader();
-  return ApiService.post(`appointments`, assignmentData)
+  return ApiService.post(`appointment`, assignmentData)
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -102,7 +102,7 @@ const assignProjectToEmployee = (assignmentData: {
 
 const removeProjectAssignment = (assignmentId: string): Promise<boolean> => {
   ApiService.setHeader();
-  return ApiService.delete(`appointments/${assignmentId}`)
+  return ApiService.delete(`appointment/${assignmentId}`)
     .then(() => true)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -119,7 +119,7 @@ const updateProjectAssignment = (assignmentId: string, assignmentData: {
   feedbackReceived?: string;
 }): Promise<any | undefined> => {
   ApiService.setHeader();
-  return ApiService.put(`appointments/${assignmentId}`, assignmentData)
+  return ApiService.put(`appointment/${assignmentId}`, assignmentData)
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);

@@ -102,6 +102,195 @@ export const taskService = {
     });
   },
 
+  async getByAssignedTo(userId: string) {
+    return this.getByAssignedUser(userId);
+  },
+
+  async getByCreatedBy(userId: string) {
+    return prisma.task.findMany({
+      where: { createdBy: userId },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        }
+      },
+      orderBy: {
+        dueDate: 'asc'
+      }
+    });
+  },
+
+  async getTasksDueSoon(days: number = 7) {
+    const today = new Date();
+    const thresholdDate = new Date();
+    thresholdDate.setDate(today.getDate() + days);
+
+    return prisma.task.findMany({
+      where: {
+        status: { not: 'COMPLETED' },
+        dueDate: {
+          gte: today,
+          lte: thresholdDate
+        }
+      },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        },
+        createdByUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      },
+      orderBy: {
+        dueDate: 'asc'
+      }
+    });
+  },
+
+  async assignTask(id: string, assignedTo: string) {
+    return prisma.task.update({
+      where: { id },
+      data: { assignedTo },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        },
+        createdByUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      }
+    });
+  },
+
+  async updateStatus(id: string, status: string) {
+    return prisma.task.update({
+      where: { id },
+      data: { status },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        },
+        createdByUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      }
+    });
+  },
+
+  async updatePriority(id: string, priority: string) {
+    return prisma.task.update({
+      where: { id },
+      data: { priority },
+      include: {
+        assignedUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            currentRole: true,
+            department: true,
+          }
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          }
+        },
+        createdByUser: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          }
+        }
+      }
+    });
+  },
+
   async getByProjectId(projectId: string) {
     return prisma.task.findMany({
       where: { projectId },

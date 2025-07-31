@@ -538,7 +538,7 @@ export default defineComponent({
 
     const deleteFile = async (file: EmployeeFile) => {
       try {
-        const success = await documentManagerService.deleteEntityFile('employees', employeeId.value, file.fullPath);
+        const success = await documentManagerService.deleteEntityFile('employees', employeeId.value, file.fullPath, file.id);
         
         if (success) {
           Swal.fire({

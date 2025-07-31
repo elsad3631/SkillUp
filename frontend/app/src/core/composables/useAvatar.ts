@@ -58,13 +58,23 @@ export function useAvatar() {
       const urlObj = new URL(url);
       const pathname = urlObj.pathname;
       
-      // For Azure Storage URLs like: http://127.0.0.1:10000/devstoreaccount1/skillup/avatars/employees/id/filename.jpg
+      // For Azure Storage URLs like: https://intentaistorage.blob.core.windows.net/skillup/avatars/employees/id/filename.jpg
+      // pathname will be: /skillup/avatars/employees/id/filename.jpg
+      // For local development URLs like: http://127.0.0.1:10000/devstoreaccount1/skillup/avatars/employees/id/filename.jpg
       // pathname will be: /devstoreaccount1/skillup/avatars/employees/id/filename.jpg
       const parts = pathname.split('/').filter(part => part.length > 0);
       
       if (parts.length >= 3) {
-        // Skip account name (devstoreaccount1) and container name (skillup)
-        const fileName = parts.slice(2).join('/');
+        // For Azure Storage: skip container name (skillup) and take everything after
+        // For local development: skip account name (devstoreaccount1) and container name (skillup)
+        let fileName: string;
+        if (url.includes('blob.core.windows.net')) {
+          // Azure Storage: /skillup/avatars/employees/id/filename.jpg
+          fileName = parts.slice(1).join('/'); // Skip 'skillup', keep 'avatars/employees/id/filename.jpg'
+        } else {
+          // Local development: /devstoreaccount1/skillup/avatars/employees/id/filename.jpg
+          fileName = parts.slice(2).join('/'); // Skip 'devstoreaccount1' and 'skillup', keep 'avatars/employees/id/filename.jpg'
+        }
         // Decode URL-encoded characters
         return decodeURIComponent(fileName);
       }
@@ -237,8 +247,6 @@ export function useAvatar() {
         } else {
           console.log('⚠️ Could not extract filename from old avatar URL');
         }
-      } else {
-        console.log('ℹ️ No existing avatar to delete or same URL');
       }
 
       // Update employee record with new avatar URL

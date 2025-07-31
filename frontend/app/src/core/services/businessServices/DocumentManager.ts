@@ -233,10 +233,6 @@ class DocumentManagerService {
       
       const dbDocument = await createDocument(documentData);
       
-      if (dbDocument) {
-        console.log('Document saved to database:', dbDocument.id);
-      }
-      
       return storageResult;
     } catch (error) {
       console.error('Error uploading entity file:', error);
@@ -263,6 +259,32 @@ class DocumentManagerService {
       const placeholderFile = new File([placeholderBlob], '.folder', { type: 'text/plain' });
       
       const result = await uploadFile(placeholderFile, folderPath);
+      
+      if (result) {
+        // Create database record for the folder
+        try {
+          const documentData = {
+            fileName: '.folder',
+            originalFileName: folderName,
+            fileUrl: folderPath,
+            fileSize: 0,
+            mimeType: 'folder' as any,
+            uploadedBy: metadata?.id || entityId,
+            userId: entityType === 'employees' ? entityId : undefined,
+            projectId: entityType === 'projects' ? entityId : undefined,
+            category: 'folder' as any,
+            tags: ['folder'],
+            isPublic: false,
+            description: `Folder: ${folderName}`,
+          };
+          
+          await createDocument(documentData);
+        } catch (dbError) {
+          console.error('Error creating database record for folder:', dbError);
+          // Continue even if database creation fails
+        }
+      }
+      
       return result !== null;
     } catch (error) {
       console.error('Error creating entity folder:', error);
@@ -275,6 +297,7 @@ class DocumentManagerService {
    */
   async deleteEntityFile(entityType: string, entityId: string, filePath: string, documentId?: string): Promise<boolean> {
     try {
+      
       // Delete from storage
       const storageResult = await deleteFile(filePath);
       
@@ -286,7 +309,6 @@ class DocumentManagerService {
       if (documentId) {
         try {
           await deleteDocument(documentId);
-          console.log(`Deleted document from database: ${documentId}`);
         } catch (error) {
           console.error('Error deleting document from database:', error);
           // Continue even if database deletion fails
@@ -325,7 +347,6 @@ class DocumentManagerService {
           
           if (document) {
             await deleteDocument(document.id);
-            console.log(`Deleted document from database: ${document.id}`);
           } else {
             console.warn(`No database record found for file: ${filePath}`);
           }
@@ -344,30 +365,71 @@ class DocumentManagerService {
    */
   async deleteEntityFolder(entityType: string, entityId: string, folderPath: string): Promise<boolean> {
     try {
-      // List all files in folder
-      const prefix = this.getEntityPrefix(entityType, entityId) + folderPath;
+      
+      // Check if folderPath already includes the entity prefix
+      const entityPrefix = this.getEntityPrefix(entityType, entityId);
+      let prefix: string;
+      
+      if (folderPath.startsWith(entityPrefix)) {
+        // folderPath already includes the full prefix, use it as is
+        prefix = folderPath;
+      } else {
+        // folderPath is relative, add the entity prefix
+        prefix = entityPrefix + folderPath;
+      }
+      
       const result = await listFiles(prefix);
       
       if (!result) {
         return false;
       }
       
-      // Delete all files
-      const deletePromises = result.files.map(file => deleteFile(file.name));
+      
+      // Delete all files using full path
+      const deletePromises = result.files.map(file => {
+        return deleteFile(file.name);
+      });
       const results = await Promise.all(deletePromises);
       
+      
       // Delete database records for files in this folder
-      const documents = await getDocumentsByUploader(entityId);
-      if (documents) {
+      let documents;
+      if (entityType === 'employees') {
+        documents = await getDocumentsByUser(entityId);
+        if (!documents || documents.length === 0) {
+          documents = await getDocumentsByUploader(entityId);
+        }
+      } else if (entityType === 'projects') {
+        documents = await getDocumentsByProject(entityId);
+      } else {
+        documents = await getDocumentsByUploader(entityId);
+      }
+      
+      if (documents && documents.length > 0) {
+        // Delete records for files in this folder
         const folderDocuments = documents.filter(doc => 
           doc.fileUrl && doc.fileUrl.includes(folderPath)
         );
         
-        const dbDeletePromises = folderDocuments.map(doc => deleteDocument(doc.id));
+        
+        const dbDeletePromises = folderDocuments.map(doc => {
+          return deleteDocument(doc.id);
+        });
         await Promise.all(dbDeletePromises);
+        
+        // Also delete the folder record itself (if it exists and wasn't already deleted)
+        const folderRecord = documents.find(doc => 
+          doc.fileUrl === folderPath && doc.fileName === '.folder' && 
+          !folderDocuments.some(folderDoc => folderDoc.id === doc.id)
+        );
+        
+        if (folderRecord) {
+          await deleteDocument(folderRecord.id);
+        }
       }
       
-      return results.every(result => result);
+      const success = results.every(result => result);
+      return success;
     } catch (error) {
       console.error('Error deleting entity folder:', error);
       return false;

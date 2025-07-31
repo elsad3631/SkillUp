@@ -14,6 +14,20 @@
     </div>
     <!--end::Loading State-->
 
+    <!--begin::Upload Loading Overlay-->
+    <div v-if="isUploading" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.5); z-index: 9999;">
+      <div class="card card-body text-center" style="max-width: 400px;">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Uploading...</span>
+        </div>
+        <h5 class="text-white mb-2">Uploading Files...</h5>
+        <p class="text-white-50 mb-0">
+          {{ uploadingFiles.size }} file(s) being uploaded
+        </p>
+      </div>
+    </div>
+    <!--end::Upload Loading Overlay-->
+
     <!--begin::Documents content-->
     <div v-else>
       <!--begin::Documents toolbar-->
@@ -74,9 +88,13 @@
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_upload_employee_file"
             @click="openUploadModal"
+            :disabled="isUploading"
           >
-            <KTIcon icon-name="files" icon-class="fs-2 me-1" />
-            Upload Files
+            <span v-if="isUploading" class="spinner-border spinner-border-sm me-1" role="status">
+              <span class="visually-hidden">Uploading...</span>
+            </span>
+            <KTIcon v-else icon-name="files" icon-class="fs-2 me-1" />
+            {{ isUploading ? 'Uploading...' : 'Upload Files' }}
           </button>
           <!--end::Upload button-->
 
@@ -97,9 +115,13 @@
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_create_employee_folder"
             @click="openCreateFolderModal"
+            :disabled="isUploading"
           >
-            <KTIcon icon-name="folder-plus" icon-class="fs-2 me-1" />
-            New Folder
+            <span v-if="isUploading" class="spinner-border spinner-border-sm me-1" role="status">
+              <span class="visually-hidden">Creating...</span>
+            </span>
+            <KTIcon v-else icon-name="folder-plus" icon-class="fs-2 me-1" />
+            {{ isUploading ? 'Creating...' : 'New Folder' }}
           </button>
           <!--end::Create folder button-->
         </div>
@@ -149,9 +171,17 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                      <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeleteFolder(folder)">
-                        <i class="fas fa-trash text-danger me-2"></i>
-                        Delete Folder
+                      <a 
+                        class="dropdown-item text-danger" 
+                        href="#" 
+                        @click.prevent="confirmDeleteFolder(folder)"
+                        :class="{ 'disabled': isDeleting }"
+                      >
+                        <span v-if="isDeleting" class="spinner-border spinner-border-sm me-2" role="status">
+                          <span class="visually-hidden">Deleting...</span>
+                        </span>
+                        <i v-else class="fas fa-trash text-danger me-2"></i>
+                        {{ isDeleting ? 'Deleting...' : 'Delete Folder' }}
                       </a>
                     </li>
                   </ul>
@@ -212,9 +242,17 @@
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                      <a class="dropdown-item text-danger" href="#" @click.prevent="confirmDeleteFile(file)">
-                        <i class="fas fa-trash text-danger me-2"></i>
-                        Delete
+                      <a 
+                        class="dropdown-item text-danger" 
+                        href="#" 
+                        @click.prevent="confirmDeleteFile(file)"
+                        :class="{ 'disabled': isDeleting && deletingFileId === file.id }"
+                      >
+                        <span v-if="isDeleting && deletingFileId === file.id" class="spinner-border spinner-border-sm me-2" role="status">
+                          <span class="visually-hidden">Deleting...</span>
+                        </span>
+                        <i v-else class="fas fa-trash text-danger me-2"></i>
+                        {{ isDeleting && deletingFileId === file.id ? 'Deleting...' : 'Delete' }}
                       </a>
                     </li>
                   </ul>
@@ -239,9 +277,13 @@
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_upload_employee_file"
             @click="openUploadModal"
+            :disabled="isUploading"
           >
-            <KTIcon icon-name="files" icon-class="fs-2 me-1" />
-            Upload Files
+            <span v-if="isUploading" class="spinner-border spinner-border-sm me-1" role="status">
+              <span class="visually-hidden">Uploading...</span>
+            </span>
+            <KTIcon v-else icon-name="files" icon-class="fs-2 me-1" />
+            {{ isUploading ? 'Uploading...' : 'Upload Files' }}
           </button>
           <button
             class="btn btn-success me-3"
@@ -256,9 +298,13 @@
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_create_employee_folder"
             @click="openCreateFolderModal"
+            :disabled="isUploading"
           >
-            <KTIcon icon-name="folder-plus" icon-class="fs-2 me-1" />
-            New Folder
+            <span v-if="isUploading" class="spinner-border spinner-border-sm me-1" role="status">
+              <span class="visually-hidden">Creating...</span>
+            </span>
+            <KTIcon v-else icon-name="folder-plus" icon-class="fs-2 me-1" />
+            {{ isUploading ? 'Creating...' : 'New Folder' }}
           </button>
         </div>
       </div>
@@ -295,6 +341,7 @@ import {
   type FileItem as EmployeeFile,
   type FolderStructure,
 } from "@/core/services/businessServices/DocumentManager";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
   name: "employee-documents",
@@ -308,14 +355,32 @@ export default defineComponent({
     const route = useRoute();
     const employee = inject<any>('employee');
     
+    // Get current user composable for account mode
+    const { currentUser, fetchCurrentUser } = useCurrentUser();
+    
     // Reactive data
     const isLoading = ref(true);
     const currentPath = ref('');
     const folderStructure = ref<FolderStructure | null>(null);
     const searchQuery = ref('');
+    const isUploading = ref(false);
+    const isDeleting = ref(false);
+    const deletingFileId = ref<string | null>(null);
+    const uploadingFiles = ref<Set<string>>(new Set());
 
     // Computed properties
     const employeeId = computed(() => route.params.id as string);
+    
+    // Determina se siamo in modalità employee view o account view
+    const isEmployeeView = computed(() => !!employeeId.value);
+    
+    // Get the target user ID (either from route or current user)
+    const targetUserId = computed(() => {
+      if (isEmployeeView.value) {
+        return employeeId.value;
+      }
+      return currentUser.value?.id;
+    });
     
     const breadcrumbs = computed(() => {
       return currentPath.value ? documentManagerService.getBreadcrumb(currentPath.value) : [];
@@ -357,11 +422,11 @@ export default defineComponent({
 
     // Methods
     const loadDocuments = async () => {
-      if (!employeeId.value) return;
+      if (!targetUserId.value) return;
       
       try {
         isLoading.value = true;
-        const result = await documentManagerService.getEntityDocuments('employees', employeeId.value, currentPath.value);
+        const result = await documentManagerService.getEntityDocuments('employees', targetUserId.value, currentPath.value);
         folderStructure.value = result;
       } catch (error) {
         console.error('Error loading documents:', error);
@@ -400,16 +465,24 @@ export default defineComponent({
 
     const handleFolderCreated = async (data: { name: string; path: string }) => {
       try {
+        if (!targetUserId.value) {
+          throw new Error('No target user ID available');
+        }
+        
         // Prepare employee info for metadata
-        const employeeInfo = employee.value ? {
+        const employeeInfo = isEmployeeView.value && employee.value ? {
           id: employee.value.id,
           firstName: employee.value.firstName || employee.value.first_name,
           lastName: employee.value.lastName || employee.value.last_name
+        } : currentUser.value ? {
+          id: currentUser.value.id,
+          firstName: currentUser.value.firstName,
+          lastName: currentUser.value.lastName
         } : undefined;
         
         const success = await documentManagerService.createEntityFolder(
           'employees',
-          employeeId.value, 
+          targetUserId.value, 
           data.name, 
           currentPath.value, 
           employeeInfo
@@ -442,17 +515,37 @@ export default defineComponent({
 
     const handleFilesUploaded = async (data: { files: File[]; path: string }) => {
       try {
+        if (!targetUserId.value) {
+          throw new Error('No target user ID available');
+        }
+        
+        isUploading.value = true;
+        uploadingFiles.value.clear();
+        
+        // Add all files to uploading set for tracking
+        data.files.forEach(file => {
+          uploadingFiles.value.add(file.name);
+        });
+        
         const uploadPromises = data.files.map(file => {
+          if (!targetUserId.value) {
+            throw new Error('No target user ID available');
+          }
+          
           // Prepare employee info for metadata
-          const employeeInfo = employee.value ? {
+          const employeeInfo = isEmployeeView.value && employee.value ? {
             id: employee.value.id,
             firstName: employee.value.firstName || employee.value.first_name,
             lastName: employee.value.lastName || employee.value.last_name
+          } : currentUser.value ? {
+            id: currentUser.value.id,
+            firstName: currentUser.value.firstName,
+            lastName: currentUser.value.lastName
           } : undefined;
           
           return documentManagerService.uploadEntityFile(
             'employees',
-            employeeId.value, 
+            targetUserId.value, 
             file, 
             currentPath.value, 
             undefined, 
@@ -460,7 +553,11 @@ export default defineComponent({
               uploadedBy: employeeInfo?.id,
               userId: employeeInfo?.id
             }
-          );
+          ).then(result => {
+            // Remove file from uploading set when done
+            uploadingFiles.value.delete(file.name);
+            return result;
+          });
         });
         
         const results = await Promise.all(uploadPromises);
@@ -494,6 +591,9 @@ export default defineComponent({
           icon: 'error',
           confirmButtonText: 'OK'
         });
+      } finally {
+        isUploading.value = false;
+        uploadingFiles.value.clear();
       }
     };
 
@@ -538,7 +638,14 @@ export default defineComponent({
 
     const deleteFile = async (file: EmployeeFile) => {
       try {
-        const success = await documentManagerService.deleteEntityFile('employees', employeeId.value, file.fullPath, file.id);
+        if (!targetUserId.value) {
+          throw new Error('No target user ID available');
+        }
+        
+        isDeleting.value = true;
+        deletingFileId.value = file.id || null;
+        
+        const success = await documentManagerService.deleteEntityFile('employees', targetUserId.value, file.fullPath, file.id);
         
         if (success) {
           Swal.fire({
@@ -562,12 +669,21 @@ export default defineComponent({
           icon: 'error',
           confirmButtonText: 'OK'
         });
+      } finally {
+        isDeleting.value = false;
+        deletingFileId.value = null;
       }
     };
 
     const deleteFolderWithContents = async (folder: EmployeeFolder) => {
       try {
-        const success = await documentManagerService.deleteEntityFolder('employees', employeeId.value, folder.path);
+        if (!targetUserId.value) {
+          throw new Error('No target user ID available');
+        }
+        
+        isDeleting.value = true; // Set deleting state for folder
+        
+        const success = await documentManagerService.deleteEntityFolder('employees', targetUserId.value, folder.path);
         
         if (success) {
           Swal.fire({
@@ -591,6 +707,8 @@ export default defineComponent({
           icon: 'error',
           confirmButtonText: 'OK'
         });
+      } finally {
+        isDeleting.value = false; // Reset deleting state
       }
     };
 
@@ -615,7 +733,7 @@ export default defineComponent({
     };
 
     // Watch for employee changes
-    watch(() => employeeId.value, (newId) => {
+    watch(() => targetUserId.value, (newId) => {
       if (newId) {
         currentPath.value = '';
         loadDocuments();
@@ -623,8 +741,13 @@ export default defineComponent({
     });
 
     // Load documents on mount
-    onMounted(() => {
-      if (employeeId.value) {
+    onMounted(async () => {
+      // Load current user first if not in employee view
+      if (!isEmployeeView.value) {
+        await fetchCurrentUser();
+      }
+      
+      if (targetUserId.value) {
         loadDocuments();
       }
     });
@@ -635,6 +758,10 @@ export default defineComponent({
       currentPath,
       searchQuery,
       folderStructure,
+      isUploading,
+      isDeleting,
+      deletingFileId,
+      uploadingFiles,
       
       // Computed
       breadcrumbs,

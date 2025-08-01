@@ -57,7 +57,7 @@ const getTaskById = (id: string): Promise<Task | undefined> => {
 
 const getTasksByAssignee = (assigneeId: string): Promise<Array<Task> | undefined> => {
   ApiService.setHeader();
-  return ApiService.get(`task/assignee/${assigneeId}`)
+  return ApiService.get(`task/assigned/${assigneeId}`)
     .then(({ data }) => data as Task[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -107,7 +107,7 @@ const getOverdueTasks = (): Promise<Array<Task> | undefined> => {
 
 const getUpcomingTasks = (days: number = 7): Promise<Array<Task> | undefined> => {
   ApiService.setHeader();
-  return ApiService.get(`task/upcoming?days=${days}`)
+  return ApiService.get(`task/due-soon?days=${days}`)
     .then(({ data }) => data as Task[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -117,7 +117,7 @@ const getUpcomingTasks = (days: number = 7): Promise<Array<Task> | undefined> =>
 
 const getMyTasks = (): Promise<Array<Task> | undefined> => {
   ApiService.setHeader();
-  return ApiService.get("task/my-tasks")
+  return ApiService.get("task/assigned/me")
     .then(({ data }) => data as Task[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -157,7 +157,7 @@ const deleteTask = (id: string): Promise<boolean> => {
 
 const assignTask = (taskId: string, assigneeId: string): Promise<Task | undefined> => {
   ApiService.setHeader();
-  return ApiService.post(`task/${taskId}/assign`, { assigneeId })
+  return ApiService.post(`task/${taskId}/assign`, { assignedTo: assigneeId })
     .then(({ data }) => data as Task)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -197,7 +197,7 @@ const getTaskStats = (): Promise<any> => {
 
 const getAssigneeTaskStats = (assigneeId: string): Promise<any> => {
   ApiService.setHeader();
-  return ApiService.get(`task/stats/assignee/${assigneeId}`)
+  return ApiService.get(`task/stats/user/${assigneeId}`)
     .then(({ data }) => data)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);

@@ -494,7 +494,7 @@ export const taskService = {
     });
   },
 
-  async create(data: any) {
+  async create(data: any, userId?: string) {
     return prisma.task.create({
       data: {
         title: data.title,
@@ -510,7 +510,7 @@ export const taskService = {
         actualHours: data.actualHours,
         tags: data.tags || [],
         attachments: data.attachments || [],
-        createdBy: data.createdBy,
+        createdBy: userId || data.createdBy,
       },
       include: {
         assignedUser: {

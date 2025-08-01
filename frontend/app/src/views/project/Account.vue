@@ -302,6 +302,19 @@
             <!--begin::Nav item-->
             <li class="nav-item">
               <router-link
+                :to="`/projects/${route.params.id}/tasks`"
+                class="nav-link text-active-primary me-6"
+                active-class="active"
+                title="Manage project tasks"
+              >
+                <i class="bi bi-list-task me-1"></i>
+                Tasks
+              </router-link>
+            </li>
+            <!--end::Nav item-->
+            <!--begin::Nav item-->
+            <li class="nav-item">
+              <router-link
                 :to="`/projects/${route.params.id}/settings`"
                 class="nav-link text-active-primary me-6"
                 active-class="active"

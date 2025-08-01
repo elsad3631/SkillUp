@@ -1,5 +1,6 @@
 import { HttpRequest, InvocationContext, HttpResponseInit, app } from "@azure/functions";
 import { taskService } from '../services/task.service';
+import { verifyToken } from '../middlewares/auth';
 
 // GET /api/task - Get all tasks
 export async function taskGetAll(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -279,8 +280,34 @@ export async function taskCreate(request: HttpRequest, context: InvocationContex
       };
     }
 
+    // Try to get user ID from JWT token first, fallback to header
+    let userId: string | undefined;
+    
+    const authHeader = request.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const decodedToken = verifyToken(token);
+      if (decodedToken) {
+        userId = decodedToken.userId;
+        context.log('User ID from JWT:', userId);
+      }
+    }
+    
+    // Fallback to header if JWT is not available or invalid
+    if (!userId) {
+      userId = request.headers.get('x-user-id') || undefined;
+      context.log('User ID from header:', userId);
+    }
+    
+    if (!userId) {
+      return {
+        status: 401,
+        jsonBody: { error: 'User ID required' }
+      };
+    }
+
     const body = await request.json();
-    const task = await taskService.create(body);
+    const task = await taskService.create(body, userId);
 
     return {
       status: 201,

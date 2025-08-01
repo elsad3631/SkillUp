@@ -523,6 +523,15 @@ const routes: Array<RouteRecordRaw> = [
             },
           },
           {
+            path: "tasks",
+            name: "project-tasks",
+            component: () => import("@/views/project/Tasks.vue"),
+            meta: {
+              pageTitle: "Project Tasks",
+              breadcrumbs: ["Home", "Projects", "Tasks"],
+            },
+          },
+          {
             path: "documents",
             name: "project-documents",
             component: () => import("@/views/project/Documents.vue"),

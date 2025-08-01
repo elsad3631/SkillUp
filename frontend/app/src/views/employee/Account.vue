@@ -395,6 +395,19 @@
               </router-link>
             </li>
             <!--end::Nav item-->
+            <!--begin::Nav item-->
+            <li class="nav-item" v-if="canViewPerformanceReviews">
+              <router-link
+                :to="performanceReviewUrl"
+                class="nav-link text-active-primary me-6"
+                active-class="active"
+                title="View employee performance reviews"
+              >
+                <i class="bi bi-star me-1"></i>
+                Performance Review
+              </router-link>
+            </li>
+            <!--end::Nav item-->
           </ul>
         </div>
         <!--begin::Navs-->
@@ -797,6 +810,23 @@ export default defineComponent({
         : '/crafted/account/documents';
     });
 
+    const performanceReviewUrl = computed(() => {
+      return isEmployeeView.value 
+        ? `/employees/${route.params.id}/performance-review`
+        : '/crafted/account/performance-review';
+    });
+
+    // Check if user can view performance reviews (admin/super admin only)
+    const canViewPerformanceReviews = computed(() => {
+      try {
+        if (!currentUser.value || !currentUser.value.userRoles || !Array.isArray(currentUser.value.userRoles)) return false;
+        return currentUser.value.userRoles.some(role => role.name === 'admin' || role.name === 'superadmin');
+      } catch (error) {
+        console.error('Error checking performance review permissions:', error);
+        return false;
+      }
+    });
+
     return {
       getAssetPath,
       route,
@@ -821,6 +851,8 @@ export default defineComponent({
       projectsUrl,
       documentsUrl,
       settingsUrl,
+      performanceReviewUrl,
+      canViewPerformanceReviews,
       getEmployeeEarnings,
       getEmployeeProjects,
       getEmployeeSuccessRate,

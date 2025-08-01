@@ -119,6 +119,7 @@ const routes: Array<RouteRecordRaw> = [
         path: "/crafted/account",
         name: "account",
         component: () => import("@/views/employee/Account.vue"),
+        redirect: "/crafted/account/overview",
         meta: {
           breadcrumbs: ["Crafted", "Account"],
         },
@@ -153,6 +154,14 @@ const routes: Array<RouteRecordRaw> = [
             component: () => import("@/views/employee/Documents.vue"),
             meta: {
               pageTitle: "Documents",
+            },
+          },
+          {
+            path: "performance-review",
+            name: "account-performance-review",
+            component: () => import("@/views/employee/PerformanceReview.vue"),
+            meta: {
+              pageTitle: "Performance Review",
             },
           },
         ],
@@ -432,6 +441,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: "/employees/:id",
         component: () => import("@/views/employee/Account.vue"),
+        redirect: (to) => `/employees/${to.params.id}/overview`,
         children: [
           {
             path: "overview",
@@ -467,6 +477,15 @@ const routes: Array<RouteRecordRaw> = [
             meta: {
               pageTitle: "Employee Settings",
               breadcrumbs: ["Home", "Employees", "Settings"],
+            },
+          },
+          {
+            path: "performance-review",
+            name: "employee-performance-review",
+            component: () => import("@/views/employee/PerformanceReview.vue"),
+            meta: {
+              pageTitle: "Employee Performance Review",
+              breadcrumbs: ["Home", "Employees", "Performance Review"],
             },
           },
         ],

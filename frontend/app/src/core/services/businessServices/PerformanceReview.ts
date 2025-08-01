@@ -1,6 +1,5 @@
 import ApiService from "@/core/services/ApiService";
 import { useAuthStore } from "@/stores/auth";
-import { PerformanceReviewStatus, PerformanceReviewPeriod } from "@/core/models/enums";
 
 const store = useAuthStore();
 
@@ -8,8 +7,8 @@ export interface PerformanceReview {
   id: string;
   employeeId: string;
   reviewerId: string;
-  reviewPeriod: PerformanceReviewPeriod;
-  reviewDate: Date;
+  reviewPeriod: string;
+  reviewDate: string;
   overallScore?: number;
   technicalScore?: number;
   softSkillScore?: number;
@@ -18,31 +17,40 @@ export interface PerformanceReview {
   strengths: string[];
   areasForImprovement: string[];
   goals?: string;
-  status: PerformanceReviewStatus;
-  nextReviewDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'COMPLETED';
+  nextReviewDate?: string;
+  createdAt: string;
+  updatedAt: string;
   employee?: {
     id: string;
-    username: string;
     firstName?: string;
     lastName?: string;
     email: string;
-    currentRole?: string;
-    department?: string;
   };
   reviewer?: {
     id: string;
-    username: string;
     firstName?: string;
     lastName?: string;
     email: string;
   };
 }
 
-const getPerformanceReviews = (): Promise<Array<PerformanceReview> | undefined> => {
+export interface PerformanceReviewStats {
+  averageOverallScore: number;
+  averageTechnicalScore: number;
+  averageSoftSkillScore: number;
+  averageLeadershipScore: number;
+  totalReviews: number;
+  completedReviews: number;
+  pendingReviews: number;
+  lastReviewDate?: string;
+  nextReviewDate?: string;
+}
+
+// Get all performance reviews
+const getAllPerformanceReviews = (): Promise<PerformanceReview[] | undefined> => {
   ApiService.setHeader();
-  return ApiService.get("performance-review")
+  return ApiService.get('performance-review')
     .then(({ data }) => data as PerformanceReview[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -50,6 +58,7 @@ const getPerformanceReviews = (): Promise<Array<PerformanceReview> | undefined> 
     });
 };
 
+// Get performance review by ID
 const getPerformanceReviewById = (id: string): Promise<PerformanceReview | undefined> => {
   ApiService.setHeader();
   return ApiService.get(`performance-review/${id}`)
@@ -60,7 +69,8 @@ const getPerformanceReviewById = (id: string): Promise<PerformanceReview | undef
     });
 };
 
-const getPerformanceReviewsByEmployee = (employeeId: string): Promise<Array<PerformanceReview> | undefined> => {
+// Get performance reviews by employee ID
+const getPerformanceReviewsByEmployee = (employeeId: string): Promise<PerformanceReview[] | undefined> => {
   ApiService.setHeader();
   return ApiService.get(`performance-review/employee/${employeeId}`)
     .then(({ data }) => data as PerformanceReview[])
@@ -70,7 +80,8 @@ const getPerformanceReviewsByEmployee = (employeeId: string): Promise<Array<Perf
     });
 };
 
-const getPerformanceReviewsByReviewer = (reviewerId: string): Promise<Array<PerformanceReview> | undefined> => {
+// Get performance reviews by reviewer ID
+const getPerformanceReviewsByReviewer = (reviewerId: string): Promise<PerformanceReview[] | undefined> => {
   ApiService.setHeader();
   return ApiService.get(`performance-review/reviewer/${reviewerId}`)
     .then(({ data }) => data as PerformanceReview[])
@@ -80,17 +91,8 @@ const getPerformanceReviewsByReviewer = (reviewerId: string): Promise<Array<Perf
     });
 };
 
-const getPerformanceReviewsByPeriod = (period: string): Promise<Array<PerformanceReview> | undefined> => {
-  ApiService.setHeader();
-  return ApiService.get(`performance-review/period/${period}`)
-    .then(({ data }) => data as PerformanceReview[])
-    .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      return undefined;
-    });
-};
-
-const getPerformanceReviewsByStatus = (status: string): Promise<Array<PerformanceReview> | undefined> => {
+// Get performance reviews by status
+const getPerformanceReviewsByStatus = (status: string): Promise<PerformanceReview[] | undefined> => {
   ApiService.setHeader();
   return ApiService.get(`performance-review/status/${status}`)
     .then(({ data }) => data as PerformanceReview[])
@@ -100,9 +102,10 @@ const getPerformanceReviewsByStatus = (status: string): Promise<Array<Performanc
     });
 };
 
-const getUpcomingReviews = (days: number = 30): Promise<Array<PerformanceReview> | undefined> => {
+// Get pending performance reviews
+const getPendingPerformanceReviews = (): Promise<PerformanceReview[] | undefined> => {
   ApiService.setHeader();
-  return ApiService.get(`performance-review/upcoming?days=${days}`)
+  return ApiService.get('performance-review/pending')
     .then(({ data }) => data as PerformanceReview[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -110,9 +113,21 @@ const getUpcomingReviews = (days: number = 30): Promise<Array<PerformanceReview>
     });
 };
 
+// Get overdue performance reviews
+const getOverduePerformanceReviews = (): Promise<PerformanceReview[] | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get('performance-review/overdue')
+    .then(({ data }) => data as PerformanceReview[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+// Create new performance review
 const createPerformanceReview = (review: Partial<PerformanceReview>): Promise<PerformanceReview | undefined> => {
   ApiService.setHeader();
-  return ApiService.post("performance-review", review)
+  return ApiService.post('performance-review', review)
     .then(({ data }) => data as PerformanceReview)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -120,9 +135,10 @@ const createPerformanceReview = (review: Partial<PerformanceReview>): Promise<Pe
     });
 };
 
+// Update performance review
 const updatePerformanceReview = (id: string, review: Partial<PerformanceReview>): Promise<PerformanceReview | undefined> => {
   ApiService.setHeader();
-  return ApiService.update("performance-review", id, review)
+  return ApiService.put(`performance-review/${id}`, review)
     .then(({ data }) => data as PerformanceReview)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -130,6 +146,7 @@ const updatePerformanceReview = (id: string, review: Partial<PerformanceReview>)
     });
 };
 
+// Delete performance review
 const deletePerformanceReview = (id: string): Promise<boolean> => {
   ApiService.setHeader();
   return ApiService.delete(`performance-review/${id}`)
@@ -140,30 +157,44 @@ const deletePerformanceReview = (id: string): Promise<boolean> => {
     });
 };
 
-const getPerformanceReviewStats = (): Promise<any> => {
+// Submit performance review for approval
+const submitPerformanceReview = (id: string): Promise<PerformanceReview | undefined> => {
   ApiService.setHeader();
-  return ApiService.get("performance-review/stats")
-    .then(({ data }) => data)
+  return ApiService.post(`performance-review/${id}/submit`, {})
+    .then(({ data }) => data as PerformanceReview)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
       return undefined;
     });
 };
 
-const getEmployeePerformanceStats = (employeeId: string): Promise<any> => {
+// Approve performance review
+const approvePerformanceReview = (id: string): Promise<PerformanceReview | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`performance-review/${id}/approve`, {})
+    .then(({ data }) => data as PerformanceReview)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+// Complete performance review
+const completePerformanceReview = (id: string): Promise<PerformanceReview | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`performance-review/${id}/complete`, {})
+    .then(({ data }) => data as PerformanceReview)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+// Get employee performance stats
+const getEmployeePerformanceStats = (employeeId: string): Promise<PerformanceReviewStats | undefined> => {
   ApiService.setHeader();
   return ApiService.get(`performance-review/stats/employee/${employeeId}`)
-    .then(({ data }) => data)
-    .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
-      return undefined;
-    });
-};
-
-const getReviewerPerformanceStats = (reviewerId: string): Promise<any> => {
-  ApiService.setHeader();
-  return ApiService.get(`performance-review/stats/reviewer/${reviewerId}`)
-    .then(({ data }) => data)
+    .then(({ data }) => data as PerformanceReviewStats)
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
       return undefined;
@@ -171,17 +202,18 @@ const getReviewerPerformanceStats = (reviewerId: string): Promise<any> => {
 };
 
 export {
-  getPerformanceReviews,
+  getAllPerformanceReviews,
   getPerformanceReviewById,
   getPerformanceReviewsByEmployee,
   getPerformanceReviewsByReviewer,
-  getPerformanceReviewsByPeriod,
   getPerformanceReviewsByStatus,
-  getUpcomingReviews,
+  getPendingPerformanceReviews,
+  getOverduePerformanceReviews,
   createPerformanceReview,
   updatePerformanceReview,
   deletePerformanceReview,
-  getPerformanceReviewStats,
+  submitPerformanceReview,
+  approvePerformanceReview,
+  completePerformanceReview,
   getEmployeePerformanceStats,
-  getReviewerPerformanceStats,
 }; 

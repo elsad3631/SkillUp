@@ -15,6 +15,31 @@ export enum PerformanceReviewPeriod {
   BIANNUAL = 'BIANNUAL'
 }
 
+export enum PerformanceReviewScore {
+  ONE = 1,
+  ONE_POINT_FIVE = 1.5,
+  TWO = 2,
+  TWO_POINT_FIVE = 2.5,
+  THREE = 3,
+  THREE_POINT_FIVE = 3.5,
+  FOUR = 4,
+  FOUR_POINT_FIVE = 4.5,
+  FIVE = 5
+}
+
+export enum PerformanceReviewCategory {
+  TECHNICAL_SKILLS = 'TECHNICAL_SKILLS',
+  SOFT_SKILLS = 'SOFT_SKILLS',
+  LEADERSHIP = 'LEADERSHIP',
+  COMMUNICATION = 'COMMUNICATION',
+  PROBLEM_SOLVING = 'PROBLEM_SOLVING',
+  TEAMWORK = 'TEAMWORK',
+  INITIATIVE = 'INITIATIVE',
+  ADAPTABILITY = 'ADAPTABILITY',
+  TIME_MANAGEMENT = 'TIME_MANAGEMENT',
+  QUALITY_OF_WORK = 'QUALITY_OF_WORK'
+}
+
 // Training & Certification Enums
 export enum TrainingEnrollmentStatus {
   ENROLLED = 'ENROLLED',

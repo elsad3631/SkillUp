@@ -7,7 +7,6 @@ export interface ApplicationUser {
   id: string;
   username: string;
   email: string;
-  roles: string[];
   avatar?: string | null;
   firstName?: string | null;
   lastName?: string | null;
@@ -54,11 +53,11 @@ const getApplicationUserById = (id: string): Promise<ApplicationUser | undefined
     });
 };
 
-const getApplicationUsersByRole = (role: string, companyId?: string): Promise<Array<ApplicationUser> | undefined> => {
+const getApplicationUsersByRole = (roleName: string, companyId?: string): Promise<Array<ApplicationUser> | undefined> => {
   ApiService.setHeader();
   const url = companyId 
-    ? `applicationuser/role/${role}?company=${encodeURIComponent(companyId)}`
-    : `applicationuser/role/${role}`;
+    ? `applicationuser/role/${roleName}?company=${encodeURIComponent(companyId)}`
+    : `applicationuser/role/${roleName}`;
     
   return ApiService.get(url)
     .then(({ data }) => data as ApplicationUser[])
@@ -138,7 +137,7 @@ const bulkDeleteApplicationUsers = (userIds: string[]): Promise<{
 
 const searchApplicationUsers = (params: {
   query?: string;
-  role?: string;
+  roleName?: string;
   department?: string;
   isAvailable?: boolean;
 }): Promise<Array<ApplicationUser> | undefined> => {
@@ -146,7 +145,7 @@ const searchApplicationUsers = (params: {
   const queryParams = new URLSearchParams();
   
   if (params.query) queryParams.append('query', params.query);
-  if (params.role) queryParams.append('role', params.role);
+  if (params.roleName) queryParams.append('role', params.roleName);
   if (params.department) queryParams.append('department', params.department);
   if (params.isAvailable !== undefined) queryParams.append('isAvailable', params.isAvailable.toString());
 

@@ -9,7 +9,6 @@ export interface CurrentUser {
   firstName?: string;
   lastName?: string;
   username: string;
-  roles: string[];
   avatar?: string;
   dateOfBirth?: string;
   placeOfBirth?: string;

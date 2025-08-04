@@ -483,6 +483,8 @@ export const applicationUserService = {
       if (!user) {
         throw new Error('User not found');
       }
+      
+
 
       // Collect all files to delete
       const filesToDelete: string[] = [];
@@ -490,27 +492,84 @@ export const applicationUserService = {
       // Add avatar file if exists
       if (user.avatar) {
         try {
-          // Extract filename from avatar URL
           const avatarFileName = this.extractFileNameFromUrl(user.avatar);
           if (avatarFileName) {
-            filesToDelete.push(avatarFileName);
+            // Ensure avatar files have the correct prefix
+            let finalAvatarFileName = avatarFileName;
+            if (!avatarFileName.startsWith('avatars/') && !avatarFileName.startsWith('users/')) {
+              if (avatarFileName.includes('/')) {
+                finalAvatarFileName = avatarFileName;
+              } else {
+                finalAvatarFileName = `avatars/employees/${id}/${avatarFileName}`;
+              }
+            }
+            filesToDelete.push(finalAvatarFileName);
           }
         } catch (error) {
           console.warn('Could not extract avatar filename:', error);
         }
       }
+      
+      // Also try to find avatar files using common avatar prefix patterns
+      try {
+        const { blobStorageService } = await import('./blobstorage.service');
+        
+        const avatarPrefixes = [
+          `avatars/employees/${id}/`,
+          `avatars/${id}/`,
+          `users/${id}/avatars/`,
+          `avatars/`,
+          `users/${id}/`
+        ];
+        
+        for (const avatarPrefix of avatarPrefixes) {
+          const avatarFiles = await blobStorageService.listFiles(avatarPrefix);
+          if (avatarFiles.length > 0) {
+            const avatarFileNames = avatarFiles.map(blob => blob.name);
+            for (const avatarFileName of avatarFileNames) {
+              if (!filesToDelete.includes(avatarFileName)) {
+                filesToDelete.push(avatarFileName);
+              }
+            }
+          }
+        }
+      } catch (avatarError) {
+        console.warn('Error accessing blob storage service for avatar files:', avatarError);
+      }
 
       // Add CV file if exists
       if (user.cvData?.storageUrl) {
         try {
-          // Extract filename from CV storage URL
           const cvFileName = this.extractFileNameFromUrl(user.cvData.storageUrl);
           if (cvFileName) {
-            filesToDelete.push(cvFileName);
+            // Ensure CV files have the correct prefix
+            let finalCvFileName = cvFileName;
+            if (!cvFileName.startsWith('cv/')) {
+              finalCvFileName = `cv/${cvFileName}`;
+            }
+            filesToDelete.push(finalCvFileName);
           }
         } catch (error) {
           console.warn('Could not extract CV filename:', error);
         }
+      }
+      
+      // Also try to find CV files using the CV prefix pattern
+      try {
+        const { blobStorageService } = await import('./blobstorage.service');
+        const cvPrefix = `cv/${id}/`;
+        const cvFiles = await blobStorageService.listFiles(cvPrefix);
+        
+        if (cvFiles.length > 0) {
+          const cvFileNames = cvFiles.map(blob => blob.name);
+          for (const cvFileName of cvFileNames) {
+            if (!filesToDelete.includes(cvFileName)) {
+              filesToDelete.push(cvFileName);
+            }
+          }
+        }
+      } catch (cvError) {
+        console.warn('Error accessing blob storage service for CV files:', cvError);
       }
 
       // Delete all employee documents from blob storage
@@ -523,15 +582,8 @@ export const applicationUserService = {
         const employeeDocuments = await blobStorageService.listFiles(employeeDocumentsPrefix);
         
         if (employeeDocuments.length > 0) {
-          console.log(`Found ${employeeDocuments.length} employee documents to delete for user ${id}`);
-          
-          // Extract file names from blob items
           const documentFileNames = employeeDocuments.map(blob => blob.name);
-          
-          // Add document files to the deletion list
           filesToDelete.push(...documentFileNames);
-          
-          console.log(`Added ${documentFileNames.length} employee documents to deletion list`);
         }
       } catch (blobError) {
         console.warn('Error accessing blob storage service for employee documents:', blobError);
@@ -541,16 +593,86 @@ export const applicationUserService = {
       // Delete all files from blob storage
       if (filesToDelete.length > 0) {
         try {
-          // Import blob storage service dynamically to avoid circular dependencies
           const { blobStorageService } = await import('./blobstorage.service');
           
           // Delete files one by one, but don't fail if some don't exist
           for (const fileName of filesToDelete) {
             try {
+              // Check if file exists before trying to delete
+              const fileExists = await blobStorageService.fileExists(fileName);
+              if (!fileExists) {
+                // Try alternative paths for CV files
+                if (fileName.includes('/') && !fileName.startsWith('cv/')) {
+                  const alternativePath = `cv/${fileName}`;
+                  const alternativeExists = await blobStorageService.fileExists(alternativePath);
+                  if (alternativeExists) {
+                    await blobStorageService.deleteFile(alternativePath);
+                  }
+                }
+                
+                // Try alternative paths for avatar files
+                if (fileName.includes('/') && !fileName.startsWith('avatars/') && !fileName.startsWith('users/')) {
+                  const avatarAlternativePaths = [
+                    `avatars/employees/${fileName}`,
+                    `avatars/${fileName}`,
+                    `users/${fileName}`,
+                    `avatars/employees/${fileName.split('/').pop()}`,
+                    `avatars/${fileName.split('/').pop()}`,
+                    `users/${fileName.split('/').pop()}`
+                  ];
+                  
+                  for (const alternativePath of avatarAlternativePaths) {
+                    const alternativeExists = await blobStorageService.fileExists(alternativePath);
+                    if (alternativeExists) {
+                      await blobStorageService.deleteFile(alternativePath);
+                      break; // Stop after finding and deleting the first match
+                    }
+                  }
+                }
+                continue;
+              }
+              
               await blobStorageService.deleteFile(fileName);
-              console.log(`Deleted file: ${fileName}`);
             } catch (fileError) {
               console.warn(`Failed to delete file ${fileName}:`, fileError);
+              
+              // Try alternative paths for CV files if the original deletion failed
+              if (fileName.includes('/') && !fileName.startsWith('cv/')) {
+                try {
+                  const alternativePath = `cv/${fileName}`;
+                  const alternativeExists = await blobStorageService.fileExists(alternativePath);
+                  if (alternativeExists) {
+                    await blobStorageService.deleteFile(alternativePath);
+                  }
+                } catch (alternativeError) {
+                  console.warn(`Also failed to delete alternative CV path:`, alternativeError);
+                }
+              }
+              
+              // Try alternative paths for avatar files if the original deletion failed
+              if (fileName.includes('/') && !fileName.startsWith('avatars/') && !fileName.startsWith('users/')) {
+                try {
+                  const avatarAlternativePaths = [
+                    `avatars/employees/${fileName}`,
+                    `avatars/${fileName}`,
+                    `users/${fileName}`,
+                    `avatars/employees/${fileName.split('/').pop()}`,
+                    `avatars/${fileName.split('/').pop()}`,
+                    `users/${fileName.split('/').pop()}`
+                  ];
+                  
+                  for (const alternativePath of avatarAlternativePaths) {
+                    const alternativeExists = await blobStorageService.fileExists(alternativePath);
+                    if (alternativeExists) {
+                      await blobStorageService.deleteFile(alternativePath);
+                      break; // Stop after finding and deleting the first match
+                    }
+                  }
+                } catch (alternativeError) {
+                  console.warn(`Also failed to delete alternative avatar path:`, alternativeError);
+                }
+              }
+              
               // Continue with other files even if one fails
             }
           }
@@ -636,6 +758,8 @@ export const applicationUserService = {
           cvData: true,
         }
       });
+      
+
 
       // Collect all files to delete
       const filesToDelete: string[] = [];
@@ -646,11 +770,47 @@ export const applicationUserService = {
           try {
             const avatarFileName = this.extractFileNameFromUrl(user.avatar);
             if (avatarFileName) {
-              filesToDelete.push(avatarFileName);
+              // Ensure avatar files have the correct prefix
+              let finalAvatarFileName = avatarFileName;
+              if (!avatarFileName.startsWith('avatars/') && !avatarFileName.startsWith('users/')) {
+                if (avatarFileName.includes('/')) {
+                  finalAvatarFileName = avatarFileName;
+                } else {
+                  finalAvatarFileName = `avatars/employees/${user.id}/${avatarFileName}`;
+                }
+              }
+              filesToDelete.push(finalAvatarFileName);
             }
           } catch (error) {
             console.warn(`Could not extract avatar filename for user ${user.id}:`, error);
           }
+        }
+        
+        // Also try to find avatar files using common avatar prefix patterns for this user
+        try {
+          const { blobStorageService } = await import('./blobstorage.service');
+          
+          const avatarPrefixes = [
+            `avatars/employees/${user.id}/`,
+            `avatars/${user.id}/`,
+            `users/${user.id}/avatars/`,
+            `avatars/`,
+            `users/${user.id}/`
+          ];
+          
+          for (const avatarPrefix of avatarPrefixes) {
+            const avatarFiles = await blobStorageService.listFiles(avatarPrefix);
+            if (avatarFiles.length > 0) {
+              const avatarFileNames = avatarFiles.map(blob => blob.name);
+              for (const avatarFileName of avatarFileNames) {
+                if (!filesToDelete.includes(avatarFileName)) {
+                  filesToDelete.push(avatarFileName);
+                }
+              }
+            }
+          }
+        } catch (avatarError) {
+          console.warn(`Error accessing blob storage service for avatar files for user ${user.id}:`, avatarError);
         }
 
         // Add CV file if exists
@@ -658,11 +818,34 @@ export const applicationUserService = {
           try {
             const cvFileName = this.extractFileNameFromUrl(user.cvData.storageUrl);
             if (cvFileName) {
-              filesToDelete.push(cvFileName);
+              // Ensure CV files have the correct prefix
+              let finalCvFileName = cvFileName;
+              if (!cvFileName.startsWith('cv/')) {
+                finalCvFileName = `cv/${cvFileName}`;
+              }
+              filesToDelete.push(finalCvFileName);
             }
           } catch (error) {
             console.warn(`Could not extract CV filename for user ${user.id}:`, error);
           }
+        }
+        
+        // Also try to find CV files using the CV prefix pattern for this user
+        try {
+          const { blobStorageService } = await import('./blobstorage.service');
+          const cvPrefix = `cv/${user.id}/`;
+          const cvFiles = await blobStorageService.listFiles(cvPrefix);
+          
+          if (cvFiles.length > 0) {
+            const cvFileNames = cvFiles.map(blob => blob.name);
+            for (const cvFileName of cvFileNames) {
+              if (!filesToDelete.includes(cvFileName)) {
+                filesToDelete.push(cvFileName);
+              }
+            }
+          }
+        } catch (cvError) {
+          console.warn(`Error accessing blob storage service for CV files for user ${user.id}:`, cvError);
         }
       }
 
@@ -676,15 +859,8 @@ export const applicationUserService = {
           const employeeDocuments = await blobStorageService.listFiles(employeeDocumentsPrefix);
           
           if (employeeDocuments.length > 0) {
-            console.log(`Found ${employeeDocuments.length} employee documents to delete for user ${userId}`);
-            
-            // Extract file names from blob items
             const documentFileNames = employeeDocuments.map(blob => blob.name);
-            
-            // Add document files to the deletion list
             filesToDelete.push(...documentFileNames);
-            
-            console.log(`Added ${documentFileNames.length} employee documents to deletion list for user ${userId}`);
           }
         }
       } catch (blobError) {
@@ -697,7 +873,6 @@ export const applicationUserService = {
         try {
           const { blobStorageService } = await import('./blobstorage.service');
           await blobStorageService.bulkDeleteFiles(filesToDelete);
-          console.log(`Bulk deleted ${filesToDelete.length} files for ${userIds.length} users`);
         } catch (blobError) {
           console.warn('Error in bulk file deletion:', blobError);
           // Continue with database deletion even if file deletion fails

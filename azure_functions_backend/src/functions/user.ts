@@ -76,7 +76,7 @@ app.http('createUser', {
         try {
           const token = authHeader.substring(7);
           const jwt = require('jsonwebtoken');
-          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+          const decoded = jwt.verify(token, process.env.JWT_SECRET || 'changeme');
           requestingUserId = decoded.userId;
         } catch (error) {
           console.warn('Invalid JWT token in createUser request');

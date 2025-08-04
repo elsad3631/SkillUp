@@ -84,6 +84,16 @@
     </div>
   </div>
 
+  <div class="row g-5 g-xl-8">
+    <div class="col-xl-6">
+      <Widget11 widget-classes="card-xl-stretch mb-xl-8" />
+    </div>
+
+    <div class="col-xl-6">
+      <ListsWidget7 widget-classes="card-xl-stretch mb-5 mb-xl-8" />
+    </div>
+  </div>
+
   <div class="g-5 gx-xxl-8">
     <TablesWidget10 />
   </div>
@@ -101,6 +111,7 @@ import ListsWidget4 from "@/components/widgets/lists/Widget4.vue";
 import ListsWidget5 from "@/components/widgets/lists/Widget5.vue";
 import ListsWidget3 from "@/components/widgets/lists/Widget3.vue";
 import TablesWidget10 from "@/components/widgets/tables/Widget10.vue";
+import Widget11 from "@/components/dashboard-default-widgets/Widget11.vue";
 
 export default defineComponent({
   name: "dashboard-main",
@@ -115,6 +126,7 @@ export default defineComponent({
     ListsWidget5,
     ListsWidget3,
     TablesWidget10,
+    Widget11,
   },
 });
 </script>

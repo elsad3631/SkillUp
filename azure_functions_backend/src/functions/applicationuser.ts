@@ -105,7 +105,7 @@ export async function applicationUserCreate(request: HttpRequest, context: Invoc
       try {
         const token = authHeader.substring(7);
         const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'changeme');
         requestingUserId = decoded.userId;
         console.log(`✅ Extracted requestingUserId from JWT: ${requestingUserId}`);
         console.log(`📋 Full JWT payload:`, decoded);

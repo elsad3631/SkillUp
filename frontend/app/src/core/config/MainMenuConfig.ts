@@ -10,7 +10,7 @@ export interface MenuItem {
 
 const MainMenuConfig: Array<MenuItem> = [
   {
-    heading: "employees",
+    heading: "Employees",
     route: "/employees",
     keenthemesIcon: "user",
     bootstrapIcon: "bi-people",
@@ -26,6 +26,12 @@ const MainMenuConfig: Array<MenuItem> = [
     route: "/projects",
     keenthemesIcon: "briefcase",
     bootstrapIcon: "bi-kanban",
+  },
+  {
+    heading: "Calendar",
+    route: "/my-calendar",
+    keenthemesIcon: "calendar",
+    bootstrapIcon: "bi-calendar-event",
   },
   {
     sectionTitle: "Quick Actions",

@@ -1,6 +1,6 @@
-import { HttpRequest, InvocationContext, HttpResponseInit } from '@azure/functions';
+import { HttpRequest, InvocationContext, HttpResponseInit, app } from '@azure/functions';
 import { CalendarService, CreateCalendarEventDto, UpdateCalendarEventDto, CalendarEventFilter } from '../services/calendar.service';
-import { verifyToken, DecodedToken } from '../middlewares/auth';
+import { authService } from '../services/auth.service';
 
 const calendarService = new CalendarService();
 
@@ -13,6 +13,24 @@ export async function calendarGetAll(request: HttpRequest, context: InvocationCo
       return {
         status: 405,
         jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization header required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = authService.verifyToken(token);
+    if (!decoded) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
       };
     }
 
@@ -41,7 +59,9 @@ export async function calendarGetAll(request: HttpRequest, context: InvocationCo
     } else if (startDate && endDate) {
       events = await calendarService.getEventsByDateRange(new Date(startDate), new Date(endDate));
     } else if (createdBy) {
-      const filter: CalendarEventFilter = { createdBy };
+      // Handle special case for "me"
+      const actualCreatedBy = createdBy === 'me' ? (decoded as any).userId : createdBy;
+      const filter: CalendarEventFilter = { createdBy: actualCreatedBy };
       events = await calendarService.getEventsByFilter(filter);
     } else {
       events = await calendarService.getAllEvents();
@@ -109,14 +129,37 @@ export async function calendarCreate(request: HttpRequest, context: InvocationCo
       };
     }
 
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization header required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = authService.verifyToken(token);
+    if (!decoded) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
+      };
+    }
+
     const body = await request.json() as CreateCalendarEventDto;
     
     // Validate required fields
-    if (!body.title || !body.startDate || !body.endDate || !body.eventType || !body.createdBy) {
+    if (!body.title || !body.startDate || !body.endDate || !body.eventType) {
       return {
         status: 400,
-        jsonBody: { error: 'Title, startDate, endDate, eventType, and createdBy are required' }
+        jsonBody: { error: 'Title, startDate, endDate, and eventType are required' }
       };
+    }
+
+    // Set createdBy to current user if not provided
+    if (!body.createdBy) {
+      body.createdBy = (decoded as any).userId;
     }
 
     // Validate dates
@@ -151,6 +194,24 @@ export async function calendarUpdate(request: HttpRequest, context: InvocationCo
       return {
         status: 405,
         jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization header required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = authService.verifyToken(token);
+    if (!decoded) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
       };
     }
 
@@ -197,6 +258,24 @@ export async function calendarDelete(request: HttpRequest, context: InvocationCo
       return {
         status: 405,
         jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization header required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = authService.verifyToken(token);
+    if (!decoded) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
       };
     }
 
@@ -278,4 +357,54 @@ export async function calendarGetToday(request: HttpRequest, context: Invocation
       jsonBody: { error: error.message || 'Failed to retrieve today events' }
     };
   }
-} 
+}
+
+// HTTP Trigger Registrations
+app.http('calendarGetAll', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'calendar',
+  handler: calendarGetAll
+});
+
+app.http('calendarGetById', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'calendar/{id}',
+  handler: calendarGetById
+});
+
+app.http('calendarCreate', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'calendar',
+  handler: calendarCreate
+});
+
+app.http('calendarUpdate', {
+  methods: ['PUT'],
+  authLevel: 'anonymous',
+  route: 'calendar/{id}',
+  handler: calendarUpdate
+});
+
+app.http('calendarDelete', {
+  methods: ['DELETE'],
+  authLevel: 'anonymous',
+  route: 'calendar/{id}',
+  handler: calendarDelete
+});
+
+app.http('calendarGetUpcoming', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'calendar/upcoming',
+  handler: calendarGetUpcoming
+});
+
+app.http('calendarGetToday', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'calendar/today',
+  handler: calendarGetToday
+}); 

@@ -243,6 +243,15 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/my-calendar",
+        name: "my-calendar",
+        component: () => import("@/views/apps/Calendar.vue"),
+        meta: {
+          pageTitle: "Il Mio Calendario",
+          breadcrumbs: ["Home", "Il Mio Calendario"],
+        },
+      },
+      {
         path: "/apps/chat/private-chat",
         name: "apps-private-chat",
         component: () => import("@/views/apps/chat/Chat.vue"),

@@ -430,6 +430,49 @@ const routes: Array<RouteRecordRaw> = [
       },
       //new views
       {
+        path: "/customers",
+        name: "customers",
+        component: () => import("@/views/customer/List.vue"),
+        meta: {
+          pageTitle: "Customers",
+          breadcrumbs: ["Home", "Customers"],
+        },
+      },
+      {
+        path: "/customers/:id",
+        component: () => import("@/views/customer/Account.vue"),
+        redirect: (to) => `/customers/${to.params.id}/overview`,
+        children: [
+          {
+            path: "overview",
+            name: "customer-overview",
+            component: () => import("@/views/customer/Overview.vue"),
+            meta: {
+              pageTitle: "Customer Overview",
+              breadcrumbs: ["Home", "Customers", "Overview"],
+            },
+          },
+          {
+            path: "projects",
+            name: "customer-projects",
+            component: () => import("@/views/customer/Projects.vue"),
+            meta: {
+              pageTitle: "Customer Projects",
+              breadcrumbs: ["Home", "Customers", "Projects"],
+            },
+          },
+          {
+            path: "settings",
+            name: "customer-settings",
+            component: () => import("@/views/customer/Settings.vue"),
+            meta: {
+              pageTitle: "Customer Settings",
+              breadcrumbs: ["Home", "Customers", "Settings"],
+            },
+          },
+        ],
+      },
+      {
         path: "/employees",
         name: "employees",
         component: () => import("@/views/employee/List.vue"),

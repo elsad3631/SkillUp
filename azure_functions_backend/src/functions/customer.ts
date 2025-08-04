@@ -1,4 +1,4 @@
-import { HttpRequest, InvocationContext, HttpResponseInit } from '@azure/functions';
+import { HttpRequest, InvocationContext, HttpResponseInit, app } from '@azure/functions';
 import { CustomerService, CreateCustomerDto, UpdateCustomerDto } from '../services/customer.service';
 import { verifyToken, DecodedToken } from '../middlewares/auth';
 
@@ -190,3 +190,39 @@ export async function customerDelete(request: HttpRequest, context: InvocationCo
     };
   }
 }
+
+// HTTP Trigger Registrations
+app.http('customerGetAll', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'customer',
+  handler: customerGetAll
+});
+
+app.http('customerGetById', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'customer/{id}',
+  handler: customerGetById
+});
+
+app.http('customerCreate', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'customer',
+  handler: customerCreate
+});
+
+app.http('customerUpdate', {
+  methods: ['PUT'],
+  authLevel: 'anonymous',
+  route: 'customer/{id}',
+  handler: customerUpdate
+});
+
+app.http('customerDelete', {
+  methods: ['DELETE'],
+  authLevel: 'anonymous',
+  route: 'customer/{id}',
+  handler: customerDelete
+});

@@ -16,6 +16,12 @@ const MainMenuConfig: Array<MenuItem> = [
     bootstrapIcon: "bi-people",
   },
   {
+    heading: "customers",
+    route: "/customers",
+    keenthemesIcon: "profile-user",
+    bootstrapIcon: "bi-person-badge",
+  },
+  {
     heading: "projects",
     route: "/projects",
     keenthemesIcon: "briefcase",

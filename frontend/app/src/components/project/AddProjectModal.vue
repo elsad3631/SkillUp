@@ -38,6 +38,8 @@
                   </div>
                 </div>
 
+
+
                 <div class="mb-6">
                   <label class="form-label">Description</label>
                   <textarea
@@ -221,6 +223,7 @@ import { defineComponent, ref, reactive } from "vue";
 import { createProject } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
 import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
   name: "AddProjectModal",
@@ -233,6 +236,7 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
+    const { currentUser } = useCurrentUser();
     const loading = ref(false);
 
     const form = reactive({
@@ -276,10 +280,26 @@ export default defineComponent({
     const onSubmit = async () => {
       loading.value = true;
       try {
+        // Determina automaticamente il companyId basato sull'utente corrente
+        let companyId: string | undefined;
+        if (currentUser.value) {
+          const userRoles = currentUser.value.userRoles || [];
+          const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+          
+          if (isSuperAdmin) {
+            // Se l'utente corrente è super admin, il nuovo progetto viene associato alla sua società
+            companyId = currentUser.value.company || currentUser.value.id;
+          } else {
+            // Se l'utente corrente non è super admin, il nuovo progetto viene associato alla società dell'utente corrente
+            companyId = currentUser.value.company;
+          }
+        }
+
         const projectData: Partial<Project> = {
           name: form.name,
           description: form.description,
           manager_id: form.managerId || undefined,
+          company: companyId,
           start_date: form.startDate ? new Date(form.startDate) : undefined,
           end_date: form.endDate ? new Date(form.endDate) : undefined,
           status: form.status,

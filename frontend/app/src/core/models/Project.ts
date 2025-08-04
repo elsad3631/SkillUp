@@ -21,4 +21,5 @@ export class Project extends CosmosEntityBase {
   manager_id?: string;
   budget?: number;
   priority?: string;
+  company?: string;
 } 

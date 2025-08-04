@@ -9,7 +9,12 @@ app.http('getAllProjects', {
   route: 'projects',
   handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     try {
-      const projects = await projectService.getAll();
+      // Get company filter from query parameters
+      const url = new URL(request.url);
+      const companyId = url.searchParams.get('company');
+      
+      const projects = await projectService.getAll(companyId || undefined);
+      
       return {
         status: 200,
         jsonBody: projects

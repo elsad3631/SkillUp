@@ -46,6 +46,9 @@ model ApplicationUser {
   employeeReviews    PerformanceReview[] @relation("EmployeeReviews")
   reviewerReviews    PerformanceReview[] @relation("ReviewerReviews")
   
+  // Relazioni per Project Company
+  companyProjects    Project[] @relation("ProjectCompany")
+  
   // Relazioni per Training e Certificazioni
   trainingEnrollments TrainingEnrollment[]
   certifications     Certification[]
@@ -120,6 +123,7 @@ model Project {
   budget             Float?
   priority           String?
   customerId         String?             // Collegamento opzionale al cliente
+  company            String?             // ID dell'utente Super Admin che rappresenta la società
   assignments        ProjectAssignment[]
   requiredHardSkills ProjectSkill[]      @relation("ProjectHardSkills")
   requiredSoftSkills ProjectSkill[]      @relation("ProjectSoftSkills")
@@ -127,6 +131,7 @@ model Project {
   
   // Relazioni
   customer           Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  companyUser        ApplicationUser? @relation("ProjectCompany", fields: [company], references: [id], onDelete: SetNull)
   tasks              Task[]
   objectives         Objective[]
   documents          Document[]

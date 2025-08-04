@@ -145,11 +145,12 @@ import Datatable from "@/components/kt-datatable/KTDataTable.vue";
 import { MenuComponent } from "@/assets/ts/components";
 import arraySort from "array-sort";
 import type { Project } from "@/core/models/Project";
-import { getProjects, deleteProject, getProject } from "@/core/services/businessServices/Project";
+import { getProjects, deleteProject, getProject, getUserProjects } from "@/core/services/businessServices/Project";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddProjectModal from "@/components/project/AddProjectModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
     name: "projects-listing",
@@ -159,6 +160,8 @@ export default defineComponent({
         Loading,
     },
     setup() {
+        const { currentUser } = useCurrentUser();
+        
         const tableHeader = ref([
             {
                 columnName: "Project",
@@ -204,20 +207,40 @@ export default defineComponent({
         const search = ref<string>("");
         const loading = ref(false);
 
-        const fetchProjects = async () => {
+                const fetchProjects = async () => {
             loading.value = true;
-            const result = await getProjects();
-            if (result) {
-                tableData.value = result;
-                initProjects.value = [...result];
+            try {
+                const result = await getUserProjects();
+                
+                if (result) {
+                    tableData.value = result;
+                    initProjects.value = [...result];
+                } else {
+                    console.warn('⚠️ No projects returned');
+                }
+            } catch (error) {
+                console.error('Failed to fetch projects:', error);
             }
             loading.value = false;
         };
 
         const onProjectCreated = (project: Project) => {
-            tableData.value.push(project);
-            initProjects.value.push(project);
-            Swal.fire('Success', 'Project has been created.', 'success');
+            // Verifica se il progetto appartiene alla company dell'utente corrente
+            if (currentUser.value) {
+                const userRoles = currentUser.value.userRoles || [];
+                const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+                
+                if (isSuperAdmin || project.company === currentUser.value.company) {
+                    tableData.value.push(project);
+                    initProjects.value.push(project);
+                    Swal.fire('Success', 'Project has been created.', 'success');
+                }
+            } else {
+                // Se non c'è un utente corrente, aggiungi comunque il progetto
+                tableData.value.push(project);
+                initProjects.value.push(project);
+                Swal.fire('Success', 'Project has been created.', 'success');
+            }
         };
 
         const editProject = (project: Project) => {

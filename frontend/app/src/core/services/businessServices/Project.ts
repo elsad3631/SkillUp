@@ -4,11 +4,22 @@ import type { Project } from "@/core/models/Project";
 
 const store = useAuthStore();
 
-const getProjects = (filterRequest?: string): Promise<Array<Project> | undefined> => {
+const getProjects = (filterRequest?: string, companyId?: string): Promise<Array<Project> | undefined> => {
   ApiService.setHeader();
-  const endpoint = filterRequest
-    ? `projects?filter=${encodeURIComponent(filterRequest)}`
-    : `projects`;
+  let endpoint = 'projects';
+  const params = new URLSearchParams();
+  
+  if (filterRequest) {
+    params.append('filter', filterRequest);
+  }
+  
+  if (companyId) {
+    params.append('company', companyId);
+  }
+  
+  if (params.toString()) {
+    endpoint += `?${params.toString()}`;
+  }
 
   return ApiService.get(endpoint)
     .then(({ data }) => data as Project[])

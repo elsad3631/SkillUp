@@ -2,11 +2,23 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const projectService = {
-  async getAll() {
+  async getAll(companyId?: string) {
+    const whereClause = companyId ? { company: companyId } : {};
+    
     const projects = await prisma.project.findMany({
+      where: whereClause,
       include: { 
         requiredHardSkills: true,
-        requiredSoftSkills: true 
+        requiredSoftSkills: true,
+        companyUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            company: true,
+          },
+        },
       },
     });
     // Map requiredHardSkills and requiredSoftSkills to camelCase in the response
@@ -33,6 +45,15 @@ export const projectService = {
       include: { 
         requiredHardSkills: true,
         requiredSoftSkills: true,
+        companyUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            company: true,
+          },
+        },
         assignments: {
           include: {
             applicationUser: {
@@ -90,6 +111,7 @@ export const projectService = {
       end_date,
       budget,
       priority,
+      company,
       required_hard_skills,
       required_soft_skills,
     } = data;
@@ -104,6 +126,7 @@ export const projectService = {
       endDate: end_date ? new Date(end_date) : undefined,
       budget,
       priority,
+      company,
     };
 
     // Gestisci soft skills come relazione annidata (usando projectSoftId)
@@ -143,6 +166,7 @@ export const projectService = {
       end_date,
       budget,
       priority,
+      company,
     } = data;
 
     const prismaData: any = {
@@ -154,6 +178,7 @@ export const projectService = {
       endDate: end_date ? new Date(end_date) : undefined,
       budget,
       priority,
+      company,
     };
 
     return prisma.project.update({ where: { id }, data: prismaData });
@@ -205,15 +230,50 @@ export const projectService = {
   },
 
   async getUserProjects(userId: string) {
+    // Prima ottieni l'utente per determinare la sua company
+    const user = await prisma.applicationUser.findUnique({
+      where: { id: userId },
+      select: { company: true, userRoles: { include: { role: true } } }
+    });
+
+    if (!user) {
+      return [];
+    }
+
+    // Determina se l'utente è superadmin
+    const isSuperAdmin = user.userRoles?.some((ur: any) => ur.role.name === 'superadmin');
+    
+    // Costruisci la query per i progetti
+    let projectWhereClause: any = {};
+    
+    if (isSuperAdmin) {
+      // Se è superadmin, mostra tutti i progetti della sua company
+      projectWhereClause.company = user.company || userId;
+    } else {
+      // Se non è superadmin, mostra solo i progetti della sua company
+      projectWhereClause.company = user.company;
+    }
+
+    // Prima prova a ottenere i progetti assegnati all'utente
     const userProjects = await prisma.projectAssignment.findMany({
       where: {
         applicationUserId: userId,
+        project: projectWhereClause,
       },
       include: {
         project: {
           include: {
             requiredHardSkills: true,
             requiredSoftSkills: true,
+            companyUser: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                company: true,
+              },
+            },
             assignments: {
               include: {
                 applicationUser: {
@@ -231,6 +291,57 @@ export const projectService = {
         },
       },
     });
+
+    // Se non ci sono progetti assegnati, ottieni tutti i progetti della company
+    if (userProjects.length === 0) {
+      const companyProjects = await prisma.project.findMany({
+        where: projectWhereClause,
+        include: {
+          requiredHardSkills: true,
+          requiredSoftSkills: true,
+          companyUser: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              company: true,
+            },
+          },
+          assignments: {
+            include: {
+              applicationUser: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  currentRole: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      
+      return companyProjects.map((project: any) => ({
+        ...project,
+        // Mappa le required skills come nel metodo getAll
+        requiredHardSkills: project.requiredHardSkills?.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          minProficiencyLevel: skill.minProficiencyLevel,
+          certification: skill.certification,
+          isMandatory: skill.isMandatory,
+        })) || [],
+        requiredSoftSkills: project.requiredSoftSkills?.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel,
+          certification: skill.certification,
+        })) || [],
+      }));
+    }
 
     return userProjects.map((assignment: any) => ({
       ...assignment.project,

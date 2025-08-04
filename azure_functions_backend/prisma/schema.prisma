@@ -303,6 +303,7 @@ model Customer {
   status            String    @default("ACTIVE") // ACTIVE, INACTIVE, PROSPECT
   industry          String?
   website           String?
+  company           String?   // ID dell'utente Super Admin che rappresenta la società
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   

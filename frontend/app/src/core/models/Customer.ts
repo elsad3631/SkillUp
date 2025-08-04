@@ -21,6 +21,7 @@ export class Customer extends CosmosEntityBase {
   status: string = 'ACTIVE'; // ACTIVE, INACTIVE, PROSPECT
   industry?: string;
   website?: string;
+  company?: string; // ID dell'utente Super Admin che rappresenta la società
   createdAt?: Date;
   updatedAt?: Date;
   

@@ -47,11 +47,11 @@
             </div>
             <div class="d-flex flex-column flex-md-row align-items-center gap-4 text-muted">
               <div class="d-flex align-items-center" v-if="customer?.email">
-                <i class="ki-duotone ki-sms fs-5 me-2"></i>
+                <KTIcon icon-name="sms" icon-class="fs-5 me-2" />
                 <span>{{ customer.email }}</span>
               </div>
               <div class="d-flex align-items-center" v-if="customer?.phone">
-                <i class="ki-duotone ki-phone fs-5 me-2"></i>
+                <KTIcon icon-name="phone" icon-class="fs-5 me-2" />
                 <span>{{ customer.phone }}</span>
               </div>
             </div>
@@ -65,7 +65,7 @@
               :to="editProfileUrl"
               class="btn btn-primary btn-lg"
             >
-              <i class="ki-duotone ki-pencil fs-5 me-2"></i>
+              <KTIcon icon-name="pencil" icon-class="fs-5 me-2" />
               Edit Profile
             </router-link>
           </div>
@@ -83,14 +83,14 @@
         <div class="card h-100">
           <div class="card-header">
             <div class="card-title">
-              <i class="ki-duotone ki-user fs-2 me-2 text-primary"></i>
+              <KTIcon icon-name="user" icon-class="fs-2 me-2 text-primary" />
               <h3 class="fw-bold m-0">Customer Information</h3>
             </div>
           </div>
           <div class="card-body">
             <div class="d-flex flex-column gap-4">
               <div class="d-flex align-items-center p-4 bg-light-primary rounded" v-if="customer?.companyName">
-                <i class="ki-duotone ki-briefcase fs-2 me-3 text-primary"></i>
+                <KTIcon icon-name="briefcase" icon-class="fs-2 me-3 text-primary" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Company Name</div>
                   <div class="fw-bold fs-6">{{ customer.companyName }}</div>
@@ -98,7 +98,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-info rounded" v-if="customer?.industry">
-                <i class="ki-duotone ki-chart-simple fs-2 me-3 text-info"></i>
+                <KTIcon icon-name="chart-simple" icon-class="fs-2 me-3 text-info" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Industry</div>
                   <div class="fw-bold fs-6">{{ customer.industry }}</div>
@@ -106,7 +106,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-success rounded" v-if="customer?.website">
-                <i class="ki-duotone ki-globe fs-2 me-3 text-success"></i>
+                <KTIcon icon-name="globe" icon-class="fs-2 me-3 text-success" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Website</div>
                   <div class="fw-bold fs-6">
@@ -118,7 +118,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-warning rounded" v-if="customer?.vatNumber">
-                <i class="ki-duotone ki-document fs-2 me-3 text-warning"></i>
+                <KTIcon icon-name="document" icon-class="fs-2 me-3 text-warning" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">VAT Number</div>
                   <div class="fw-bold fs-6">{{ customer.vatNumber }}</div>
@@ -126,7 +126,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-danger rounded" v-if="customer?.fiscalCode">
-                <i class="ki-duotone ki-document fs-2 me-3 text-danger"></i>
+                <KTIcon icon-name="document" icon-class="fs-2 me-3 text-danger" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Fiscal Code</div>
                   <div class="fw-bold fs-6">{{ customer.fiscalCode }}</div>
@@ -143,14 +143,14 @@
         <div class="card h-100">
           <div class="card-header">
             <div class="card-title">
-              <i class="ki-duotone ki-phone fs-2 me-2 text-primary"></i>
+              <KTIcon icon-name="phone" icon-class="fs-2 me-2 text-primary" />
               <h3 class="fw-bold m-0">Contact Information</h3>
             </div>
           </div>
           <div class="card-body">
             <div class="d-flex flex-column gap-4">
               <div class="d-flex align-items-center p-4 bg-light-primary rounded" v-if="customer?.contactPerson">
-                <i class="ki-duotone ki-user fs-2 me-3 text-primary"></i>
+                <KTIcon icon-name="user" icon-class="fs-2 me-3 text-primary" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Contact Person</div>
                   <div class="fw-bold fs-6">{{ customer.contactPerson }}</div>
@@ -158,7 +158,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-info rounded" v-if="customer?.contactEmail">
-                <i class="ki-duotone ki-sms fs-2 me-3 text-info"></i>
+                <KTIcon icon-name="sms" icon-class="fs-2 me-3 text-info" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Contact Email</div>
                   <div class="fw-bold fs-6">
@@ -170,7 +170,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-success rounded" v-if="customer?.contactPhone">
-                <i class="ki-duotone ki-phone fs-2 me-3 text-success"></i>
+                <KTIcon icon-name="phone" icon-class="fs-2 me-3 text-success" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Contact Phone</div>
                   <div class="fw-bold fs-6">
@@ -182,7 +182,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-warning rounded" v-if="customer?.email">
-                <i class="ki-duotone ki-sms fs-2 me-3 text-warning"></i>
+                <KTIcon icon-name="sms" icon-class="fs-2 me-3 text-warning" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Primary Email</div>
                   <div class="fw-bold fs-6">
@@ -194,7 +194,7 @@
               </div>
 
               <div class="d-flex align-items-center p-4 bg-light-danger rounded" v-if="customer?.phone">
-                <i class="ki-duotone ki-phone fs-2 me-3 text-danger"></i>
+                <KTIcon icon-name="phone" icon-class="fs-2 me-3 text-danger" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Primary Phone</div>
                   <div class="fw-bold fs-6">
@@ -218,14 +218,14 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">
-              <i class="ki-duotone ki-map-pin fs-2 me-2 text-primary"></i>
+              <KTIcon icon-name="map-pin" icon-class="fs-2 me-2 text-primary" />
               <h3 class="fw-bold m-0">Address Information</h3>
             </div>
           </div>
           <div class="card-body">
             <div class="d-flex flex-column gap-4">
               <div class="d-flex align-items-start p-4 bg-light-primary rounded" v-if="customer?.address">
-                <i class="ki-duotone ki-map-pin fs-2 me-3 text-primary mt-1"></i>
+                <KTIcon icon-name="map-pin" icon-class="fs-2 me-3 text-primary mt-1" />
                 <div>
                   <div class="text-muted fs-7 fw-semibold">Full Address</div>
                   <div class="fw-bold fs-6">{{ customer.address }}</div>
@@ -235,7 +235,7 @@
               <div class="row" v-if="customer?.city || customer?.country">
                 <div class="col-md-6" v-if="customer?.city">
                   <div class="d-flex align-items-center p-4 bg-light-info rounded">
-                    <i class="ki-duotone ki-building fs-2 me-3 text-info"></i>
+                    <KTIcon icon-name="building" icon-class="fs-2 me-3 text-info" />
                     <div>
                       <div class="text-muted fs-7 fw-semibold">City</div>
                       <div class="fw-bold fs-6">{{ customer.city }}</div>
@@ -245,7 +245,7 @@
 
                 <div class="col-md-6" v-if="customer?.country">
                   <div class="d-flex align-items-center p-4 bg-light-success rounded">
-                    <i class="ki-duotone ki-flag fs-2 me-3 text-success"></i>
+                    <KTIcon icon-name="flag" icon-class="fs-2 me-3 text-success" />
                     <div>
                       <div class="text-muted fs-7 fw-semibold">Country</div>
                       <div class="fw-bold fs-6">{{ customer.country }}</div>
@@ -266,7 +266,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">
-              <i class="ki-duotone ki-note fs-2 me-2 text-primary"></i>
+              <KTIcon icon-name="note" icon-class="fs-2 me-2 text-primary" />
               <h3 class="fw-bold m-0">Notes</h3>
             </div>
           </div>
@@ -288,7 +288,7 @@
             <div class="d-flex align-items-center">
               <div class="symbol symbol-50px me-3">
                 <div class="symbol-label bg-primary">
-                  <i class="ki-duotone ki-briefcase fs-2x text-white"></i>
+                  <KTIcon icon-name="briefcase" icon-class="fs-2x text-white" />
                 </div>
               </div>
               <div>
@@ -306,7 +306,7 @@
             <div class="d-flex align-items-center">
               <div class="symbol symbol-50px me-3">
                 <div class="symbol-label bg-info">
-                  <i class="ki-duotone ki-calendar fs-2x text-white"></i>
+                  <KTIcon icon-name="calendar" icon-class="fs-2x text-white" />
                 </div>
               </div>
               <div>
@@ -324,7 +324,7 @@
             <div class="d-flex align-items-center">
               <div class="symbol symbol-50px me-3">
                 <div class="symbol-label bg-success">
-                  <i class="ki-duotone ki-calendar fs-2x text-white"></i>
+                  <KTIcon icon-name="calendar" icon-class="fs-2x text-white" />
                 </div>
               </div>
               <div>
@@ -342,7 +342,7 @@
             <div class="d-flex align-items-center">
               <div class="symbol symbol-50px me-3">
                 <div class="symbol-label bg-warning">
-                  <i class="ki-duotone ki-status fs-2x text-white"></i>
+                  <KTIcon icon-name="status" icon-class="fs-2x text-white" />
                 </div>
               </div>
               <div>

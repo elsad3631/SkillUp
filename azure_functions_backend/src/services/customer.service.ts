@@ -19,6 +19,7 @@ export interface CreateCustomerDto {
   status?: string;
   industry?: string;
   website?: string;
+  company?: string;
 }
 
 export interface UpdateCustomerDto extends Partial<CreateCustomerDto> {}
@@ -121,6 +122,25 @@ export class CustomerService {
       },
       include: {
         projects: true,
+        calendarEvents: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getCustomersByCompany(companyId: string) {
+    return await prisma.customer.findMany({
+      where: { company: companyId },
+      include: {
+        projects: {
+          include: {
+            assignments: true,
+            requiredHardSkills: true,
+            requiredSoftSkills: true,
+          },
+        },
         calendarEvents: true,
       },
       orderBy: {

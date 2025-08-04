@@ -256,6 +256,36 @@
             </div>
             <!--end::Input group-->
 
+            <!--begin::Input group-->
+            <div class="row mb-6">
+              <!--begin::Label-->
+              <label class="col-lg-4 col-form-label fw-semobold fs-6">
+                <KTIcon icon-name="building" icon-class="fs-6 me-2" />
+                Customer
+              </label>
+              <!--end::Label-->
+
+              <!--begin::Col-->
+              <div class="col-lg-8 fv-row">
+                <select
+                  name="customerId"
+                  class="form-select form-select-lg form-select-solid"
+                  v-model="projectDetails.customerId"
+                >
+                  <option value="">Select a customer</option>
+                  <option v-for="customer in customers" :key="customer.id" :value="customer.id">
+                    {{ customer.name }}
+                  </option>
+                </select>
+                <div class="form-text">
+                  <KTIcon icon-name="information-5" icon-class="fs-6 me-1" />
+                  The company or individual who requested the project
+                </div>
+              </div>
+              <!--end::Col-->
+            </div>
+            <!--end::Input group-->
+
             <!-- Date Range -->
             <div class="row mb-6">
               <div class="col-lg-6">
@@ -547,7 +577,10 @@ import {
   createSoftSkill, updateSoftSkill, deleteSoftSkill, getSoftSkillsByProjectId,
   createHardSkill, updateHardSkill, deleteHardSkill, getHardSkillsByProjectId 
 } from "@/core/services/businessServices/ProjectSkill";
+import { getCustomersByCompany } from "@/core/services/businessServices/Customer";
+import { useCurrentUser } from "@/core/composables/useCurrentUser";
 import type { ProjectSkill } from "@/core/services/businessServices/ProjectSkill";
+import type { Customer } from "@/core/models/Customer";
 
 interface ProjectDetails {
   name: string;
@@ -558,6 +591,7 @@ interface ProjectDetails {
   managerId: string;
   startDate: string;
   endDate: string;
+  customerId: string; // Added customerId
   requiredSoftSkills: ProjectSkill[];
   requiredHardSkills: ProjectSkill[];
 }
@@ -584,6 +618,7 @@ export default defineComponent({
       managerId: '',
       startDate: '',
       endDate: '',
+      customerId: '', // Initialize customerId
       requiredSoftSkills: [],
       requiredHardSkills: [],
     });
@@ -621,6 +656,7 @@ export default defineComponent({
           managerId: val.managerId || '',
           startDate: val.startDate ? val.startDate.split('T')[0] : '',
           endDate: val.endDate ? val.endDate.split('T')[0] : '',
+          customerId: val.customerId || '', // Update customerId
           requiredSoftSkills: [],
           requiredHardSkills: [],
         };
@@ -648,6 +684,7 @@ export default defineComponent({
               priority: projectDetails.value.priority,
               budget: projectDetails.value.budget ? parseFloat(projectDetails.value.budget.toString()) : null,
               manager_id: projectDetails.value.managerId || null,
+              customer_id: projectDetails.value.customerId || null, // Add customer_id
               start_date: projectDetails.value.startDate ? new Date(projectDetails.value.startDate) : null,
               end_date: projectDetails.value.endDate ? new Date(projectDetails.value.endDate) : null,
               requiredSoftSkills: projectDetails.value.requiredSoftSkills,
@@ -716,6 +753,7 @@ export default defineComponent({
           managerId: project.value.managerId || '',
           startDate: project.value.startDate ? project.value.startDate.split('T')[0] : '',
           endDate: project.value.endDate ? project.value.endDate.split('T')[0] : '',
+          customerId: project.value.customerId || '', // Reset customerId
           requiredSoftSkills: [...(project.value.requiredSoftSkills || [])],
           requiredHardSkills: [...(project.value.requiredHardSkills || [])],
         };
@@ -968,6 +1006,27 @@ export default defineComponent({
       editingSoftSkillIndex.value = projectDetails.value.requiredSoftSkills.length - 1;
     };
 
+    // Load customers for the dropdown
+    const customers = ref<Customer[]>([]);
+    const { currentUser } = useCurrentUser();
+    
+    const loadCustomers = async () => {
+      try {
+        const companyId = currentUser.value?.company;
+        if (companyId) {
+          const customersData = await getCustomersByCompany(companyId);
+          customers.value = customersData || [];
+        }
+      } catch (error) {
+        console.error("Error loading customers:", error);
+        customers.value = [];
+      }
+    };
+
+    onMounted(() => {
+      loadCustomers();
+    });
+
     return {
       submitButton,
       saveChanges,
@@ -988,6 +1047,7 @@ export default defineComponent({
       editHardSkill,
       saveHardSkill,
       removeHardSkill,
+      customers, // Expose customers for the dropdown
     };
   },
 });

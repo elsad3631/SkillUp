@@ -96,7 +96,7 @@
 
                 <div class="d-flex flex-column mb-7">
                   <div class="d-flex align-items-center mb-3">
-                    <KTIcon icon-name="dollar" icon-class="fs-4 text-muted me-2" />
+                    <KTIcon icon-name="chart-simple" icon-class="fs-4 text-muted me-2" />
                     <span class="text-muted fs-7">Budget</span>
                   </div>
                   <span class="fw-bold fs-6">{{ formatCurrency(project.budget) }}</span>
@@ -159,10 +159,6 @@
               <br />
               Projects will appear here once they are created and assigned to this customer.
             </p>
-            <router-link to="/projects" class="btn btn-primary">
-              <KTIcon icon-name="plus" icon-class="fs-4 me-2" />
-              Create New Project
-            </router-link>
           </div>
         </div>
       </div>
@@ -214,7 +210,7 @@
             <div class="d-flex align-items-center">
               <div class="symbol symbol-50px me-3">
                 <div class="symbol-label bg-info">
-                  <KTIcon icon-name="clock" icon-class="fs-2x text-white" />
+                  <KTIcon icon-name="chart-simple" icon-class="fs-2x text-white" />
                 </div>
               </div>
               <div>
@@ -232,7 +228,7 @@
             <div class="d-flex align-items-center">
               <div class="symbol symbol-50px me-3">
                 <div class="symbol-label bg-warning">
-                  <KTIcon icon-name="dollar" icon-class="fs-2x text-white" />
+                  <KTIcon icon-name="chart-simple" icon-class="fs-2x text-white" />
                 </div>
               </div>
               <div>

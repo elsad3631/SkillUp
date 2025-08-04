@@ -85,6 +85,16 @@ const getCustomersWithProjects = (): Promise<Array<Customer> | undefined> => {
     });
 };
 
+const getCustomersByCompany = (companyId: string): Promise<Array<Customer> | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get(`customer?company=${encodeURIComponent(companyId)}`)
+    .then(({ data }) => data as Customer[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 export {
   getAllCustomers,
   getCustomerById,
@@ -93,5 +103,6 @@ export {
   deleteCustomer,
   searchCustomers,
   getCustomersByStatus,
-  getCustomersWithProjects
+  getCustomersWithProjects,
+  getCustomersByCompany
 }; 

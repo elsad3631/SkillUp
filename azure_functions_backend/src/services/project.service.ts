@@ -10,6 +10,7 @@ export const projectService = {
       include: { 
         requiredHardSkills: true,
         requiredSoftSkills: true,
+        customer: true,
         companyUser: {
           select: {
             id: true,
@@ -45,6 +46,7 @@ export const projectService = {
       include: { 
         requiredHardSkills: true,
         requiredSoftSkills: true,
+        customer: true,
         companyUser: {
           select: {
             id: true,
@@ -112,6 +114,7 @@ export const projectService = {
       budget,
       priority,
       company,
+      customer_id,
       required_hard_skills,
       required_soft_skills,
     } = data;
@@ -127,6 +130,7 @@ export const projectService = {
       budget,
       priority,
       company,
+      customerId: customer_id,
     };
 
     // Gestisci soft skills come relazione annidata (usando projectSoftId)
@@ -167,6 +171,7 @@ export const projectService = {
       budget,
       priority,
       company,
+      customer_id,
     } = data;
 
     const prismaData: any = {
@@ -179,6 +184,7 @@ export const projectService = {
       budget,
       priority,
       company,
+      customerId: customer_id,
     };
 
     return prisma.project.update({ where: { id }, data: prismaData });

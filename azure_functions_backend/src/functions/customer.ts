@@ -21,9 +21,12 @@ export async function customerGetAll(request: HttpRequest, context: InvocationCo
     const status = searchParams.get('status');
     const search = searchParams.get('search');
     const withProjects = searchParams.get('withProjects');
+    const company = searchParams.get('company');
 
     let customers;
-    if (status) {
+    if (company) {
+      customers = await customerService.getCustomersByCompany(company);
+    } else if (status) {
       customers = await customerService.getCustomersByStatus(status);
     } else if (search) {
       customers = await customerService.searchCustomers(search);

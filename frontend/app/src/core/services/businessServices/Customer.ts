@@ -104,5 +104,6 @@ export {
   searchCustomers,
   getCustomersByStatus,
   getCustomersWithProjects,
-  getCustomersByCompany
+  getCustomersByCompany,
+  type Customer
 }; 

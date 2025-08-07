@@ -157,6 +157,7 @@
         <Loading v-if="editModalLoading" />
       </template>
     </EditEmployeeModal>
+    <ExportEmployeeModal />
 </template>
 
 <script lang="ts">
@@ -168,6 +169,7 @@ import arraySort from "array-sort";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal.vue";
+import ExportEmployeeModal from "@/components/employee/ExportEmployeeModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
@@ -187,6 +189,7 @@ export default defineComponent({
         Datatable,
         AddEmployeeModal,
         EditEmployeeModal,
+        ExportEmployeeModal,
         Loading,
     },
     setup() {

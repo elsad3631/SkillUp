@@ -137,6 +137,7 @@
 
     <!-- Modals -->
     <AddProjectModal @project-created="onProjectCreated" :close-modal="() => closeModal('kt_modal_add_project')" />
+    <ExportProjectModal />
 </template>
 
 <script lang="ts">
@@ -148,6 +149,7 @@ import type { Project } from "@/core/models/Project";
 import { getProjects, deleteProject, getProject, getUserProjects } from "@/core/services/businessServices/Project";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddProjectModal from "@/components/project/AddProjectModal.vue";
+import ExportProjectModal from "@/components/project/ExportProjectModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
@@ -157,6 +159,7 @@ export default defineComponent({
     components: {
         Datatable,
         AddProjectModal,
+        ExportProjectModal,
         Loading,
     },
     setup() {

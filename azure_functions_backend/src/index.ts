@@ -30,6 +30,9 @@ import './functions/task';
 import './functions/training-enrollment';
 import './functions/user-setting';
 import './functions/calendar';
+import './functions/export-customers';
+import './functions/export-projects';
+import './functions/export-employees';
 
 // All functions are automatically registered when their modules are imported
 // The @azure/functions app.http() calls in each function file handle the registration 

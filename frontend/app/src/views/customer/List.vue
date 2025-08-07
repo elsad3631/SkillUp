@@ -166,6 +166,7 @@
 
     <!-- Modals -->
     <AddCustomerModal @customer-created="onCustomerCreated" :close-modal="() => closeModal('kt_modal_add_customer')" />
+    <ExportCustomerModal />
 </template>
 
 <script lang="ts">
@@ -176,6 +177,7 @@ import arraySort from "array-sort";
 
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddCustomerModal from "@/components/customer/AddCustomerModal.vue";
+import ExportCustomerModal from "@/components/customer/ExportCustomerModal.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { 
@@ -189,6 +191,7 @@ export default defineComponent({
     components: {
         Datatable,
         AddCustomerModal,
+        ExportCustomerModal,
         Loading,
     },
     setup() {

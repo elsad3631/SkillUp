@@ -34,6 +34,15 @@ const routes: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: "/comments-demo",
+        name: "comments-demo",
+        component: () => import("@/views/crafted/CommentsDemo.vue"),
+        meta: {
+          pageTitle: "Comments Demo",
+          breadcrumbs: ["Demo"],
+        },
+      },
+      {
         path: "/crafted/pages/profile",
         name: "profile",
         component: () => import("@/components/page-layouts/Profile.vue"),

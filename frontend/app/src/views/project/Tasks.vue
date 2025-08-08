@@ -188,6 +188,20 @@
     @task-assigned="onTaskAssigned" 
     :close-modal="() => closeModal('kt_modal_assign_task')"
   />
+
+  <!-- Comments Section for Tasks -->
+  <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+    <div class="col-12">
+      <CommentSection 
+        v-if="projectId"
+        entity-type="PROJECT"
+        :entity-id="projectId"
+        @comment-added="onCommentAdded"
+        @comment-updated="onCommentUpdated"
+        @comment-deleted="onCommentDeleted"
+      />
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -199,6 +213,7 @@ import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddTaskModal from "@/components/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/task/EditTaskModal.vue";
 import AssignTaskModal from "@/components/task/AssignTaskModal.vue";
+import CommentSection from "@/components/comment/CommentSection.vue";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
@@ -220,6 +235,7 @@ export default defineComponent({
     AddTaskModal,
     EditTaskModal,
     AssignTaskModal,
+    CommentSection,
     Loading,
   },
   setup() {
@@ -540,6 +556,18 @@ export default defineComponent({
       }
     };
 
+    const onCommentAdded = (comment: any) => {
+      console.log('Comment added:', comment);
+    };
+
+    const onCommentUpdated = (comment: any) => {
+      console.log('Comment updated:', comment);
+    };
+
+    const onCommentDeleted = (commentId: string) => {
+      console.log('Comment deleted:', commentId);
+    };
+
     // Watch for project changes
     watch(() => projectId, (newProjectId) => {
       if (newProjectId) {
@@ -589,6 +617,9 @@ export default defineComponent({
       getProgressBarClass,
       getTaskProgress,
       loading,
+      onCommentAdded,
+      onCommentUpdated,
+      onCommentDeleted,
     };
   },
 });

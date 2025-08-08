@@ -42,6 +42,12 @@ const MainMenuConfig: Array<MenuItem> = [
         keenthemesIcon: "element-11",
         bootstrapIcon: "bi-list-check",
       },
+      {
+        heading: "Comments Demo",
+        route: "/comments-demo",
+        keenthemesIcon: "chat",
+        bootstrapIcon: "bi-chat-dots",
+      },
     ],
     keenthemesIcon: "flash",
     bootstrapIcon: "bi-lightning",

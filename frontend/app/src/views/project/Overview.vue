@@ -386,33 +386,21 @@
     </div>
     <!--end::Team Assignments Section-->
 
-    <!--begin::Dashboard Widgets-->
-    <div class="row gy-10 gx-xl-10">
-      <div class="col-xl-6">
-        <KTChartWidget1
-          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-        ></KTChartWidget1>
-      </div>
-      <div class="col-xl-6">
-        <KTListWidget1
-          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-        ></KTListWidget1>
-      </div>
-    </div>
 
-    <div class="row gy-10 gx-xl-10">
-      <div class="col-xl-6">
-        <KTListWidget5
-          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-        ></KTListWidget5>
-      </div>
-      <div class="col-xl-6">
-        <KTTableWidget5
-          widget-classes="card-xxl-stretch mb-5 mb-xl-10"
-        ></KTTableWidget5>
+    <!--begin::Comments Section-->
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+      <div class="col-12">
+        <CommentSection 
+          v-if="project"
+          entity-type="PROJECT"
+          :entity-id="project.id"
+          @comment-added="onCommentAdded"
+          @comment-updated="onCommentUpdated"
+          @comment-deleted="onCommentDeleted"
+        />
       </div>
     </div>
-    <!--end::Dashboard Widgets-->
+    <!--end::Comments Section-->
   </div>
   <!--end::Overview Content-->
 </template>
@@ -425,6 +413,7 @@ import KTListWidget5 from "@/components/widgets/lists/Widget5.vue";
 import KTTableWidget5 from "@/components/widgets/tables/Widget5.vue";
 import Dropdown3 from "@/components/dropdown/Dropdown3.vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
+import CommentSection from "@/components/comment/CommentSection.vue";
 
 export default defineComponent({
   name: "project-overview",
@@ -435,6 +424,7 @@ export default defineComponent({
     KTListWidget5,
     KTTableWidget5,
     KTIcon,
+    CommentSection,
   },
   setup() {
     const project = inject<any>('project');
@@ -481,12 +471,27 @@ export default defineComponent({
       }
     };
 
+    const onCommentAdded = (comment: any) => {
+      console.log('Comment added:', comment);
+    };
+
+    const onCommentUpdated = (comment: any) => {
+      console.log('Comment updated:', comment);
+    };
+
+    const onCommentDeleted = (commentId: string) => {
+      console.log('Comment deleted:', commentId);
+    };
+
     return {
       project,
       formatDate,
       getStatusBadgeClass,
       getPriorityBadgeClass,
       getAssignmentStatusBadgeClass,
+      onCommentAdded,
+      onCommentUpdated,
+      onCommentDeleted,
     };
   },
 });

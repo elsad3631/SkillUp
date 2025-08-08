@@ -68,7 +68,7 @@ const getCommentsByAuthor = (authorId: string): Promise<Array<Comment> | undefin
 
 const getCommentReplies = (commentId: string): Promise<Array<Comment> | undefined> => {
   ApiService.setHeader();
-  return ApiService.get(`comment/${commentId}/replies`)
+  return ApiService.get(`comment/parent/${commentId}`)
     .then(({ data }) => data as Comment[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
@@ -146,6 +146,36 @@ const getEntityCommentStats = (entityType: string, entityId: string): Promise<an
     });
 };
 
+const replyToComment = (commentId: string, replyData: Partial<Comment>): Promise<Comment | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`comment/${commentId}/reply`, replyData)
+    .then(({ data }) => data as Comment)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const likeComment = (commentId: string, userId: string): Promise<Comment | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`comment/${commentId}/like`, { userId })
+    .then(({ data }) => data as Comment)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const unlikeComment = (commentId: string, userId: string): Promise<Comment | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`comment/${commentId}/unlike`, { userId })
+    .then(({ data }) => data as Comment)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 export {
   getComments,
   getCommentById,
@@ -156,6 +186,9 @@ export {
   createComment,
   updateComment,
   deleteComment,
+  replyToComment,
+  likeComment,
+  unlikeComment,
   getCommentStats,
   getAuthorCommentStats,
   getEntityCommentStats,

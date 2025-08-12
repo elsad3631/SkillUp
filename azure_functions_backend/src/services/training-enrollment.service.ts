@@ -182,6 +182,8 @@ export const trainingEnrollmentService = {
     return prisma.trainingEnrollment.update({
       where: { id },
       data: {
+        userId: data.userId,
+        trainingId: data.trainingId,
         status: data.status,
         completionDate: data.completionDate,
         score: data.score,

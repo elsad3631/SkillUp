@@ -28,6 +28,12 @@ const MainMenuConfig: Array<MenuItem> = [
     bootstrapIcon: "bi-kanban",
   },
   {
+    heading: "Training",
+    route: "/training",
+    keenthemesIcon: "education",
+    bootstrapIcon: "bi-mortarboard",
+  },
+  {
     heading: "Calendar",
     route: "/my-calendar",
     keenthemesIcon: "calendar",

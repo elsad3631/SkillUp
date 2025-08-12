@@ -612,6 +612,44 @@ const routes: Array<RouteRecordRaw> = [
           },
         ],
       },
+      // Training Routes
+      {
+        path: "/training",
+        name: "training",
+        component: () => import("@/views/training/TrainingDashboard.vue"),
+        meta: {
+          pageTitle: "Training Dashboard",
+          breadcrumbs: ["Home", "Training"],
+        },
+      },
+      {
+        path: "/training/enrollments",
+        name: "training-enrollments",
+        component: () => import("@/views/training/TrainingEnrollments.vue"),
+        meta: {
+          pageTitle: "Training Enrollments",
+          breadcrumbs: ["Home", "Training", "Enrollments"],
+        },
+      },
+      {
+        path: "/training/certifications",
+        name: "training-certifications",
+        component: () => import("@/views/training/Certifications.vue"),
+        meta: {
+          pageTitle: "Certifications",
+          breadcrumbs: ["Home", "Training", "Certifications"],
+        },
+      },
+      {
+        path: "/training/programs",
+        name: "training-programs",
+        component: () => import("@/views/training/TrainingPrograms.vue"),
+        meta: {
+          pageTitle: "Training Programs",
+          breadcrumbs: ["Home", "Training", "Programs"],
+        },
+      },
+
       {
         path: '/asset-types',
         name: 'AssetTypeList',

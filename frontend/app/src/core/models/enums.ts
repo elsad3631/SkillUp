@@ -49,6 +49,13 @@ export enum TrainingEnrollmentStatus {
   FAILED = 'FAILED'
 }
 
+export enum CertificationStatus {
+  ACTIVE = 'ACTIVE',
+  EXPIRED = 'EXPIRED',
+  REVOKED = 'REVOKED',
+  PENDING = 'PENDING'
+}
+
 export enum TrainingDifficulty {
   BEGINNER = 'BEGINNER',
   INTERMEDIATE = 'INTERMEDIATE',

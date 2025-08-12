@@ -40,14 +40,14 @@ export interface Certification {
   id: string;
   userId: string;
   name: string;
-  issuingOrganization: string;
+  issuingAuthority: string;
+  certificateNumber?: string;
   issueDate: Date;
   expiryDate?: Date;
-  certificateUrl: string;
-  credentialId?: string;
+  status: string;
+  credentialUrl?: string;
   description?: string;
-  isVerified: boolean;
-  verificationDate?: Date;
+  tags: string[];
   createdAt: Date;
   updatedAt: Date;
   user?: {
@@ -59,6 +59,28 @@ export interface Certification {
     currentRole?: string;
     department?: string;
   };
+}
+
+export interface Training {
+  id: string;
+  title: string;
+  description?: string;
+  provider?: string;
+  url?: string;
+  estimatedDurationHours: number;
+  skillsDeveloped: string[];
+  level?: string;
+  cost?: number;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  currentRole?: string;
+  department?: string;
 }
 
 // Training Enrollment Services
@@ -102,6 +124,16 @@ const getTrainingEnrollmentsByStatus = (status: string): Promise<Array<TrainingE
     });
 };
 
+const getTrainingEnrollmentsByTraining = (trainingId: string): Promise<Array<TrainingEnrollment> | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get(`training-enrollment/training/${trainingId}`)
+    .then(({ data }) => data as TrainingEnrollment[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 const getCompletedTrainings = (): Promise<Array<TrainingEnrollment> | undefined> => {
   ApiService.setHeader();
   return ApiService.get("training-enrollment/completed")
@@ -126,8 +158,15 @@ const updateTrainingEnrollment = (id: string, enrollment: Partial<TrainingEnroll
   ApiService.setHeader();
   return ApiService.update("training-enrollment", id, enrollment)
     .then(({ data }) => data as TrainingEnrollment)
-    .catch(({ response }) => {
-      store.setError(response.data.message || response.data.error, response.status);
+    .catch((error) => {
+      console.error('Error updating training enrollment:', error);
+      const response = error.response;
+      if (response) {
+        const errorMessage = response.data?.message || response.data?.error || 'Unknown error occurred';
+        store.setError(errorMessage, response.status);
+      } else {
+        store.setError('Network error or request failed', 500);
+      }
       return undefined;
     });
 };
@@ -146,6 +185,68 @@ const getTrainingEnrollmentStats = (): Promise<any> => {
   ApiService.setHeader();
   return ApiService.get("training-enrollment/stats")
     .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+// Training Services
+const getTrainings = (): Promise<Array<Training> | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get("skill-trainings")
+    .then(({ data }) => data as Training[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const getTrainingById = (id: string): Promise<Training | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get(`skill-trainings/${id}`)
+    .then(({ data }) => data as Training)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const createTraining = (training: Partial<Training>): Promise<Training | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post("skill-trainings", training)
+    .then(({ data }) => data as Training)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const updateTraining = (id: string, training: Partial<Training>): Promise<Training | undefined> => {
+  ApiService.setHeader();
+  return ApiService.update("skill-trainings", id, training)
+    .then(({ data }) => data as Training)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+const deleteTraining = (id: string): Promise<boolean> => {
+  ApiService.setHeader();
+  return ApiService.delete(`skill-trainings/${id}`)
+    .then(() => true)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return false;
+    });
+};
+
+// User Services
+const getUsers = (): Promise<Array<User> | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get("applicationuser")
+    .then(({ data }) => data as User[])
     .catch(({ response }) => {
       store.setError(response.data.message || response.data.error, response.status);
       return undefined;
@@ -259,11 +360,20 @@ export {
   getTrainingEnrollmentById,
   getTrainingEnrollmentsByUser,
   getTrainingEnrollmentsByStatus,
+  getTrainingEnrollmentsByTraining,
   getCompletedTrainings,
   createTrainingEnrollment,
   updateTrainingEnrollment,
   deleteTrainingEnrollment,
   getTrainingEnrollmentStats,
+  // Training
+  getTrainings,
+  getTrainingById,
+  createTraining,
+  updateTraining,
+  deleteTraining,
+  // User
+  getUsers,
   // Certification
   getCertifications,
   getCertificationById,

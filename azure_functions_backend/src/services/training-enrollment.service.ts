@@ -160,6 +160,7 @@ export const trainingEnrollmentService = {
         certificateUrl: data.certificateUrl,
         notes: data.notes,
         progress: data.progress || 0,
+        company: data.company,
       },
       include: {
         user: {
@@ -190,6 +191,7 @@ export const trainingEnrollmentService = {
         certificateUrl: data.certificateUrl,
         notes: data.notes,
         progress: data.progress,
+        company: data.company,
       },
       include: {
         user: {

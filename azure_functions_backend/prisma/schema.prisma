@@ -8,74 +8,50 @@ datasource db {
 }
 
 model ApplicationUser {
-  id                 String              @id @default(uuid())
-  username           String              @unique
-  email              String              @unique
-  passwordHash       String
-  avatar             String?
-  firstName          String?
-  lastName           String?
-  dateOfBirth        DateTime?
-  placeOfBirth       String?
-  address            String?
-  phone              String?
-  currentRole        String?
-  department         String?
-  isAvailable        Boolean             @default(true)
-  company            String?             // ID dell'utente Super Admin che rappresenta la società
-  cvData             CVData?
-  hardSkills         EmployeeSkill[]     @relation("HardSkills")
-  softSkills         EmployeeSkill[]     @relation("SoftSkills")
-  experiences        Experience[]
-  projectAssignments ProjectAssignment[]
-  activityLogs       UserActivityLog[]
-  sentNotifications  Notification[] @relation("NotificationSender")
-  receivedNotifications Notification[] @relation("NotificationRecipient")
-  assets             Asset[]
-  
-  // Nuove relazioni per il sistema di ruoli e permessi
-  userRoles          UserRole[]
-  roleAssignments    UserRole[] @relation("RoleAssignment")
-  permissionGrants   RolePermission[] @relation("PermissionGrant")
-  
-  // Relazioni per il calendario
-  calendarEvents     CalendarEvent[]
-  createdEvents      CalendarEvent[] @relation("EventCreator")
-  
-  // Relazioni per Performance Review
-  employeeReviews    PerformanceReview[] @relation("EmployeeReviews")
-  reviewerReviews    PerformanceReview[] @relation("ReviewerReviews")
-  
-  // Relazioni per Project Company
-  companyProjects    Project[] @relation("ProjectCompany")
-  
-  // Relazioni per Training e Certificazioni
-  trainingEnrollments TrainingEnrollment[]
-  certifications     Certification[]
-  
-  // Relazioni per Task Management
-  assignedTasks      Task[] @relation("TaskAssignee")
-  createdTasks       Task[] @relation("TaskCreator")
-  
-  // Relazioni per Mentorship
-  mentorRelations    Mentorship[] @relation("MentorRelations")
-  menteeRelations    Mentorship[] @relation("MenteeRelations")
-  
-  // Relazioni per Comments
-  comments           Comment[]
-  
-  // Relazioni per Objectives
-  assignedObjectives Objective[] @relation("ObjectiveAssignee")
-  
-  // Relazioni per Documents
-  uploadedDocuments  Document[] @relation("DocumentUploader")
-  userDocuments      Document[] @relation("DocumentOwner")
-  
-  // Relazioni per Audit Log
-  auditLogs          AuditLog[] @relation("AuditLogUser")
-  
-  // Relazioni per User Settings
-  userSettings       UserSetting?
+  id                    String               @id @default(uuid())
+  username              String               @unique
+  email                 String               @unique
+  passwordHash          String
+  avatar                String?
+  firstName             String?
+  lastName              String?
+  dateOfBirth           DateTime?
+  placeOfBirth          String?
+  address               String?
+  phone                 String?
+  currentRole           String?
+  department            String?
+  isAvailable           Boolean              @default(true)
+  company               String?
+  assets                Asset[]
+  auditLogs             AuditLog[]           @relation("AuditLogUser")
+  cvData                CVData?
+  createdEvents         CalendarEvent[]      @relation("EventCreator")
+  calendarEvents        CalendarEvent[]
+  certifications        Certification[]
+  comments              Comment[]
+  uploadedDocuments     Document[]           @relation("DocumentUploader")
+  userDocuments         Document[]           @relation("DocumentOwner")
+  hardSkills            EmployeeSkill[]      @relation("HardSkills")
+  softSkills            EmployeeSkill[]      @relation("SoftSkills")
+  experiences           Experience[]
+  menteeRelations       Mentorship[]         @relation("MenteeRelations")
+  mentorRelations       Mentorship[]         @relation("MentorRelations")
+  receivedNotifications Notification[]       @relation("NotificationRecipient")
+  sentNotifications     Notification[]       @relation("NotificationSender")
+  assignedObjectives    Objective[]          @relation("ObjectiveAssignee")
+  employeeReviews       PerformanceReview[]  @relation("EmployeeReviews")
+  reviewerReviews       PerformanceReview[]  @relation("ReviewerReviews")
+  companyProjects       Project[]            @relation("ProjectCompany")
+  projectAssignments    ProjectAssignment[]
+  permissionGrants      RolePermission[]     @relation("PermissionGrant")
+  assignedTasks         Task[]               @relation("TaskAssignee")
+  createdTasks          Task[]               @relation("TaskCreator")
+  trainingEnrollments   TrainingEnrollment[]
+  activityLogs          UserActivityLog[]
+  roleAssignments       UserRole[]           @relation("RoleAssignment")
+  userRoles             UserRole[]
+  userSettings          UserSetting?
 }
 
 model CVData {
@@ -122,27 +98,25 @@ model Project {
   managerId          String?
   budget             Float?
   priority           String?
-  customerId         String?             // Collegamento opzionale al cliente
-  company            String?             // ID dell'utente Super Admin che rappresenta la società
+  customerId         String?
+  company            String?
+  calendarEvents     CalendarEvent[]
+  documents          Document[]
+  objectives         Objective[]
+  companyUser        ApplicationUser?    @relation("ProjectCompany", fields: [company], references: [id])
+  customer           Customer?           @relation(fields: [customerId], references: [id])
   assignments        ProjectAssignment[]
   requiredHardSkills ProjectSkill[]      @relation("ProjectHardSkills")
   requiredSoftSkills ProjectSkill[]      @relation("ProjectSoftSkills")
-  calendarEvents     CalendarEvent[]
-  
-  // Relazioni
-  customer           Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  companyUser        ApplicationUser? @relation("ProjectCompany", fields: [company], references: [id], onDelete: SetNull)
   tasks              Task[]
-  objectives         Objective[]
-  documents          Document[]
 }
 
 model ProjectSkill {
   id                  String   @id @default(uuid())
   name                String
   minProficiencyLevel Int?
-  proficiencyLevel    Int? // For soft skills (like EmployeeSkill)
-  certification       String? // For both hard and soft skills
+  proficiencyLevel    Int?
+  certification       String?
   isMandatory         Boolean?
   projectHardId       String?
   projectSoftId       String?
@@ -165,7 +139,7 @@ model ProjectAssignment {
 }
 
 model SkillTraining {
-  id                     String   @id @default(uuid())
+  id                     String               @id @default(uuid())
   title                  String
   description            String?
   provider               String?
@@ -174,8 +148,7 @@ model SkillTraining {
   skillsDeveloped        String[]
   level                  String?
   cost                   Float?
-  
-  // Relazioni
+  company                String?
   enrollments            TrainingEnrollment[]
 }
 
@@ -189,375 +162,329 @@ model Asset {
 }
 
 model UserActivityLog {
-  id          String    @id @default(uuid())
-  userId      String
-  action      String
-  entityType  String
-  entityId    String?
-  description String
-  ipAddress   String?
-  userAgent   String?
-  timestamp   DateTime  @default(now())
-  status      String
+  id           String          @id @default(uuid())
+  userId       String
+  action       String
+  entityType   String
+  entityId     String?
+  description  String
+  ipAddress    String?
+  userAgent    String?
+  timestamp    DateTime        @default(now())
+  status       String
   errorMessage String?
-  metadata    Json?
-  
-  user        ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metadata     Json?
+  user         ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
-  id          String    @id @default(uuid())
+  id          String           @id @default(uuid())
   recipientId String
   senderId    String?
   type        String
   title       String
   message     String
-  priority    String    @default("MEDIUM")
-  isRead      Boolean   @default(false)
+  priority    String           @default("MEDIUM")
+  isRead      Boolean          @default(false)
   readAt      DateTime?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime         @default(now())
   expiresAt   DateTime?
   actionUrl   String?
   metadata    Json?
-  
-  recipient   ApplicationUser @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  sender      ApplicationUser? @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+  recipient   ApplicationUser  @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      ApplicationUser? @relation("NotificationSender", fields: [senderId], references: [id])
 }
 
-// Sistema di Ruoli e Permessi Granulari
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relazioni
-  userRoles   UserRole[]
+  id              String           @id @default(uuid())
+  name            String           @unique
+  description     String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   rolePermissions RolePermission[]
+  userRoles       UserRole[]
 }
 
 model Permission {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  resource    String   // es. "users", "projects", "tasks"
-  action      String   // es. "create", "read", "update", "delete"
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  
-  // Relazioni
+  id              String           @id @default(uuid())
+  name            String           @unique
+  description     String?
+  resource        String
+  action          String
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
   rolePermissions RolePermission[]
 }
 
 model UserRole {
-  id                String          @id @default(uuid())
-  userId            String
-  roleId            String
-  assignedBy        String?
-  assignedAt        DateTime        @default(now())
-  expiresAt         DateTime?
-  isActive          Boolean         @default(true)
-  
-  // Relazioni
-  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role              Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  assignedByUser    ApplicationUser? @relation("RoleAssignment", fields: [assignedBy], references: [id], onDelete: SetNull)
-  
+  id             String           @id @default(uuid())
+  userId         String
+  roleId         String
+  assignedBy     String?
+  assignedAt     DateTime         @default(now())
+  expiresAt      DateTime?
+  isActive       Boolean          @default(true)
+  assignedByUser ApplicationUser? @relation("RoleAssignment", fields: [assignedBy], references: [id])
+  role           Role             @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user           ApplicationUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, roleId])
 }
 
 model RolePermission {
-  id           String     @id @default(uuid())
-  roleId       String
-  permissionId String
-  grantedAt    DateTime   @default(now())
-  grantedBy    String?
-  isActive     Boolean    @default(true)
-  
-  // Relazioni
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  grantedByUser ApplicationUser? @relation("PermissionGrant", fields: [grantedBy], references: [id], onDelete: SetNull)
-  
+  id            String           @id @default(uuid())
+  roleId        String
+  permissionId  String
+  grantedAt     DateTime         @default(now())
+  grantedBy     String?
+  isActive      Boolean          @default(true)
+  grantedByUser ApplicationUser? @relation("PermissionGrant", fields: [grantedBy], references: [id])
+  permission    Permission       @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role          Role             @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
   @@unique([roleId, permissionId])
 }
 
-// Tabella Clienti
 model Customer {
-  id                String    @id @default(uuid())
-  name              String
-  companyName       String?
-  email             String?
-  phone             String?
-  address           String?
-  city              String?
-  country           String?
-  vatNumber         String?   // Partita IVA
-  fiscalCode        String?   // Codice Fiscale
-  contactPerson     String?
-  contactPhone      String?
-  contactEmail      String?
-  notes             String?
-  status            String    @default("ACTIVE") // ACTIVE, INACTIVE, PROSPECT
-  industry          String?
-  website           String?
-  company           String?   // ID dell'utente Super Admin che rappresenta la società
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  projects          Project[]
-  calendarEvents    CalendarEvent[]
+  id             String          @id @default(uuid())
+  name           String
+  companyName    String?
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  country        String?
+  vatNumber      String?
+  fiscalCode     String?
+  contactPerson  String?
+  contactPhone   String?
+  contactEmail   String?
+  notes          String?
+  status         String          @default("ACTIVE")
+  industry       String?
+  website        String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  company        String?
+  calendarEvents CalendarEvent[]
+  projects       Project[]
 }
 
-// Tabella Calendario
 model CalendarEvent {
-  id                String    @id @default(uuid())
+  id                String           @id @default(uuid())
   title             String
   description       String?
   startDate         DateTime
   endDate           DateTime
-  allDay            Boolean   @default(false)
-  eventType         String    // APPOINTMENT, PERMISSION, SICK_LEAVE, HOLIDAY, MEETING, TASK, OTHER
-  status            String    @default("CONFIRMED") // CONFIRMED, PENDING, CANCELLED, COMPLETED
-  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  allDay            Boolean          @default(false)
+  eventType         String
+  status            String           @default("CONFIRMED")
+  priority          String           @default("MEDIUM")
   location          String?
-  attendees         String[]  // Array di ID utenti
+  attendees         String[]
   createdBy         String
-  customerId        String?   // Collegamento opzionale al cliente
-  projectId         String?   // Collegamento opzionale al progetto
-  userId            String?   // Utente associato all'evento (per permessi, ferie, etc.)
-  color             String?   // Colore per la visualizzazione nel calendario
-  recurrence        String?   // Pattern di ricorrenza (DAILY, WEEKLY, MONTHLY, YEARLY)
+  customerId        String?
+  projectId         String?
+  userId            String?
+  color             String?
+  recurrence        String?
   recurrenceEndDate DateTime?
-  isPrivate         Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  customer          Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  project           Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  user              ApplicationUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdByUser     ApplicationUser @relation("EventCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  isPrivate         Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdByUser     ApplicationUser  @relation("EventCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  customer          Customer?        @relation(fields: [customerId], references: [id])
+  project           Project?         @relation(fields: [projectId], references: [id])
+  user              ApplicationUser? @relation(fields: [userId], references: [id])
 }
 
-// 🟢 1. Performance Review
 model PerformanceReview {
-  id                String    @id @default(uuid())
-  employeeId        String    // Utente valutato
-  reviewerId        String    // Utente che effettua la valutazione
-  reviewPeriod      String    // es. "Q1 2024", "Annual 2024"
-  reviewDate        DateTime  @default(now())
-  overallScore      Float?    // Punteggio complessivo (es. 1-5)
-  technicalScore    Float?    // Competenze tecniche
-  softSkillScore    Float?    // Competenze trasversali
-  leadershipScore   Float?    // Leadership (se applicabile)
-  feedback          String?   // Feedback dettagliato
-  strengths         String[]  // Punti di forza
-  areasForImprovement String[] // Aree di miglioramento
-  goals             String?   // Obiettivi per il prossimo periodo
-  status            String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, COMPLETED
-  nextReviewDate    DateTime? // Data della prossima review
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  employee          ApplicationUser @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Cascade)
-  reviewer          ApplicationUser @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(uuid())
+  employeeId          String
+  reviewerId          String
+  reviewPeriod        String
+  reviewDate          DateTime        @default(now())
+  overallScore        Float?
+  technicalScore      Float?
+  softSkillScore      Float?
+  leadershipScore     Float?
+  feedback            String?
+  strengths           String[]
+  areasForImprovement String[]
+  goals               String?
+  status              String          @default("DRAFT")
+  nextReviewDate      DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  employee            ApplicationUser @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Cascade)
+  reviewer            ApplicationUser @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
 }
 
-// 🟢 2. Training Enrollment
 model TrainingEnrollment {
-  id                String    @id @default(uuid())
-  userId            String
-  trainingId        String
-  enrollmentDate    DateTime  @default(now())
-  status            String    @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
-  completionDate    DateTime?
-  score             Float?    // Punteggio finale (se applicabile)
-  certificateUrl    String?   // URL del certificato ottenuto
-  notes             String?   // Note aggiuntive
-  progress          Int?      // Percentuale di completamento (0-100)
-  
-  // Relazioni
-  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  training          SkillTraining @relation(fields: [trainingId], references: [id], onDelete: Cascade)
-  
+  id             String          @id @default(uuid())
+  userId         String
+  trainingId     String
+  enrollmentDate DateTime        @default(now())
+  status         String          @default("PLANNED")
+  completionDate DateTime?
+  score          Float?
+  certificateUrl String?
+  notes          String?
+  progress       Int?
+  company        String?
+  training       SkillTraining   @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  user           ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, trainingId])
 }
 
-// 🟢 2. Certification
 model Certification {
-  id                String    @id @default(uuid())
+  id                String          @id @default(uuid())
   userId            String
   name              String
-  issuingAuthority  String    // Autorità emittente
-  certificateNumber String?   // Numero del certificato
+  issuingAuthority  String
+  certificateNumber String?
   issueDate         DateTime
   expiryDate        DateTime?
-  status            String    @default("ACTIVE") // ACTIVE, EXPIRED, REVOKED
-  credentialUrl     String?   // URL per verificare il certificato
+  status            String          @default("ACTIVE")
+  credentialUrl     String?
   description       String?
-  tags              String[]  // Tag per categorizzazione
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
+  tags              String[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
   user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// 🟢 3. Task Management
 model Task {
-  id                String    @id @default(uuid())
-  title             String
-  description       String?
-  assignedTo        String?   // ID utente assegnato
-  projectId         String?   // Progetto associato (opzionale)
-  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
-  status            String    @default("TODO") // TODO, IN_PROGRESS, REVIEW, COMPLETED, CANCELLED
-  dueDate           DateTime?
-  startDate         DateTime?
-  completedDate     DateTime?
-  estimatedHours    Float?
-  actualHours       Float?
-  tags              String[]  // Tag per categorizzazione
-  attachments       String[]  // Array di URL file allegati
-  createdBy         String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  assignedUser      ApplicationUser? @relation("TaskAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
-  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  createdByUser     ApplicationUser @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  id             String           @id @default(uuid())
+  title          String
+  description    String?
+  assignedTo     String?
+  projectId      String?
+  priority       String           @default("MEDIUM")
+  status         String           @default("TODO")
+  dueDate        DateTime?
+  startDate      DateTime?
+  completedDate  DateTime?
+  estimatedHours Float?
+  actualHours    Float?
+  tags           String[]
+  attachments    String[]
+  createdBy      String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  assignedUser   ApplicationUser? @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  createdByUser  ApplicationUser  @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  project        Project?         @relation(fields: [projectId], references: [id])
 }
 
-// 🟢 4. Mentorship
 model Mentorship {
-  id                String    @id @default(uuid())
-  mentorId          String    // ID del mentor
-  menteeId          String    // ID del mentee
-  startDate         DateTime  @default(now())
-  endDate           DateTime?
-  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
-  goals             String?   // Obiettivi del programma
-  notes             String?   // Note aggiuntive
-  meetingFrequency  String?   // Frequenza degli incontri
-  lastMeetingDate   DateTime?
-  nextMeetingDate   DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  mentor            ApplicationUser @relation("MentorRelations", fields: [mentorId], references: [id], onDelete: Cascade)
-  mentee            ApplicationUser @relation("MenteeRelations", fields: [menteeId], references: [id], onDelete: Cascade)
-  
+  id               String          @id @default(uuid())
+  mentorId         String
+  menteeId         String
+  startDate        DateTime        @default(now())
+  endDate          DateTime?
+  status           String          @default("ACTIVE")
+  goals            String?
+  notes            String?
+  meetingFrequency String?
+  lastMeetingDate  DateTime?
+  nextMeetingDate  DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  mentee           ApplicationUser @relation("MenteeRelations", fields: [menteeId], references: [id], onDelete: Cascade)
+  mentor           ApplicationUser @relation("MentorRelations", fields: [mentorId], references: [id], onDelete: Cascade)
+
   @@unique([mentorId, menteeId])
 }
 
-// 🟢 5. Comments and Collaboration
 model Comment {
-  id                String    @id @default(uuid())
-  content           String
-  entityType        String    // Tipo di entità (PROJECT, TASK, EXPERIENCE, etc.)
-  entityId          String    // ID dell'entità
-  authorId          String
-  parentCommentId    String?  // Per commenti annidati
-  isPrivate         Boolean   @default(false)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  author            ApplicationUser @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parentComment     Comment? @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: SetNull)
-  replies           Comment[] @relation("CommentReplies")
+  id              String          @id @default(uuid())
+  content         String
+  entityType      String
+  entityId        String
+  authorId        String
+  parentCommentId String?
+  isPrivate       Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  author          ApplicationUser @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentComment   Comment?        @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  replies         Comment[]       @relation("CommentReplies")
 }
 
-// 🟢 6. Objectives and KPIs
 model Objective {
-  id                String    @id @default(uuid())
-  title             String
-  description       String?
-  targetValue       Float?    // Valore target da raggiungere
-  currentValue      Float?    // Valore attuale
-  unit              String?   // Unità di misura
-  startDate         DateTime
-  endDate           DateTime
-  status            String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED, OVERDUE
-  priority          String    @default("MEDIUM") // LOW, MEDIUM, HIGH
-  assignedTo        String?   // Utente responsabile
-  projectId         String?   // Progetto associato (opzionale)
-  category          String?   // Categoria (PERSONAL, TEAM, COMPANY)
-  progress          Int?      // Percentuale di completamento (0-100)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  assignedUser      ApplicationUser? @relation("ObjectiveAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
-  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  id           String           @id @default(uuid())
+  title        String
+  description  String?
+  targetValue  Float?
+  currentValue Float?
+  unit         String?
+  startDate    DateTime
+  endDate      DateTime
+  status       String           @default("ACTIVE")
+  priority     String           @default("MEDIUM")
+  assignedTo   String?
+  projectId    String?
+  category     String?
+  progress     Int?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  assignedUser ApplicationUser? @relation("ObjectiveAssignee", fields: [assignedTo], references: [id])
+  project      Project?         @relation(fields: [projectId], references: [id])
 }
 
-// 🟢 7. Document Management
 model Document {
-  id                String    @id @default(uuid())
-  fileName          String
-  originalFileName  String
-  fileUrl           String
-  fileSize          Int       // Dimensione in bytes
-  mimeType          String
-  uploadedBy        String
-  userId            String?   // Utente associato (opzionale)
-  projectId         String?   // Progetto associato (opzionale)
-  category          String?   // Categoria del documento
-  tags              String[]  // Tag per categorizzazione
-  isPublic          Boolean   @default(false)
-  description       String?
-  uploadedAt        DateTime  @default(now())
-  
-  // Relazioni
-  uploadedByUser    ApplicationUser @relation("DocumentUploader", fields: [uploadedBy], references: [id], onDelete: Cascade)
-  user              ApplicationUser? @relation("DocumentOwner", fields: [userId], references: [id], onDelete: SetNull)
-  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  id               String           @id @default(uuid())
+  fileName         String
+  originalFileName String
+  fileUrl          String
+  fileSize         Int
+  mimeType         String
+  uploadedBy       String
+  userId           String?
+  projectId        String?
+  category         String?
+  tags             String[]
+  isPublic         Boolean          @default(false)
+  description      String?
+  uploadedAt       DateTime         @default(now())
+  project          Project?         @relation(fields: [projectId], references: [id])
+  uploadedByUser   ApplicationUser  @relation("DocumentUploader", fields: [uploadedBy], references: [id], onDelete: Cascade)
+  user             ApplicationUser? @relation("DocumentOwner", fields: [userId], references: [id])
 }
 
-// 🟢 8. Advanced Audit Log
 model AuditLog {
-  id                String    @id @default(uuid())
-  userId            String?   // Utente che ha effettuato l'azione
-  action            String    // Tipo di azione (CREATE, UPDATE, DELETE, LOGIN, etc.)
-  entityType        String    // Tipo di entità modificata
-  entityId          String?   // ID dell'entità
-  oldValues         Json?     // Valori precedenti
-  newValues         Json?     // Nuovi valori
-  ipAddress         String?
-  userAgent         String?
-  sessionId         String?
-  description       String?
-  severity          String    @default("INFO") // INFO, WARNING, ERROR, CRITICAL
-  timestamp         DateTime  @default(now())
-  
-  // Relazioni
-  user              ApplicationUser? @relation("AuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+  id          String           @id @default(uuid())
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String?
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String?
+  userAgent   String?
+  sessionId   String?
+  description String?
+  severity    String           @default("INFO")
+  timestamp   DateTime         @default(now())
+  user        ApplicationUser? @relation("AuditLogUser", fields: [userId], references: [id])
 }
 
-// 🟢 9. User Settings
 model UserSetting {
-  id                String    @id @default(uuid())
-  userId            String    @unique
-  theme             String    @default("LIGHT") // LIGHT, DARK, AUTO
-  language          String    @default("IT") // IT, EN, etc.
-  timezone          String    @default("Europe/Rome")
-  dateFormat        String    @default("DD/MM/YYYY")
-  timeFormat        String    @default("24H") // 12H, 24H
-  notificationPreferences Json? // Preferenze notifiche in JSON
-  dashboardLayout   Json?     // Layout personalizzato dashboard
-  emailNotifications Boolean  @default(true)
-  pushNotifications Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
-  // Relazioni
-  user              ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-} 
+  id                      String          @id @default(uuid())
+  userId                  String          @unique
+  theme                   String          @default("LIGHT")
+  language                String          @default("IT")
+  timezone                String          @default("Europe/Rome")
+  dateFormat              String          @default("DD/MM/YYYY")
+  timeFormat              String          @default("24H")
+  notificationPreferences Json?
+  dashboardLayout         Json?
+  emailNotifications      Boolean         @default(true)
+  pushNotifications       Boolean         @default(true)
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  user                    ApplicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

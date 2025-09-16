@@ -1,5 +1,7 @@
 import { app, HttpRequest, InvocationContext, HttpResponseInit } from '@azure/functions';
 import { skillTrainingService } from '../services/skill-training.service';
+import { verifyToken } from '../middlewares/auth';
+import { authService } from '../services/auth.service';
 
 // GET /api/skill-trainings - Get all skill trainings
 app.http('getAllSkillTrainings', {
@@ -67,8 +69,58 @@ app.http('createSkillTraining', {
   route: 'skill-trainings',
   handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     try {
-      const body = await request.json();
-      const training = await skillTrainingService.create(body);
+      const body = await request.json() as any;
+      
+      // Get current user from JWT token
+      const authHeader = request.headers.get('authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return {
+          status: 401,
+          jsonBody: { error: 'Authorization token required' }
+        };
+      }
+
+      const token = authHeader.substring(7);
+      const decodedToken = verifyToken(token);
+      
+      if (!decodedToken || !decodedToken.userId) {
+        return {
+          status: 401,
+          jsonBody: { error: 'Invalid token' }
+        };
+      }
+
+      // Get current user with roles and company info
+      const currentUser = await authService.getUserById(decodedToken.userId);
+      if (!currentUser) {
+        return {
+          status: 401,
+          jsonBody: { error: 'User not found' }
+        };
+      }
+
+      // Determine company ID based on user role
+      let companyId: string | undefined;
+      if (currentUser) {
+        const userRoles = currentUser.userRoles || [];
+        const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+        
+        if (isSuperAdmin) {
+          // Se l'utente corrente è super admin, il nuovo training viene associato alla sua società
+          companyId = currentUser.company || currentUser.id;
+        } else {
+          // Se l'utente corrente non è super admin, il nuovo training viene associato alla società dell'utente corrente
+          companyId = currentUser.company || undefined;
+        }
+      }
+
+      // Add company to the training data
+      const trainingData = {
+        ...body,
+        company: companyId
+      };
+
+      const training = await skillTrainingService.create(trainingData);
       
       return {
         status: 201,
@@ -99,8 +151,58 @@ app.http('updateSkillTraining', {
         };
       }
 
-      const body = await request.json();
-      const training = await skillTrainingService.update(id, body);
+      const body = await request.json() as any;
+      
+      // Get current user from JWT token
+      const authHeader = request.headers.get('authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return {
+          status: 401,
+          jsonBody: { error: 'Authorization token required' }
+        };
+      }
+
+      const token = authHeader.substring(7);
+      const decodedToken = verifyToken(token);
+      
+      if (!decodedToken || !decodedToken.userId) {
+        return {
+          status: 401,
+          jsonBody: { error: 'Invalid token' }
+        };
+      }
+
+      // Get current user with roles and company info
+      const currentUser = await authService.getUserById(decodedToken.userId);
+      if (!currentUser) {
+        return {
+          status: 401,
+          jsonBody: { error: 'User not found' }
+        };
+      }
+
+      // Determine company ID based on user role
+      let companyId: string | undefined;
+      if (currentUser) {
+        const userRoles = currentUser.userRoles || [];
+        const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+        
+        if (isSuperAdmin) {
+          // Se l'utente corrente è super admin, il training viene associato alla sua società
+          companyId = currentUser.company || currentUser.id;
+        } else {
+          // Se l'utente corrente non è super admin, il training viene associato alla società dell'utente corrente
+          companyId = currentUser.company || undefined;
+        }
+      }
+
+      // Add company to the training data
+      const trainingData = {
+        ...body,
+        company: companyId
+      };
+
+      const training = await skillTrainingService.update(id, trainingData);
       
       return {
         status: 200,
@@ -138,6 +240,37 @@ app.http('deleteSkillTraining', {
       };
     } catch (error) {
       context.error('Error deleting skill training:', error);
+      return {
+        status: 500,
+        jsonBody: { message: 'Internal server error' }
+      };
+    }
+  }
+});
+
+// GET /api/skill-trainings/company/:companyId - Get skill trainings by company
+app.http('getSkillTrainingsByCompany', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'skill-trainings/company/{companyId}',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const companyId = request.params.companyId;
+      if (!companyId) {
+        return {
+          status: 400,
+          jsonBody: { message: 'Company ID is required' }
+        };
+      }
+
+      const trainings = await skillTrainingService.getByCompany(companyId);
+      
+      return {
+        status: 200,
+        jsonBody: trainings
+      };
+    } catch (error) {
+      context.error('Error getting skill trainings by company:', error);
       return {
         status: 500,
         jsonBody: { message: 'Internal server error' }

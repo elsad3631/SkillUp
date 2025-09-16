@@ -1,5 +1,7 @@
 import { HttpRequest, InvocationContext, HttpResponseInit, app } from "@azure/functions";
 import { trainingEnrollmentService } from '../services/training-enrollment.service';
+import { verifyToken } from '../middlewares/auth';
+import { authService } from '../services/auth.service';
 
 // GET /api/training-enrollment - Get all training enrollments
 export async function trainingEnrollmentGetAll(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
@@ -220,8 +222,58 @@ export async function trainingEnrollmentCreate(request: HttpRequest, context: In
       };
     }
 
-    const body = await request.json();
-    const enrollment = await trainingEnrollmentService.create(body);
+    const body = await request.json() as any;
+    
+    // Get current user from JWT token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization token required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decodedToken = verifyToken(token);
+    
+    if (!decodedToken || !decodedToken.userId) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
+      };
+    }
+
+    // Get current user with roles and company info
+    const currentUser = await authService.getUserById(decodedToken.userId);
+    if (!currentUser) {
+      return {
+        status: 401,
+        jsonBody: { error: 'User not found' }
+      };
+    }
+
+    // Determine company ID based on user role
+    let companyId: string | undefined;
+    if (currentUser) {
+      const userRoles = currentUser.userRoles || [];
+      const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+      
+      if (isSuperAdmin) {
+        // Se l'utente corrente è super admin, il nuovo enrollment viene associato alla sua società
+        companyId = currentUser.company || currentUser.id;
+      } else {
+        // Se l'utente corrente non è super admin, il nuovo enrollment viene associato alla società dell'utente corrente
+        companyId = currentUser.company || undefined;
+      }
+    }
+
+    // Add company to the enrollment data
+    const enrollmentData = {
+      ...body,
+      company: companyId
+    };
+
+    const enrollment = await trainingEnrollmentService.create(enrollmentData);
 
     return {
       status: 201,
@@ -250,8 +302,58 @@ export async function trainingEnrollmentUpdate(request: HttpRequest, context: In
     }
 
     const id = (context.triggerMetadata?.id as string) || request.url.split('/').pop() || '';
-    const body = await request.json();
-    const enrollment = await trainingEnrollmentService.update(id, body);
+    const body = await request.json() as any;
+    
+    // Get current user from JWT token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization token required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decodedToken = verifyToken(token);
+    
+    if (!decodedToken || !decodedToken.userId) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
+      };
+    }
+
+    // Get current user with roles and company info
+    const currentUser = await authService.getUserById(decodedToken.userId);
+    if (!currentUser) {
+      return {
+        status: 401,
+        jsonBody: { error: 'User not found' }
+      };
+    }
+
+    // Determine company ID based on user role
+    let companyId: string | undefined;
+    if (currentUser) {
+      const userRoles = currentUser.userRoles || [];
+      const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+      
+      if (isSuperAdmin) {
+        // Se l'utente corrente è super admin, l'enrollment viene associato alla sua società
+        companyId = currentUser.company || currentUser.id;
+      } else {
+        // Se l'utente corrente non è super admin, l'enrollment viene associato alla società dell'utente corrente
+        companyId = currentUser.company || undefined;
+      }
+    }
+
+    // Add company to the enrollment data
+    const enrollmentData = {
+      ...body,
+      company: companyId
+    };
+
+    const enrollment = await trainingEnrollmentService.update(id, enrollmentData);
 
     return {
       status: 200,

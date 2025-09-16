@@ -272,7 +272,7 @@ export const exportService = {
       });
 
       // Set column widths
-      worksheet.columns.forEach(column => {
+      worksheet.columns.forEach((column) => {
         if (column.width) {
           column.width = Math.min(column.width, 50);
         }
@@ -508,7 +508,7 @@ export const exportService = {
 
       console.log('🔍 Include clause:', JSON.stringify(includeClause, null, 2));
 
-      const customers = await prisma.customer.findMany({
+      const customers = await (prisma as any).customer.findMany({
         where: whereClause,
         include: includeClause
       });
@@ -630,7 +630,7 @@ export const exportService = {
       });
 
       // Set column widths
-      worksheet.columns.forEach(column => {
+      worksheet.columns.forEach((column) => {
         if (column.width) {
           column.width = Math.min(column.width, 50);
         }
@@ -763,7 +763,7 @@ export const exportService = {
     industries: string[];
   }> {
     try {
-      const industries = await prisma.customer.findMany({
+      const industries = await (prisma as any).customer.findMany({
         where: {
           industry: { not: null },
           ...(companyId ? { company: companyId } : {})
@@ -773,7 +773,7 @@ export const exportService = {
       });
 
       return {
-        industries: industries.map(i => i.industry!).filter(Boolean)
+        industries: industries.map((i: any) => i.industry!).filter(Boolean)
       };
     } catch (error) {
       console.error('Error getting customer export filters:', error);
@@ -973,7 +973,7 @@ export const exportService = {
       });
 
       // Set column widths
-      worksheet.columns.forEach(column => {
+      worksheet.columns.forEach((column) => {
         if (column.width) {
           column.width = Math.min(column.width, 50);
         }

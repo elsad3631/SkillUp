@@ -1,6 +1,7 @@
 import { HttpRequest, InvocationContext, HttpResponseInit, app } from '@azure/functions';
 import { CustomerService, CreateCustomerDto, UpdateCustomerDto } from '../services/customer.service';
 import { verifyToken, DecodedToken } from '../middlewares/auth';
+import { authService } from '../services/auth.service';
 
 const customerService = new CustomerService();
 
@@ -108,7 +109,56 @@ export async function customerCreate(request: HttpRequest, context: InvocationCo
       };
     }
 
-    const newCustomer = await customerService.createCustomer(body);
+    // Get current user from JWT token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization token required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decodedToken = verifyToken(token);
+    
+    if (!decodedToken || !decodedToken.userId) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
+      };
+    }
+
+    // Get current user with roles and company info
+    const currentUser = await authService.getUserById(decodedToken.userId);
+    if (!currentUser) {
+      return {
+        status: 401,
+        jsonBody: { error: 'User not found' }
+      };
+    }
+
+    // Determine company ID based on user role
+    let companyId: string | undefined;
+    if (currentUser) {
+      const userRoles = currentUser.userRoles || [];
+      const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+      
+      if (isSuperAdmin) {
+        // Se l'utente corrente è super admin, il nuovo customer viene associato alla sua società
+        companyId = currentUser.company || currentUser.id;
+      } else {
+        // Se l'utente corrente non è super admin, il nuovo customer viene associato alla società dell'utente corrente
+        companyId = currentUser.company || undefined;
+      }
+    }
+
+    // Add company to the customer data
+    const customerData = {
+      ...body,
+      company: companyId
+    };
+
+    const newCustomer = await customerService.createCustomer(customerData);
     return {
       status: 201,
       jsonBody: newCustomer
@@ -144,7 +194,57 @@ export async function customerUpdate(request: HttpRequest, context: InvocationCo
     }
 
     const body = await request.json() as UpdateCustomerDto;
-    const updatedCustomer = await customerService.updateCustomer(id, body);
+    
+    // Get current user from JWT token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Authorization token required' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const decodedToken = verifyToken(token);
+    
+    if (!decodedToken || !decodedToken.userId) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Invalid token' }
+      };
+    }
+
+    // Get current user with roles and company info
+    const currentUser = await authService.getUserById(decodedToken.userId);
+    if (!currentUser) {
+      return {
+        status: 401,
+        jsonBody: { error: 'User not found' }
+      };
+    }
+
+    // Determine company ID based on user role
+    let companyId: string | undefined;
+    if (currentUser) {
+      const userRoles = currentUser.userRoles || [];
+      const isSuperAdmin = userRoles.some((ur: any) => ur.name === 'superadmin');
+      
+      if (isSuperAdmin) {
+        // Se l'utente corrente è super admin, il customer viene associato alla sua società
+        companyId = currentUser.company || currentUser.id;
+      } else {
+        // Se l'utente corrente non è super admin, il customer viene associato alla società dell'utente corrente
+        companyId = currentUser.company || undefined;
+      }
+    }
+
+    // Add company to the customer data
+    const customerData = {
+      ...body,
+      company: companyId
+    };
+
+    const updatedCustomer = await customerService.updateCustomer(id, customerData);
     
     return {
       status: 200,

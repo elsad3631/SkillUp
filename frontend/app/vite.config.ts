@@ -16,6 +16,9 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 3000,
   },
+  define: {
+    'import.meta.env.VITE_APP_API_URL': JSON.stringify('http://localhost:7071/api'),
+  },
   server: {
     proxy: {
       '/api': {

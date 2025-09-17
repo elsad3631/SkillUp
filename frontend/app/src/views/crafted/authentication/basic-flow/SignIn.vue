@@ -1,20 +1,20 @@
 <template>
   <!--begin::Form-->
   <VForm
-    class="form w-100"
+    class="form w-100 fv-plugins-bootstrap5 fv-plugins-framework p-3 p-md-4"
     id="kt_login_signin_form"
     @submit="onSubmitLogin"
     :validation-schema="login"
     :initial-values="{ email: '', password: '' }"
   >
     <!--begin::Heading-->
-    <div class="text-center mb-8">
+    <div class="text-center mb-3 mb-md-4">
       <!--begin::Title-->
-      <h1 class="auth-title">Welcome Back!</h1>
+      <h1 class="auth-title mb-2">Welcome Back!</h1>
       <!--end::Title-->
 
       <!--begin::Subtitle-->
-      <p class="auth-subtitle">Sign in to your account to continue</p>
+      <p class="auth-subtitle mb-2">Sign in to your account to continue</p>
       <!--end::Subtitle-->
 
       <!--begin::Link-->
@@ -26,26 +26,18 @@
       </div>
       <!--end::Link-->
     </div>
-    <!--begin::Heading-->
+    <!--end::Heading-->
 
     <!--begin::Input group-->
-    <div class="form-group mb-6">
-      <!--begin::Label-->
-      <label class="form-label">
-        Email Address
-      </label>
-      <!--end::Label-->
-
-      <!--begin::Input-->
+    <div class="mb-3">
       <Field
         tabindex="1"
-        class="form-input"
+        class="form-control form-input"
         type="email"
         name="email"
-        placeholder="Enter your email address"
+        placeholder="Email Address"
         autocomplete="email"
       />
-      <!--end::Input-->
       <div class="error-container">
         <ErrorMessage name="email" />
       </div>
@@ -53,38 +45,28 @@
     <!--end::Input group-->
 
     <!--begin::Input group-->
-    <div class="form-group mb-8">
-      <!--begin::Wrapper-->
-      <div class="label-container">
-        <!--begin::Label-->
-        <label class="form-label">
-          Password
-        </label>
-        <!--end::Label-->
-
-        <!--begin::Link-->
-        <router-link to="/password-reset" class="forgot-link">
-          Forgot Password?
-        </router-link>
-        <!--end::Link-->
-      </div>
-      <!--end::Wrapper-->
-
-      <!--begin::Input-->
+    <div class="mb-3">
       <Field
         tabindex="2"
-        class="form-input"
+        class="form-control form-input"
         type="password"
         name="password"
-        placeholder="Enter your password"
+        placeholder="Password"
         autocomplete="current-password"
       />
-      <!--end::Input-->
       <div class="error-container">
         <ErrorMessage name="password" />
       </div>
     </div>
     <!--end::Input group-->
+
+    <!--begin::Forgot Password Link-->
+    <div class="text-end mb-3">
+      <router-link to="/password-reset" class="forgot-link">
+        Forgot Password?
+      </router-link>
+    </div>
+    <!--end::Forgot Password Link-->
 
     <!--begin::Actions-->
     <div class="text-center">
@@ -94,7 +76,7 @@
         type="submit"
         ref="submitButton"
         id="kt_sign_in_submit"
-        class="submit-button"
+        class="btn btn-primary btn-lg w-100 submit-button"
         :disabled="isLoading"
       >
         <span class="indicator-label">
@@ -119,7 +101,7 @@ import { defineComponent, ref } from "vue";
 import { ErrorMessage, Field, Form as VForm, useForm } from "vee-validate";
 import { useAuthStore, type User } from "@/stores/auth";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import * as Yup from "yup";
 
 export default defineComponent({
@@ -132,6 +114,7 @@ export default defineComponent({
   setup() {
     const store = useAuthStore();
     const router = useRouter();
+    const toast = useToast();
 
     const submitButton = ref<HTMLButtonElement | null>(null);
     const isLoading = ref(false);
@@ -161,47 +144,15 @@ export default defineComponent({
         const error = Object.values(store.errors);
 
         if (error.length === 0) {
-          Swal.fire({
-            title: "Welcome Back!",
-            text: "You have successfully signed in to your account.",
-            icon: "success",
-            buttonsStyling: false,
-            confirmButtonText: "Continue",
-            heightAuto: false,
-            customClass: {
-              confirmButton: "btn fw-semobold btn-light-primary",
-            },
-          }).then(() => {
-            // Go to page after successfully login
-            router.push({ name: "dashboard" });
-          });
+          toast.success("Welcome Back! You have successfully signed in to your account.");
+          // Go to page after successfully login
+          router.push({ name: "dashboard" });
         } else {
-          Swal.fire({
-            title: "Sign In Failed",
-            text: error[0] as string,
-            icon: "error",
-            buttonsStyling: false,
-            confirmButtonText: "Try Again",
-            heightAuto: false,
-            customClass: {
-              confirmButton: "btn fw-semobold btn-light-danger",
-            },
-          }).then(() => {
-            store.errors = {};
-          });
+          toast.error(error[0] as string);
+          store.errors = {};
         }
       } catch (error) {
-        Swal.fire({
-          title: "Connection Error",
-          text: "Unable to connect to the server. Please check your internet connection and try again.",
-          icon: "error",
-          buttonsStyling: false,
-          confirmButtonText: "Try Again",
-          heightAuto: false,
-          customClass: {
-            confirmButton: "btn fw-semobold btn-light-danger",
-          },
-        });
+        toast.error("Unable to connect to the server. Please check your internet connection and try again.");
       } finally {
         //Deactivate indicator
         submitButton.value?.removeAttribute("data-kt-indicator");
@@ -222,9 +173,15 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* Solo stili essenziali per il tema personalizzato */
+.form {
+  min-height: auto;
+  overflow: visible;
+}
+
 .auth-title {
   color: white;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -232,13 +189,13 @@ export default defineComponent({
 
 .auth-subtitle {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
 }
 
 .auth-link-container {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 
@@ -255,56 +212,35 @@ export default defineComponent({
   text-decoration: none;
 }
 
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  color: white;
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.875rem 1rem;
+.form-input,
+.form-select {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 1rem;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  font-size: 1rem;
 }
 
 .form-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  font-size: 1rem;
 }
 
-.form-input:focus {
+.form-input:focus,
+.form-select:focus {
   outline: none;
   border-color: #6366f1;
   background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.form-input:focus::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.label-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
 .forgot-link {
   color: #6366f1;
   text-decoration: none;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: color 0.3s ease;
 }
@@ -320,20 +256,16 @@ export default defineComponent({
 
 .error-container :deep(.fv-help-block) {
   color: #ef4444;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   margin: 0;
 }
 
 .submit-button {
-  width: 100%;
-  padding: 0.875rem 1.5rem;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   border: none;
   border-radius: 12px;
   color: white;
   font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
@@ -362,17 +294,58 @@ export default defineComponent({
   align-items: center;
 }
 
+/* Responsive con Bootstrap */
 @media (max-width: 768px) {
   .auth-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
   
-  .form-input {
-    padding: 0.75rem 0.875rem;
+  .auth-subtitle {
+    font-size: 0.85rem;
   }
   
-  .submit-button {
-    padding: 0.75rem 1.25rem;
+  .form-input,
+  .form-select {
+    font-size: 0.95rem;
+  }
+  
+  .form-input::placeholder {
+    font-size: 0.95rem;
+  }
+  
+  .forgot-link {
+    font-size: 0.8rem;
+  }
+  
+  .error-container :deep(.fv-help-block) {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-title {
+    font-size: 1.375rem;
+  }
+  
+  .auth-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .form-input,
+  .form-select {
+    font-size: 0.9rem;
+  }
+  
+  .form-input::placeholder {
+    font-size: 0.9rem;
+  }
+  
+  .forgot-link {
+    font-size: 0.75rem;
+  }
+  
+  .error-container :deep(.fv-help-block) {
+    font-size: 0.75rem;
   }
 }
 </style>

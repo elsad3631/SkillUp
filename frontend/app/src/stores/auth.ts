@@ -68,10 +68,11 @@ export const useAuthStore = defineStore("auth", () => {
     return ApiService.post("auth/register", credentials)
       .then(({ data }) => {
         // Dopo la registrazione, effettua il login per ottenere il token
-        login({ email: credentials.email, password: credentials.password });
+        return login({ email: credentials.email, password: credentials.password });
       })
       .catch(({ response }) => {
         setError(response.data.errors);
+        throw response; // Rilancia l'errore per permettere al componente di gestirlo
       });
   }
 

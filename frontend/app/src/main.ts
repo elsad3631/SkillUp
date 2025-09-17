@@ -9,6 +9,9 @@ TIP: To get started with clean router change path to @/router/clean.ts.
 import router from "./router";
 import ElementPlus from "element-plus";
 import i18n from "@/core/plugins/i18n";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
+import "@/assets/css/toast-custom.css";
 
 //imports for app initialization
 import ApiService from "@/core/services/ApiService";
@@ -24,6 +27,20 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(ElementPlus);
+app.use(Toast, {
+  position: "top-right",
+  timeout: 5000,
+  closeOnClick: true,
+  pauseOnFocusLoss: true,
+  pauseOnHover: true,
+  draggable: true,
+  draggablePercent: 0.6,
+  showCloseButtonOnHover: false,
+  hideProgressBar: false,
+  closeButton: "button",
+  icon: true,
+  rtl: false
+});
 
 ApiService.init(app);
 initApexCharts(app);

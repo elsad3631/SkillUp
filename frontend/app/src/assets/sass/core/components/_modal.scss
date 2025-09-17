@@ -5,3 +5,424 @@
 .modal-rounded {
 	border-radius: $modal-content-border-radius !important;	
 }
+
+// Custom modal backdrop styling for more opaque and transparent effect
+.modal-backdrop {
+	background-color: rgba(0, 0, 0, 0.7) !important;
+	backdrop-filter: blur(10px) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+}
+
+.modal-backdrop.fade {
+	background-color: rgba(0, 0, 0, 0.7) !important;
+	backdrop-filter: blur(10px) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+}
+
+.modal-backdrop.show {
+	background-color: rgba(0, 0, 0, 0.7) !important;
+	backdrop-filter: blur(10px) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+}
+
+// Custom modal content styling for more opaque and transparent effect
+.modal-content {
+	background: rgba(255, 255, 255, 0.1) !important;
+	backdrop-filter: blur(10px) !important;
+	-webkit-backdrop-filter: blur(10px) !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	border-radius: 12px !important;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+// Dark theme support
+[data-bs-theme="dark"] .modal-content {
+	background: rgba(0, 0, 0, 0.3) !important;
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+// Modal header styling
+.modal-header {
+	background: transparent !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+	color: white !important;
+}
+
+.modal-header h2,
+.modal-header h3,
+.modal-header h4,
+.modal-header h5,
+.modal-header h6 {
+	color: white !important;
+}
+
+// Modal body styling
+.modal-body {
+	background: transparent !important;
+	color: white !important;
+}
+
+// Modal footer styling
+.modal-footer {
+	background: transparent !important;
+	border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+// Dark theme overrides
+[data-bs-theme="dark"] .modal-header {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-bs-theme="dark"] .modal-footer {
+	border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+// Form elements inside modals
+.modal-content .form-control,
+.modal-content .form-select {
+	background: rgba(255, 255, 255, 0.1) !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	color: white !important;
+	backdrop-filter: blur(5px) !important;
+	-webkit-backdrop-filter: blur(5px) !important;
+}
+
+.modal-content .form-control::placeholder,
+.modal-content .form-select::placeholder {
+	color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.modal-content .form-control:focus,
+.modal-content .form-select:focus {
+	background: rgba(255, 255, 255, 0.15) !important;
+	border-color: #6366f1 !important;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+.modal-content .form-label {
+	color: white !important;
+}
+
+.modal-content .card {
+	background: rgba(255, 255, 255, 0.05) !important;
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-content .card-header {
+	background: rgba(255, 255, 255, 0.05) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.modal-content .card-body {
+	background: transparent !important;
+}
+
+// Enhanced User Experience & Attractive Styling
+// ================================================
+
+// Smooth animations for modal appearance
+.modal.fade .modal-dialog {
+	transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+	transform: scale(0.8) translateY(-50px) !important;
+	opacity: 0 !important;
+}
+
+.modal.show .modal-dialog {
+	transform: scale(1) translateY(0) !important;
+	opacity: 1 !important;
+}
+
+// Enhanced modal content with better visual hierarchy
+.modal-content {
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	transform: translateY(0) !important;
+	
+	&:hover {
+		transform: translateY(-2px) !important;
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+	}
+}
+
+// Beautiful gradient backgrounds for different themes
+.modal-content {
+	background: linear-gradient(135deg, 
+		rgba(255, 255, 255, 0.15) 0%, 
+		rgba(255, 255, 255, 0.05) 100%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.3) !important;
+	box-shadow: 
+		0 8px 32px rgba(0, 0, 0, 0.3),
+		inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+// Dark theme with beautiful gradients
+[data-bs-theme="dark"] .modal-content {
+	background: linear-gradient(135deg, 
+		rgba(0, 0, 0, 0.4) 0%, 
+		rgba(0, 0, 0, 0.2) 100%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	box-shadow: 
+		0 8px 32px rgba(0, 0, 0, 0.5),
+		inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+// Enhanced header with gradient and better typography
+.modal-header {
+	background: linear-gradient(135deg, 
+		rgba(255, 255, 255, 0.1) 0%, 
+		rgba(255, 255, 255, 0.05) 100%) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+	padding: 1.5rem 2rem !important;
+	border-radius: 12px 12px 0 0 !important;
+	
+	h2, h3, h4, h5, h6 {
+		color: white !important;
+		font-weight: 600 !important;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+		margin: 0 !important;
+	}
+}
+
+// Enhanced close button
+.modal-header .btn-close {
+	background: rgba(255, 255, 255, 0.1) !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	border-radius: 8px !important;
+	width: 2.5rem !important;
+	height: 2.5rem !important;
+	transition: all 0.3s ease !important;
+	
+	&:hover {
+		background: rgba(255, 255, 255, 0.2) !important;
+		transform: scale(1.1) !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+	}
+}
+
+// Enhanced body with better spacing and typography
+.modal-body {
+	padding: 2rem !important;
+	color: rgba(255, 255, 255, 0.9) !important;
+	line-height: 1.6 !important;
+	
+	// Better spacing for form elements
+	.row {
+		margin-bottom: 1.5rem !important;
+	}
+}
+
+// Enhanced form controls with modern styling
+.modal-content .form-control,
+.modal-content .form-select {
+	background: rgba(255, 255, 255, 0.1) !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	color: white !important;
+	border-radius: 8px !important;
+	padding: 0.75rem 1rem !important;
+	font-size: 0.95rem !important;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+	
+	&:hover {
+		background: rgba(255, 255, 255, 0.15) !important;
+		border-color: rgba(255, 255, 255, 0.3) !important;
+		transform: translateY(-1px) !important;
+	}
+	
+	&:focus {
+		background: rgba(255, 255, 255, 0.2) !important;
+		border-color: #6366f1 !important;
+		box-shadow: 
+			0 0 0 3px rgba(99, 102, 241, 0.2),
+			inset 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+		transform: translateY(-1px) !important;
+	}
+}
+
+// Enhanced labels with better visibility
+.modal-content .form-label {
+	color: rgba(255, 255, 255, 0.9) !important;
+	font-weight: 500 !important;
+	font-size: 0.9rem !important;
+	margin-bottom: 0.5rem !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+	
+	&.required::after {
+		content: " *" !important;
+		color: #f1416c !important;
+		font-weight: bold !important;
+	}
+}
+
+// Enhanced placeholder text
+.modal-content .form-control::placeholder,
+.modal-content .form-select::placeholder {
+	color: rgba(255, 255, 255, 0.6) !important;
+	font-style: italic !important;
+}
+
+// Enhanced cards with better visual hierarchy
+.modal-content .card {
+	background: rgba(255, 255, 255, 0.08) !important;
+	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	border-radius: 12px !important;
+	transition: all 0.3s ease !important;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+	
+	&:hover {
+		background: rgba(255, 255, 255, 0.12) !important;
+		transform: translateY(-2px) !important;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+	}
+}
+
+.modal-content .card-header {
+	background: rgba(255, 255, 255, 0.1) !important;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+	border-radius: 12px 12px 0 0 !important;
+	padding: 1rem 1.5rem !important;
+	
+	.card-title {
+		color: white !important;
+		font-weight: 600 !important;
+		font-size: 1.1rem !important;
+		margin: 0 !important;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+	}
+}
+
+.modal-content .card-body {
+	padding: 1.5rem !important;
+}
+
+// Enhanced buttons with modern styling
+.modal-content .btn {
+	border-radius: 8px !important;
+	font-weight: 500 !important;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+	
+	&:hover {
+		transform: translateY(-2px) !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+	}
+	
+	&:active {
+		transform: translateY(0) !important;
+	}
+}
+
+.modal-content .btn-primary {
+	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+	border: none !important;
+	color: white !important;
+	
+	&:hover {
+		background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+	}
+}
+
+.modal-content .btn-light {
+	background: rgba(255, 255, 255, 0.1) !important;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	color: white !important;
+	
+	&:hover {
+		background: rgba(255, 255, 255, 0.2) !important;
+		border-color: rgba(255, 255, 255, 0.3) !important;
+	}
+}
+
+// Enhanced footer with better button spacing
+.modal-footer {
+	padding: 1.5rem 2rem !important;
+	border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+	border-radius: 0 0 12px 12px !important;
+	background: rgba(255, 255, 255, 0.05) !important;
+	
+	.btn {
+		margin-left: 0.5rem !important;
+		margin-right: 0.5rem !important;
+		padding: 0.75rem 1.5rem !important;
+		min-width: 100px !important;
+	}
+}
+
+// Enhanced tabs styling
+.modal-content .nav-tabs {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+	margin-bottom: 2rem !important;
+	
+	.nav-link {
+		color: rgba(255, 255, 255, 0.7) !important;
+		border: 1px solid transparent !important;
+		border-radius: 8px 8px 0 0 !important;
+		padding: 0.75rem 1.5rem !important;
+		transition: all 0.3s ease !important;
+		
+		&:hover {
+			color: white !important;
+			background: rgba(255, 255, 255, 0.1) !important;
+			border-color: rgba(255, 255, 255, 0.2) !important;
+		}
+		
+		&.active {
+			color: white !important;
+			background: rgba(255, 255, 255, 0.15) !important;
+			border-color: rgba(255, 255, 255, 0.2) !important;
+			border-bottom-color: transparent !important;
+		}
+	}
+}
+
+// Enhanced form text and help text
+.modal-content .form-text {
+	color: rgba(255, 255, 255, 0.6) !important;
+	font-size: 0.85rem !important;
+	margin-top: 0.5rem !important;
+}
+
+// Smooth scrollbar for modal body
+.modal-body.scroll-y {
+	scrollbar-width: thin !important;
+	scrollbar-color: rgba(255, 255, 255, 0.3) transparent !important;
+	
+	&::-webkit-scrollbar {
+		width: 6px !important;
+	}
+	
+	&::-webkit-scrollbar-track {
+		background: transparent !important;
+	}
+	
+	&::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.3) !important;
+		border-radius: 3px !important;
+	}
+	
+	&::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.5) !important;
+	}
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+	.modal-content {
+		margin: 1rem !important;
+		border-radius: 8px !important;
+	}
+	
+	.modal-header,
+	.modal-footer {
+		padding: 1rem !important;
+	}
+	
+	.modal-body {
+		padding: 1rem !important;
+	}
+	
+	.modal-content .form-control,
+	.modal-content .form-select {
+		padding: 0.6rem 0.8rem !important;
+		font-size: 0.9rem !important;
+	}
+}

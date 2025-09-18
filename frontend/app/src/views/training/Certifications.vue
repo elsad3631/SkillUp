@@ -132,7 +132,9 @@
       <div class="modal-content modern-modal-content">
         <div class="modal-header modern-modal-header">
           <h5 class="modal-title">{{ editingCertification ? 'Edit Certification' : 'New Certification' }}</h5>
-          <button @click="closeCertificationModal" type="button" class="btn-close modern-btn-close"></button>
+          <button @click="closeCertificationModal" type="button" class="btn btn-icon btn-sm btn-active-icon-primary modern-btn-close">
+            <KTIcon icon-name="cross" icon-class="fs-1" />
+          </button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="saveCertification">
@@ -662,7 +664,7 @@ export default defineComponent({
 
 /* Modern modal styling */
 .modal.show {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, var(--bs-modal-backdrop-opacity, 0.8));
   backdrop-filter: blur(4px);
 }
 

@@ -16,6 +16,9 @@
     // Bootstrap general    
     --#{$prefix}white-bg-rgb: #{to-rgb($white)};
     --#{$prefix}black-bg-rgb: #{to-rgb($black)};
+    
+    // Modal backdrop opacity
+    --#{$prefix}modal-backdrop-opacity: #{$modal-backdrop-opacity};
 }
 
 @include color-mode(light) {

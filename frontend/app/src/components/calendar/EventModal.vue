@@ -9,13 +9,13 @@
     @click.self="closeModal"
   >
     <div class="modal-dialog modal-dialog-centered mw-650px">
-      <div class="modal-content">
+      <div class="modal-content modern-modal-content">
         <!--begin::Modal header-->
-        <div class="modal-header">
+        <div class="modal-header modern-modal-header">
           <h2 class="fw-bold">
             {{ mode === 'create' ? 'Nuovo Evento' : 'Modifica Evento' }}
           </h2>
-          <div class="btn btn-icon btn-sm btn-active-icon-primary" @click="closeModal">
+          <div class="btn btn-icon btn-sm btn-active-icon-primary modern-btn-close" @click="closeModal">
             <KTIcon icon-name="cross" icon-class="fs-1" />
           </div>
         </div>
@@ -404,10 +404,10 @@
         <!--end::Modal body-->
 
         <!--begin::Modal footer-->
-        <div class="modal-footer">
+        <div class="modal-footer modern-modal-footer">
           <button
             type="button"
-            class="btn btn-light"
+            class="btn btn-light modern-btn"
             @click="closeModal"
           >
             Annulla
@@ -416,7 +416,7 @@
           <button
             v-if="mode === 'edit'"
             type="button"
-            class="btn btn-danger"
+            class="btn btn-danger modern-btn"
             @click="handleDelete"
           >
             Elimina
@@ -424,7 +424,7 @@
           
           <button
             type="button"
-            class="btn btn-primary"
+            class="btn btn-primary modern-btn"
             @click="handleSubmit"
             :disabled="loading"
           >
@@ -829,12 +829,85 @@ export default defineComponent({
 
 <style lang="scss">
 .modal.show {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, var(--bs-modal-backdrop-opacity, 0.8));
+  backdrop-filter: blur(4px);
 }
 
 .form-check-input:checked {
   background-color: #3699ff;
   border-color: #3699ff;
+}
+
+.modern-modal-content {
+  border-radius: 16px;
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modern-modal-header {
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.05), rgba(var(--bs-primary-rgb), 0.1));
+  border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+  border-radius: 16px 16px 0 0;
+}
+
+.modern-modal-footer {
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.02), rgba(var(--bs-primary-rgb), 0.05));
+  border-top: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+  border-radius: 0 0 16px 16px;
+}
+
+.modern-btn-close {
+  transition: all 0.2s ease;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modern-btn-close:hover {
+  background-color: rgba(var(--bs-danger-rgb), 0.1);
+  transform: scale(1.1);
+}
+
+.modern-btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.modern-btn:hover::before {
+  left: 100%;
+}
+
+.modern-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 // Stili per la selezione partecipanti

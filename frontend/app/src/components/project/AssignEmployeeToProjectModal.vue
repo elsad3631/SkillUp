@@ -78,9 +78,9 @@
                   
                   <!--begin::Filters-->
                   <div class="card-body border-bottom bg-light-success bg-opacity-25 py-4">
-                    <div class="row g-3">
+                    <div class="row g-3 align-items-center">
                       <!--begin::Search-->
-                      <div class="col-md-8">
+                      <div class="col-md-6">
                         <div class="position-relative">
                           <i class="ki-duotone ki-magnifier fs-3 position-absolute top-50 start-0 translate-middle-y ms-4 text-muted">
                             <span class="path1"></span>
@@ -96,22 +96,89 @@
                       </div>
                       <!--end::Search-->
                       
-                      <!--begin::Department Filter-->
-                      <div class="col-md-4">
-                        <select
-                          v-model="filters.department"
-                          class="form-select form-select-solid"
-                        >
-                          <option value="">All Departments</option>
-                          <option value="Development">Development</option>
-                          <option value="Design">Design</option>
-                          <option value="Marketing">Marketing</option>
-                          <option value="Sales">Sales</option>
-                          <option value="HR">HR</option>
-                        </select>
+                      <!--begin::Smart Search-->
+                      <div class="col-md-6">
+                        <div class="smart-search-container">
+                          <div class="d-flex align-items-center gap-2 mb-2">
+                            <button
+                              @click="performSmartSearch"
+                              :disabled="smartSearchLoading"
+                              class="btn btn-light-success btn-sm d-flex align-items-center"
+                              title="Find employees matching project skills"
+                            >
+                              <span v-if="!smartSearchLoading" class="indicator-label">
+                                <i class="ki-duotone ki-magic-wand fs-6 me-1">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                  <span class="path3"></span>
+                                  <span class="path4"></span>
+                                  <span class="path5"></span>
+                                </i>
+                                Smart Search
+                              </span>
+                              <span v-if="smartSearchLoading" class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm align-middle me-1"></span>
+                                Analyzing...
+                              </span>
+                            </button>
+                            
+                            <button
+                              v-if="searchResultsSummary"
+                              @click="clearSmartSearch"
+                              class="btn btn-light-danger btn-sm"
+                              title="Clear smart search results"
+                            >
+                              <i class="ki-duotone ki-cross fs-6">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                              </i>
+                            </button>
+                          </div>
+                          
+                          <div class="form-check form-check-custom form-check-solid">
+                            <input
+                              v-model="includeSoftSkills"
+                              class="form-check-input"
+                              type="checkbox"
+                              id="includeSoftSkills"
+                            />
+                            <label class="form-check-label fs-7 text-muted" for="includeSoftSkills">
+                              <i class="ki-duotone ki-profile-user fs-7 me-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                                <span class="path4"></span>
+                              </i>
+                              Include Soft Skills
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                      <!--end::Department Filter-->
+                      <!--end::Smart Search-->
                     </div>
+                    
+                    <!--begin::Search Results Summary-->
+                    <div v-if="searchResultsSummary" class="d-flex align-items-center gap-2 mt-3">
+                      <span class="badge badge-light-success fs-7">
+                        <i class="ki-duotone ki-magic-wand fs-7 me-1">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                          <span class="path4"></span>
+                          <span class="path5"></span>
+                        </i>
+                        {{ searchResultsSummary.totalMatches }} matches
+                      </span>
+                      <span class="badge badge-light-info fs-7">
+                        <i class="ki-duotone ki-chart-pie-4 fs-7 me-1">
+                          <span class="path1"></span>
+                          <span class="path2"></span>
+                          <span class="path3"></span>
+                        </i>
+                        Avg: {{ Math.round(searchResultsSummary.averageScore) }}%
+                      </span>
+                    </div>
+                    <!--end::Search Results Summary-->
                     
                     <!--begin::Active Filters-->
                     <div v-if="hasActiveFilters" class="d-flex flex-wrap gap-2 mt-3">
@@ -229,6 +296,33 @@
                                     </i>
                                     {{ employee.phone }}
                                   </span>
+                                  
+                                  <!--begin::Skill Match Indicator-->
+                                  <span v-if="employee.skillMatchScore !== undefined" :class="getMatchScoreBadgeClass(employee.skillMatchScore)" class="badge fs-8">
+                                    <i class="ki-duotone ki-magic-wand fs-7 me-1">
+                                      <span class="path1"></span>
+                                      <span class="path2"></span>
+                                      <span class="path3"></span>
+                                      <span class="path4"></span>
+                                      <span class="path5"></span>
+                                    </i>
+                                    {{ Math.round(employee.skillMatchScore) }}% Match
+                                  </span>
+                                  <!--end::Skill Match Indicator-->
+                                  
+                                  <!--begin::Skill Details Tooltip-->
+                                  <span v-if="employee.skillMatchScore !== undefined" class="badge badge-light-secondary fs-8 cursor-pointer" 
+                                        :title="getSkillMatchTooltip(employee)"
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top">
+                                    <i class="ki-duotone ki-information-5 fs-7 me-1">
+                                      <span class="path1"></span>
+                                      <span class="path2"></span>
+                                      <span class="path3"></span>
+                                    </i>
+                                    Details
+                                  </span>
+                                  <!--end::Skill Details Tooltip-->
                                 </div>
                               </div>
                               <!--end::Employee Info-->
@@ -506,8 +600,8 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, watch } from "vue";
-import { getApplicationUsers } from "@/core/services/businessServices/ApplicationUser";
-import { assignProjectToEmployee } from "@/core/services/businessServices/Project";
+import { getNonSuperAdminUsers } from "@/core/services/businessServices/ApplicationUser";
+import { assignProjectToEmployee, smartSearchEmployees } from "@/core/services/businessServices/Project";
 import { getAssetPath } from "@/core/helpers/assets";
 import { hideModal } from "@/core/helpers/dom";
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -531,7 +625,14 @@ export default defineComponent({
     const assignEmployeeToProjectModalRef = ref<HTMLElement | null>(null);
     const isLoading = ref(false);
     const employeesLoading = ref(false);
+    const smartSearchLoading = ref(false);
     const availableEmployees = ref<any[]>([]);
+    const includeSoftSkills = ref(true);
+    const searchResultsSummary = ref<{
+      totalMatches: number;
+      averageScore: number;
+      includeSoftSkills: boolean;
+    } | null>(null);
     
     const formData = ref({
       selectedEmployees: [] as string[],
@@ -621,16 +722,140 @@ export default defineComponent({
       };
     };
 
+    // Badge class per il punteggio di match
+    const getMatchScoreBadgeClass = (score: number) => {
+      if (score >= 90) return "badge-light-success";
+      if (score >= 70) return "badge-light-primary";
+      if (score >= 50) return "badge-light-warning";
+      if (score >= 30) return "badge-light-info";
+      return "badge-light-danger";
+    };
+
+    // Tooltip con dettagli del match delle skills
+    const getSkillMatchTooltip = (employee: any) => {
+      const hardSkills = employee.hardSkills || [];
+      const softSkills = employee.softSkills || [];
+      
+      let tooltip = `Match Score: ${Math.round(employee.skillMatchScore || 0)}%\n\n`;
+      
+      if (hardSkills.length > 0) {
+        tooltip += `Hard Skills: ${hardSkills.length}\n`;
+        hardSkills.forEach(skill => {
+          tooltip += `• ${skill.name} (Level: ${skill.proficiencyLevel || 1})\n`;
+        });
+      }
+      
+      if (softSkills.length > 0) {
+        tooltip += `\nSoft Skills: ${softSkills.length}\n`;
+        softSkills.forEach(skill => {
+          tooltip += `• ${skill.name} (Level: ${skill.proficiencyLevel || 1})\n`;
+        });
+      }
+      
+      return tooltip;
+    };
+
+    // Pulisce i risultati della smart search
+    const clearSmartSearch = () => {
+      searchResultsSummary.value = null;
+      // Rimuove i punteggi di match dagli employee
+      availableEmployees.value = availableEmployees.value.map(employee => ({
+        ...employee,
+        skillMatchScore: undefined
+      }));
+    };
+
+    // Smart search per employee basati sulle skills del progetto
+    const performSmartSearch = async () => {
+      smartSearchLoading.value = true;
+      try {
+        // Chiama l'API per la smart search
+        const result = await smartSearchEmployees(
+          props.projectId,
+          includeSoftSkills.value
+        );
+
+        if (!result) {
+          Swal.fire({
+            title: "Errore!",
+            text: "Impossibile eseguire la ricerca intelligente",
+            icon: "error",
+            confirmButtonText: "OK"
+          });
+          return;
+        }
+
+        // Aggiorna la lista degli employee con i punteggi dal server
+        availableEmployees.value = result.employees;
+
+        // Calcola il punteggio medio
+        const averageScore = result.employees.length > 0 
+          ? result.employees.reduce((sum, e) => sum + (e.skillMatchScore || 0), 0) / result.employees.length
+          : 0;
+
+        // Aggiorna il summary dei risultati
+        searchResultsSummary.value = {
+          totalMatches: result.totalMatches,
+          averageScore: averageScore,
+          includeSoftSkills: result.includeSoftSkills
+        };
+
+        // Mostra un messaggio di successo più dettagliato
+        Swal.fire({
+          title: "🎯 Ricerca Intelligente Completata!",
+          html: `
+            <div class="text-start">
+              <p><strong>${result.totalMatches}</strong> employee trovati con skills compatibili</p>
+              <p>Punteggio medio: <strong>${Math.round(averageScore)}%</strong></p>
+              <p>Soft skills: <strong>${result.includeSoftSkills ? 'Incluse' : 'Escluse'}</strong></p>
+            </div>
+          `,
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+
+      } catch (error) {
+        console.error("Error performing smart search:", error);
+        Swal.fire({
+          title: "Errore!",
+          text: "Impossibile eseguire la ricerca intelligente",
+          icon: "error",
+          confirmButtonText: "OK"
+        });
+      } finally {
+        smartSearchLoading.value = false;
+      }
+    };
+
     // Carica employee disponibili
     const loadAvailableEmployees = async () => {
       employeesLoading.value = true;
       try {
-        const employees = await getApplicationUsers();
+        const employees = await getNonSuperAdminUsers();
         if (employees) {
-          // Filtra employee già assegnati
-          availableEmployees.value = employees.filter(
-            (employee) => !props.assignedEmployeeIds.includes(employee.id || "")
-          );
+          // Filtra employee già assegnati al progetto
+          availableEmployees.value = employees.filter((employee) => {
+            // Esclude employee già assegnati al progetto
+            if (props.assignedEmployeeIds.includes(employee.id || "")) {
+              return false;
+            }
+            
+            // Esclude employee con ruoli admin (getNonSuperAdminUsers già esclude superadmin)
+            if (employee.userRoles && Array.isArray(employee.userRoles)) {
+              const hasAdminRole = employee.userRoles.some((userRole: any) => {
+                const roleName = userRole.name?.toLowerCase();
+                return roleName === 'admin';
+              });
+              if (hasAdminRole) {
+                return false;
+              }
+            }
+            
+            return true;
+          });
         }
       } catch (error) {
         console.error("Error loading employees:", error);
@@ -729,16 +954,23 @@ export default defineComponent({
       assignEmployeeToProjectModalRef,
       isLoading,
       employeesLoading,
+      smartSearchLoading,
       availableEmployees,
       filteredEmployees,
       formData,
       filters,
+      includeSoftSkills,
+      searchResultsSummary,
       isFormValid,
       hasActiveFilters,
       getEmployeeName,
       getInitials,
       getAvatarUrl,
+      getMatchScoreBadgeClass,
+      getSkillMatchTooltip,
       clearAllFilters,
+      clearSmartSearch,
+      performSmartSearch,
       submit,
       resetForm,
     };
@@ -815,5 +1047,88 @@ export default defineComponent({
   .sticky-top {
     position: relative !important;
   }
+}
+
+/* Smart Search Button Styles */
+.btn-light-success {
+  background-color: rgba(80, 205, 137, 0.1);
+  border-color: rgba(80, 205, 137, 0.2);
+  color: #50CD89;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-light-success:hover:not(:disabled) {
+  background-color: rgba(80, 205, 137, 0.2);
+  border-color: rgba(80, 205, 137, 0.3);
+  color: #17C653;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(80, 205, 137, 0.3);
+}
+
+.btn-light-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Smart Search Container */
+.smart-search-container {
+  background: rgba(80, 205, 137, 0.05);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(80, 205, 137, 0.1);
+}
+
+/* Match Score Badge Animations */
+.badge-light-success {
+  animation: pulse-success 2s infinite;
+}
+
+.badge-light-primary {
+  animation: pulse-primary 2s infinite;
+}
+
+.badge-light-warning {
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-success {
+  0% { box-shadow: 0 0 0 0 rgba(80, 205, 137, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(80, 205, 137, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(80, 205, 137, 0); }
+}
+
+@keyframes pulse-primary {
+  0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(0, 123, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+
+@keyframes pulse-warning {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* Skill Match Badge Animation */
+.badge-light-info {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(54, 162, 235, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(54, 162, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(54, 162, 235, 0);
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style> 

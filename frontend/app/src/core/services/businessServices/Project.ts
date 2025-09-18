@@ -157,6 +157,25 @@ const smartSearchProjects = (employeeId: string, includeSoftSkills: boolean = tr
     });
 };
 
+// Smart search per employee basati sulle skills richieste dal progetto
+const smartSearchEmployees = (projectId: string, includeSoftSkills: boolean = true, companyId?: string): Promise<{
+  employees: any[];
+  totalMatches: number;
+  includeSoftSkills: boolean;
+} | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`projects/smart-search-employees`, {
+    projectId,
+    includeSoftSkills,
+    companyId
+  })
+    .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 export {
   getProjects,
   getProject,
@@ -168,5 +187,6 @@ export {
   assignProjectToEmployee,
   removeProjectAssignment,
   updateProjectAssignment,
-  smartSearchProjects
+  smartSearchProjects,
+  smartSearchEmployees
 }; 

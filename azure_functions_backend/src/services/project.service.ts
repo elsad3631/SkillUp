@@ -561,4 +561,92 @@ export const projectService = {
     // Calcola la percentuale finale
     return totalWeight > 0 ? (totalScore / totalWeight) : 0;
   },
+
+  // Smart search per employee basati sulle skills richieste dal progetto
+  async smartSearchEmployeesByProjectSkills(projectId: string, includeSoftSkills: boolean = true, companyId?: string) {
+    // Prima ottieni i dati del progetto con le skills richieste
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        requiredHardSkills: true,
+        requiredSoftSkills: true,
+        assignments: {
+          select: {
+            applicationUserId: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Ottieni tutti gli employee disponibili (escludendo quelli già assegnati)
+    const whereClause: any = {
+      // Exclude admin and super admin users
+      userRoles: {
+        none: {
+          role: {
+            name: {
+              in: ['admin', 'superadmin']
+            }
+          }
+        }
+      }
+    };
+
+    if (companyId) {
+      whereClause.company = companyId;
+    }
+    
+    const employees = await prisma.applicationUser.findMany({
+      where: whereClause,
+      include: {
+        hardSkills: true,
+        softSkills: true,
+        userRoles: {
+          include: {
+            role: true
+          }
+        }
+      },
+    });
+
+    // Filtra employee già assegnati al progetto
+    const availableEmployees = employees.filter(employee => 
+      !project.assignments.some(assignment => assignment.applicationUserId === employee.id)
+    );
+
+    // Calcola il punteggio di match per ogni employee
+    const employeesWithScores = availableEmployees.map(employee => {
+      const matchScore = this.calculateSkillMatchScore(
+        project,
+        employee.hardSkills || [],
+        includeSoftSkills ? (employee.softSkills || []) : []
+      );
+      
+      return {
+        ...employee,
+        skillMatchScore: matchScore,
+        hardSkills: employee.hardSkills?.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel,
+          certification: skill.certification,
+        })) || [],
+        softSkills: employee.softSkills?.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel,
+          certification: skill.certification,
+        })) || [],
+      };
+    });
+
+    // Ordina per punteggio di match (dal più alto al più basso)
+    employeesWithScores.sort((a, b) => (b.skillMatchScore || 0) - (a.skillMatchScore || 0));
+
+    return employeesWithScores;
+  }
 }; 

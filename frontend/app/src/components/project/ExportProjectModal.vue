@@ -316,9 +316,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="scss">
-.el-select {
-  width: 100%;
-}
-</style> 

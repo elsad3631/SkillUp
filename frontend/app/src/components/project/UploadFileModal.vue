@@ -385,24 +385,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.dropzone-area {
-  border: 2px dashed #cbd5e1;
-  border-radius: 0.5rem;
-  padding: 3rem 2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #f8fafc;
-}
-
-.dropzone-area:hover,
-.dropzone-area.drag-over {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
-}
-
-.max-h-300px {
-  max-height: 300px;
-}
-</style> 

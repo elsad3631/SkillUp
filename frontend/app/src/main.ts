@@ -11,7 +11,7 @@ import ElementPlus from "element-plus";
 import i18n from "@/core/plugins/i18n";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
-import "@/assets/css/toast-custom.css";
+import "@/assets/css/main.css";
 
 //imports for app initialization
 import ApiService from "@/core/services/ApiService";

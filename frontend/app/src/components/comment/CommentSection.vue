@@ -239,18 +239,3 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.comments-list {
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-.comment-item {
-  border-bottom: 1px solid #e4e6ea;
-  padding-bottom: 1rem;
-}
-
-.comment-item:last-child {
-  border-bottom: none;
-}
-</style>

@@ -226,12 +226,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="scss">
-.symbol-label {
-  border-radius: 0.475rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-</style> 

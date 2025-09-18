@@ -413,13 +413,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="scss">
-.el-date-editor--daterange.el-input__inner {
-  width: 100%;
-}
-
-.el-select {
-  width: 100%;
-}
-</style> 

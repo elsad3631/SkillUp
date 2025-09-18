@@ -354,22 +354,3 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.comment-item {
-  position: relative;
-}
-
-.reply-item {
-  position: relative;
-}
-
-.reply-item::before {
-  content: '';
-  position: absolute;
-  left: -1px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: #e4e6ea;
-}
-</style>

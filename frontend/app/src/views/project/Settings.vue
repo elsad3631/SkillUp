@@ -401,12 +401,17 @@
             <h4 class="mb-0">Hard Skills</h4>
             <span class="badge badge-light-primary ms-2">{{ projectDetails.requiredHardSkills.length }} skills</span>
           </div>
-          <div v-for="(skill, index) in projectDetails.requiredHardSkills" :key="'hard-' + index" class="mb-3 p-4 border rounded bg-light">
+          <div v-for="(skill, index) in projectDetails.requiredHardSkills" :key="'hard-' + index" class="mb-3 p-4 border rounded bg-light skill-card">
             <div class="row align-items-center">
               <template v-if="editingHardSkillIndex === index">
                 <div class="col-md-3">
                   <label class="form-label small">Skill Name</label>
-                  <input v-model="skill.name" placeholder="e.g., JavaScript, React" class="form-control" />
+                  <select v-model="skill.name" class="form-select" required>
+                    <option value="" class="text-dark">Select Hard Skill</option>
+                    <option v-for="hardSkill in hardSkills" :key="hardSkill.id" :value="hardSkill.name" class="text-dark">
+                      {{ hardSkill.name }}
+                    </option>
+                  </select>
                 </div>
                 <div class="col-md-2">
                   <label class="form-label small">Min Level</label>
@@ -476,12 +481,17 @@
             <h4 class="mb-0">Soft Skills</h4>
             <span class="badge badge-light-success ms-2">{{ projectDetails.requiredSoftSkills.length }} skills</span>
           </div>
-          <div v-for="(skill, index) in projectDetails.requiredSoftSkills" :key="'soft-' + index" class="mb-3 p-4 border rounded bg-light">
+          <div v-for="(skill, index) in projectDetails.requiredSoftSkills" :key="'soft-' + index" class="mb-3 p-4 border rounded bg-light skill-card">
             <div class="row align-items-center">
               <template v-if="editingSoftSkillIndex === index">
                 <div class="col-md-3">
                   <label class="form-label small">Skill Name</label>
-                  <input v-model="skill.name" placeholder="e.g., Communication, Leadership" class="form-control" />
+                  <select v-model="skill.name" class="form-select" required>
+                    <option value="" class="text-dark">Select Soft Skill</option>
+                    <option v-for="softSkill in softSkills" :key="softSkill.id" :value="softSkill.name" class="text-dark">
+                      {{ softSkill.name }}
+                    </option>
+                  </select>
                 </div>
                 <div class="col-md-2">
                   <label class="form-label small">Level</label>
@@ -579,6 +589,7 @@ import {
 } from "@/core/services/businessServices/ProjectSkill";
 import { getCustomersByCompany } from "@/core/services/businessServices/Customer";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
+import { getAssetsByTypeAndCompany } from "@/core/services/businessServices/Asset";
 import type { ProjectSkill } from "@/core/services/businessServices/ProjectSkill";
 import type { Customer } from "@/core/models/Customer";
 
@@ -604,6 +615,8 @@ export default defineComponent({
     const editingHardSkillIndex = ref<number | null>(null);
     const editingSoftSkillIndex = ref<number | null>(null);
     const newSoftSkill = ref('');
+    const hardSkills = ref<any[]>([]);
+    const softSkills = ref<any[]>([]);
 
     const project = inject<any>('project');
     const refreshProject = inject<any>('refreshProject');
@@ -1023,8 +1036,25 @@ export default defineComponent({
       }
     };
 
+    const loadSkills = async () => {
+      if (!currentUser.value?.company) return;
+      
+      try {
+        const [hardSkillsData, softSkillsData] = await Promise.all([
+          getAssetsByTypeAndCompany("hard skill", currentUser.value.company),
+          getAssetsByTypeAndCompany("soft skill", currentUser.value.company)
+        ]);
+        
+        hardSkills.value = hardSkillsData || [];
+        softSkills.value = softSkillsData || [];
+      } catch (error) {
+        console.error("Error loading skills:", error);
+      }
+    };
+
     onMounted(() => {
       loadCustomers();
+      loadSkills();
     });
 
     return {
@@ -1048,6 +1078,8 @@ export default defineComponent({
       saveHardSkill,
       removeHardSkill,
       customers, // Expose customers for the dropdown
+      hardSkills,
+      softSkills,
     };
   },
 });
@@ -1087,13 +1119,27 @@ export default defineComponent({
 
 /* Skill cards styling */
 .bg-light {
-  background-color: #f8f9fa !important;
-  border: 1px solid #e9ecef !important;
+  background-color: rgba(54, 153, 255, 0.05) !important;
+  border: 1px solid rgba(54, 153, 255, 0.2) !important;
+  transition: all 0.3s ease;
 }
 
 .bg-light:hover {
-  background-color: #e9ecef !important;
-  border-color: #dee2e6 !important;
+  background-color: rgba(54, 153, 255, 0.1) !important;
+  border-color: rgba(54, 153, 255, 0.3) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.15);
+}
+
+[data-bs-theme="dark"] .bg-light {
+  background-color: rgba(54, 153, 255, 0.1) !important;
+  border: 1px solid rgba(54, 153, 255, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .bg-light:hover {
+  background-color: rgba(54, 153, 255, 0.15) !important;
+  border-color: rgba(54, 153, 255, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.2);
 }
 
 /* Form validation styling */
@@ -1112,5 +1158,55 @@ export default defineComponent({
   color: #6C757D;
   font-size: 0.875rem;
   margin-top: 0.25rem;
+}
+
+/* Select options styling */
+.form-select option {
+  background-color: white !important;
+  color: #181c32 !important;
+  padding: 8px 12px;
+}
+
+[data-bs-theme="dark"] .form-select option {
+  background-color: #1e1e2d !important;
+  color: #ffffff !important;
+}
+
+.form-select:focus {
+  border-color: #009ef7;
+  box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+}
+
+/* Additional skill card enhancements */
+.skill-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.skill-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #3699FF, #009ef7);
+  opacity: 0.7;
+}
+
+.skill-card:hover::before {
+  opacity: 1;
+  width: 6px;
+}
+
+/* Better contrast for skill labels */
+.skill-card .form-label {
+  font-weight: 600;
+  color: #3699FF;
+  margin-bottom: 0.5rem;
+}
+
+[data-bs-theme="dark"] .skill-card .form-label {
+  color: #5db4ff;
 }
 </style>

@@ -30,7 +30,7 @@ const MainMenuConfig: Array<MenuItem> = [
   {
     heading: "Training",
     route: "/training",
-    keenthemesIcon: "education",
+    keenthemesIcon: "educare",
     bootstrapIcon: "bi-mortarboard",
   },
   {

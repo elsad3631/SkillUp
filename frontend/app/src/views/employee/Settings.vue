@@ -365,7 +365,7 @@
     <div class="card-body">
       <div v-if="profileDetails.hardSkills && profileDetails.hardSkills.length">
         <h4>Hard Skills</h4>
-        <div v-for="(skill, index) in profileDetails.hardSkills" :key="'hard-' + index" class="mb-3 p-3 border rounded">
+        <div v-for="(skill, index) in profileDetails.hardSkills" :key="'hard-' + index" class="mb-3 p-3 border rounded skill-card">
           <div class="row align-items-center">
             <template v-if="editingHardSkillIndex === index">
               <div class="col-md-4">
@@ -422,7 +422,7 @@
       </div>
       <div v-if="profileDetails.softSkills && profileDetails.softSkills.length">
         <h4>Soft Skills</h4>
-        <div v-for="(skill, index) in profileDetails.softSkills" :key="'soft-' + index" class="mb-3 p-3 border rounded">
+        <div v-for="(skill, index) in profileDetails.softSkills" :key="'soft-' + index" class="mb-3 p-3 border rounded skill-card">
           <div class="row align-items-center">
             <template v-if="editingSoftSkillIndex === index">
               <div class="col-md-4">
@@ -2092,5 +2092,48 @@ export default defineComponent({
 .form-select:focus {
   border-color: #009ef7;
   box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+}
+
+/* Skill cards styling */
+.skill-card {
+  background-color: rgba(54, 153, 255, 0.05) !important;
+  border: 1px solid rgba(54, 153, 255, 0.2) !important;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.skill-card:hover {
+  background-color: rgba(54, 153, 255, 0.1) !important;
+  border-color: rgba(54, 153, 255, 0.3) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.15);
+}
+
+.skill-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #3699FF, #009ef7);
+  opacity: 0.7;
+}
+
+.skill-card:hover::before {
+  opacity: 1;
+  width: 6px;
+}
+
+[data-bs-theme="dark"] .skill-card {
+  background-color: rgba(54, 153, 255, 0.1) !important;
+  border: 1px solid rgba(54, 153, 255, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .skill-card:hover {
+  background-color: rgba(54, 153, 255, 0.15) !important;
+  border-color: rgba(54, 153, 255, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.2);
 }
 </style>

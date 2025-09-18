@@ -2,7 +2,7 @@
   <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
     <!-- Training Enrollments Overview -->
     <div class="col-xl-6">
-      <div class="card card-flush h-xl-100">
+      <div class="card card-flush h-xl-100 hover-card">
         <div class="card-header pt-5">
           <div class="card-title d-flex flex-column">
             <div class="d-flex align-items-center">
@@ -13,25 +13,25 @@
         </div>
         <div class="card-body pt-2 pb-4 d-flex align-items-center">
           <div class="d-flex flex-column content-justify-center flex-row-fluid">
-            <div class="d-flex fw-semibold align-items-center">
-              <div class="bullet bullet-dot bg-primary me-2"></div>
+            <div class="d-flex fw-semibold align-items-center hover-item">
+              <div class="bullet bullet-dot bg-primary me-2 transition-all"></div>
               <div class="text-gray-600">In Progress</div>
-              <div class="ms-auto fw-bold fs-6 text-gray-400">{{ inProgressCount }}</div>
+              <div class="ms-auto fw-bold fs-6 text-gray-400 counter">{{ inProgressCount }}</div>
             </div>
-            <div class="d-flex fw-semibold align-items-center my-3">
-              <div class="bullet bullet-dot bg-success me-2"></div>
+            <div class="d-flex fw-semibold align-items-center my-3 hover-item">
+              <div class="bullet bullet-dot bg-success me-2 transition-all"></div>
               <div class="text-gray-600">Completed</div>
-              <div class="ms-auto fw-bold fs-6 text-gray-400">{{ completedCount }}</div>
+              <div class="ms-auto fw-bold fs-6 text-gray-400 counter">{{ completedCount }}</div>
             </div>
-            <div class="d-flex fw-semibold align-items-center">
-              <div class="bullet bullet-dot bg-warning me-2"></div>
+            <div class="d-flex fw-semibold align-items-center hover-item">
+              <div class="bullet bullet-dot bg-warning me-2 transition-all"></div>
               <div class="text-gray-600">Enrolled</div>
-              <div class="ms-auto fw-bold fs-6 text-gray-400">{{ plannedCount }}</div>
+              <div class="ms-auto fw-bold fs-6 text-gray-400 counter">{{ plannedCount }}</div>
             </div>
           </div>
           <div class="w-100px w-sm-150px flex-shrink-0">
-            <div class="d-flex align-items-center justify-content-center rounded bg-light-primary w-100 h-100">
-              <KTIcon icon-name="education" icon-class="fs-2hx text-primary" />
+            <div class="d-flex align-items-center justify-content-center rounded bg-light-primary w-100 h-100 icon-container">
+              <KTIcon icon-name="education" icon-class="fs-2hx text-primary transition-all" />
             </div>
           </div>
         </div>
@@ -40,7 +40,7 @@
 
     <!-- Certifications Overview -->
     <div class="col-xl-6">
-      <div class="card card-flush h-xl-100">
+      <div class="card card-flush h-xl-100 hover-card">
         <div class="card-header pt-5">
           <div class="card-title d-flex flex-column">
             <div class="d-flex align-items-center">
@@ -51,25 +51,25 @@
         </div>
         <div class="card-body pt-2 pb-4 d-flex align-items-center">
           <div class="d-flex flex-column content-justify-center flex-row-fluid">
-            <div class="d-flex fw-semibold align-items-center">
-              <div class="bullet bullet-dot bg-success me-2"></div>
+            <div class="d-flex fw-semibold align-items-center hover-item">
+              <div class="bullet bullet-dot bg-success me-2 transition-all"></div>
               <div class="text-gray-600">Active</div>
-              <div class="ms-auto fw-bold fs-6 text-gray-400">{{ activeCertCount }}</div>
+              <div class="ms-auto fw-bold fs-6 text-gray-400 counter">{{ activeCertCount }}</div>
             </div>
-            <div class="d-flex fw-semibold align-items-center my-3">
-              <div class="bullet bullet-dot bg-warning me-2"></div>
+            <div class="d-flex fw-semibold align-items-center my-3 hover-item">
+              <div class="bullet bullet-dot bg-warning me-2 transition-all"></div>
               <div class="text-gray-600">Expired</div>
-              <div class="ms-auto fw-bold fs-6 text-gray-400">{{ expiredCertCount }}</div>
+              <div class="ms-auto fw-bold fs-6 text-gray-400 counter">{{ expiredCertCount }}</div>
             </div>
-            <div class="d-flex fw-semibold align-items-center">
-              <div class="bullet bullet-dot bg-danger me-2"></div>
+            <div class="d-flex fw-semibold align-items-center hover-item">
+              <div class="bullet bullet-dot bg-danger me-2 transition-all"></div>
               <div class="text-gray-600">Revoked</div>
-              <div class="ms-auto fw-bold fs-6 text-gray-400">{{ revokedCertCount }}</div>
+              <div class="ms-auto fw-bold fs-6 text-gray-400 counter">{{ revokedCertCount }}</div>
             </div>
           </div>
           <div class="w-100px w-sm-150px flex-shrink-0">
-            <div class="d-flex align-items-center justify-content-center rounded bg-light-success w-100 h-100">
-              <KTIcon icon-name="award" icon-class="fs-2hx text-success" />
+            <div class="d-flex align-items-center justify-content-center rounded bg-light-success w-100 h-100 icon-container">
+              <KTIcon icon-name="award" icon-class="fs-2hx text-success transition-all" />
             </div>
           </div>
         </div>
@@ -78,20 +78,21 @@
   </div>
 
   <!-- Training Enrollments Section -->
-  <div class="card mb-5 mb-xl-10">
+  <div class="card mb-5 mb-xl-10 hover-card">
     <div class="card-header border-0">
       <div class="card-title m-0">
         <h3 class="fw-bold m-0">Training Enrollments</h3>
       </div>
       <div class="card-toolbar">
-        <router-link to="/training/enrollments" class="btn btn-sm btn-light-primary me-2">
+        <router-link to="/training/enrollments" class="btn btn-sm btn-light-primary me-2 modern-btn">
+          <KTIcon icon-name="eye" icon-class="fs-2 me-1" />
           View Enrollments
         </router-link>
       </div>
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 modern-table">
           <thead>
             <tr class="fw-bold text-muted">
               <th class="min-w-150px">User</th>
@@ -103,11 +104,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="enrollment in recentEnrollments" :key="enrollment.id">
+            <tr v-for="enrollment in recentEnrollments" :key="enrollment.id" class="table-row-hover">
               <td>
                 <div class="d-flex align-items-center">
                   <div class="symbol symbol-45px me-5">
-                    <div class="symbol-label bg-light-primary d-flex align-items-center justify-content-center">
+                    <div class="symbol-label bg-light-primary d-flex align-items-center justify-content-center transition-all">
                       <span class="fw-bold fs-6 text-primary">
                         {{ getInitials(enrollment.user?.firstName, enrollment.user?.lastName) }}
                       </span>
@@ -130,21 +131,21 @@
                 </span>
               </td>
               <td>
-                <span :class="getStatusBadgeClass(enrollment.status)" class="badge">
+                <span :class="getStatusBadgeClass(enrollment.status)" class="badge transition-all">
                   {{ enrollment.status }}
                 </span>
               </td>
               <td>
                 <div class="d-flex align-items-center">
                   <div class="progress h-6px w-100px me-3">
-                    <div class="progress-bar" :style="{ width: enrollment.progress + '%' }"></div>
+                    <div class="progress-bar transition-all" :style="{ width: enrollment.progress + '%' }"></div>
                   </div>
                   <span class="fw-bold fs-7">{{ enrollment.progress }}%</span>
                 </div>
               </td>
               <td>{{ formatDate(enrollment.enrollmentDate) }}</td>
               <td class="text-end">
-                <router-link :to="`/training/enrollments/${enrollment.id}`" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
+                <router-link :to="`/training/enrollments/${enrollment.id}`" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm modern-btn">
                   <KTIcon icon-name="eye" icon-class="fs-3" />
                 </router-link>
               </td>
@@ -156,24 +157,25 @@
   </div>
 
   <!-- Training Programs Section -->
-  <div class="card mb-5 mb-xl-10">
+  <div class="card mb-5 mb-xl-10 hover-card">
     <div class="card-header border-0">
       <div class="card-title m-0">
         <h3 class="fw-bold m-0">Training Programs</h3>
       </div>
       <div class="card-toolbar">
-        <button @click="openCreateTrainingModal()" class="btn btn-sm btn-primary me-2">
-          <KTIcon icon-name="plus" icon-class="fs-2" />
+        <button @click="openCreateTrainingModal()" class="btn btn-sm btn-primary me-2 modern-btn">
+          <KTIcon icon-name="plus" icon-class="fs-2 me-1" />
           New Training
         </button>
-        <router-link to="/training/programs" class="btn btn-sm btn-light-primary">
+        <router-link to="/training/programs" class="btn btn-sm btn-light-primary modern-btn">
+          <KTIcon icon-name="eye" icon-class="fs-2 me-1" />
           View All
         </router-link>
       </div>
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 modern-table">
           <thead>
             <tr class="fw-bold text-muted">
               <th class="min-w-200px">Title</th>
@@ -186,7 +188,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="training in recentTrainings" :key="training.id">
+            <tr v-for="training in recentTrainings" :key="training.id" class="table-row-hover">
               <td>
                 <div class="d-flex flex-column">
                   <span class="text-dark fw-bold text-h6 mb-1">{{ training.title }}</span>
@@ -199,7 +201,7 @@
                 <span class="text-dark fw-bold">{{ training.provider || '-' }}</span>
               </td>
               <td>
-                <span :class="getLevelBadgeClass(training.level || '')" class="badge">
+                <span :class="getLevelBadgeClass(training.level || '')" class="badge transition-all">
                   {{ training.level || 'N/A' }}
                 </span>
               </td>
@@ -217,13 +219,13 @@
                   <span 
                     v-for="skill in training.skillsDeveloped?.slice(0, 2)" 
                     :key="skill"
-                    class="badge badge-light-info me-1 mb-1"
+                    class="badge badge-light-info me-1 mb-1 transition-all"
                   >
                     {{ skill }}
                   </span>
                   <span 
                     v-if="training.skillsDeveloped && training.skillsDeveloped.length > 2"
-                    class="badge badge-light-secondary"
+                    class="badge badge-light-secondary transition-all"
                   >
                     +{{ training.skillsDeveloped.length - 2 }}
                   </span>
@@ -231,10 +233,10 @@
               </td>
               <td class="text-end">
                 <div class="d-flex justify-content-end flex-shrink-0">
-                  <button @click="openEditTrainingModal(training)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
+                  <button @click="openEditTrainingModal(training)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 modern-btn">
                     <KTIcon icon-name="pencil" icon-class="fs-3" />
                   </button>
-                  <button @click="deleteTrainingProgram(training.id)" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm">
+                  <button @click="deleteTrainingProgram(training.id)" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm modern-btn">
                     <KTIcon icon-name="trash" icon-class="fs-3" />
                   </button>
                 </div>
@@ -247,20 +249,21 @@
   </div>
 
   <!-- Certifications Section -->
-  <div class="card mb-5 mb-xl-10">
+  <div class="card mb-5 mb-xl-10 hover-card">
     <div class="card-header border-0">
       <div class="card-title m-0">
         <h3 class="fw-bold m-0">Recent Certifications</h3>
       </div>
       <div class="card-toolbar">
-        <router-link to="/training/certifications" class="btn btn-sm btn-light-primary">
+        <router-link to="/training/certifications" class="btn btn-sm btn-light-primary modern-btn">
+          <KTIcon icon-name="eye" icon-class="fs-2 me-1" />
           View All
         </router-link>
       </div>
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3">
+        <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 modern-table">
           <thead>
             <tr class="fw-bold text-muted">
               <th class="min-w-150px">User</th>
@@ -273,11 +276,11 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="certification in recentCertifications" :key="certification.id">
+            <tr v-for="certification in recentCertifications" :key="certification.id" class="table-row-hover">
               <td>
                 <div class="d-flex align-items-center">
                   <div class="symbol symbol-45px me-5">
-                    <div class="symbol-label bg-light-primary d-flex align-items-center justify-content-center">
+                    <div class="symbol-label bg-light-primary d-flex align-items-center justify-content-center transition-all">
                       <span class="fw-bold fs-6 text-primary">
                         {{ getInitials(certification.user?.firstName, certification.user?.lastName) }}
                       </span>
@@ -303,7 +306,7 @@
                 <span class="text-dark fw-bold text-h6 mb-1">{{ certification.issuingAuthority }}</span>
               </td>
               <td>
-                <span :class="getStatusBadgeClass(certification.status)" class="badge">
+                <span :class="getStatusBadgeClass(certification.status)" class="badge transition-all">
                   {{ certification.status }}
                 </span>
               </td>
@@ -315,7 +318,7 @@
                 <span v-else class="text-muted fs-7">-</span>
               </td>
               <td class="text-end">
-                <router-link :to="`/training/certifications/${certification.id}`" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm">
+                <router-link :to="`/training/certifications/${certification.id}`" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm modern-btn">
                   <KTIcon icon-name="eye" icon-class="fs-3" />
                 </router-link>
               </td>
@@ -686,4 +689,198 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+/* Modern hover effects for cards */
+.hover-card {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.hover-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: rgba(var(--bs-primary-rgb), 0.2);
+}
+
+/* Hover effects for overview items */
+.hover-item {
+  transition: all 0.2s ease;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.hover-item:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.05);
+  transform: translateX(4px);
+}
+
+.hover-item:hover .bullet {
+  transform: scale(1.2);
+}
+
+.hover-item:hover .counter {
+  color: var(--bs-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Icon container animations */
+.icon-container {
+  transition: all 0.3s ease;
+}
+
+.hover-card:hover .icon-container {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1), rgba(var(--bs-primary-rgb), 0.2)) !important;
+}
+
+.hover-card:hover .icon-container i {
+  transform: rotate(5deg);
+}
+
+/* Modern button styling */
+.modern-btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.modern-btn:hover::before {
+  left: 100%;
+}
+
+.modern-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Table row hover effects */
+.table-row-hover {
+  transition: all 0.2s ease;
+}
+
+.table-row-hover:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.03);
+  transform: scale(1.01);
+}
+
+.table-row-hover:hover td {
+  border-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Modern table styling */
+.modern-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modern-table thead th {
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.05), rgba(var(--bs-primary-rgb), 0.1));
+  border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.1);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/* Badge animations */
+.badge {
+  transition: all 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bar animations */
+.progress-bar {
+  transition: width 0.6s ease;
+}
+
+.table-row-hover:hover .progress-bar {
+  box-shadow: 0 0 10px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+/* Symbol label animations */
+.symbol-label {
+  transition: all 0.3s ease;
+}
+
+.table-row-hover:hover .symbol-label {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.2);
+}
+
+/* Smooth transitions for all elements */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Card header enhancements */
+.card-header {
+  background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.02), rgba(var(--bs-primary-rgb), 0.05));
+  border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Loading animation for counters */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter {
+  animation: countUp 0.6s ease-out;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .hover-card:hover {
+    transform: none;
+  }
+  
+  .hover-item:hover {
+    transform: none;
+  }
+  
+  .modern-btn:hover {
+    transform: none;
+  }
+  
+  .table-row-hover:hover {
+    transform: none;
+  }
+}
+
+/* Focus states for accessibility */
+.modern-btn:focus {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+.hover-item:focus {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+</style>
 

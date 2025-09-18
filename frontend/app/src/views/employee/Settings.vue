@@ -1277,8 +1277,8 @@ export default defineComponent({
           proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
           certification: skill.certification,
           ...(isEmployeeView.value 
-            ? { employeeHard: { connect: { id: route.params.id } } }
-            : { applicationUserHard: { connect: { id: userData.value?.id } } }
+            ? { applicationUserHardId: route.params.id }
+            : { applicationUserHardId: userData.value?.id }
           ),
         };
         if (skill.id) {
@@ -1334,8 +1334,8 @@ export default defineComponent({
           proficiencyLevel: skill.proficiencyLevel ? parseInt(skill.proficiencyLevel) : undefined,
           certification: skill.certification,
           ...(isEmployeeView.value 
-            ? { employeeSoft: { connect: { id: route.params.id } } }
-            : { applicationUserSoft: { connect: { id: userData.value?.id } } }
+            ? { applicationUserSoftId: route.params.id }
+            : { applicationUserSoftId: userData.value?.id }
           ),
         };
         if (skill.id) {

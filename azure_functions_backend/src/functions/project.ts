@@ -190,4 +190,49 @@ app.http('deleteProject', {
       };
     }
   }
+});
+
+// POST /api/projects/smart-search - Smart search projects by employee skills
+app.http('smartSearchProjects', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'projects/smart-search',
+  handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
+    try {
+      const body = await request.json() as {
+        employeeId: string;
+        includeSoftSkills?: boolean;
+        companyId?: string;
+      };
+      const { employeeId, includeSoftSkills = true, companyId } = body;
+
+      if (!employeeId) {
+        return {
+          status: 400,
+          jsonBody: { message: 'Employee ID is required' }
+        };
+      }
+
+      const projects = await projectService.smartSearchByEmployeeSkills(
+        employeeId, 
+        includeSoftSkills, 
+        companyId
+      );
+      
+      return {
+        status: 200,
+        jsonBody: {
+          projects,
+          totalMatches: projects.filter(p => (p.skillMatchScore || 0) > 0).length,
+          includeSoftSkills
+        }
+      };
+    } catch (error) {
+      context.error('Error performing smart search:', error);
+      return {
+        status: 500,
+        jsonBody: { message: 'Internal server error' }
+      };
+    }
+  }
 }); 

@@ -64,15 +64,57 @@
                       <h4 class="fw-bold text-gray-800 mb-0">Available Projects</h4>
                     </div>
                     <div class="card-toolbar">
-                      <span class="badge badge-light-primary fs-7">
-                        {{ filteredProjects.length }} of {{ availableProjects.length }} showing
-                      </span>
+                      <div class="d-flex align-items-center gap-2">
+                        <!--begin::Search Results Summary-->
+                        <div v-if="searchResultsSummary" class="d-flex align-items-center gap-2">
+                          <span class="badge badge-light-success fs-7">
+                            <i class="ki-duotone ki-magic-wand fs-7 me-1">
+                              <span class="path1"></span>
+                              <span class="path2"></span>
+                              <span class="path3"></span>
+                              <span class="path4"></span>
+                              <span class="path5"></span>
+                            </i>
+                            {{ searchResultsSummary.totalMatches }} matches
+                          </span>
+                          <span class="badge badge-light-info fs-7">
+                            <i class="ki-duotone ki-chart-pie-4 fs-7 me-1">
+                              <span class="path1"></span>
+                              <span class="path2"></span>
+                              <span class="path3"></span>
+                            </i>
+                            Avg: {{ Math.round(searchResultsSummary.averageScore) }}%
+                          </span>
+                        </div>
+                        <!--end::Search Results Summary-->
+                        
+                        <span class="badge badge-light-primary fs-7">
+                          {{ filteredProjects.length }} of {{ availableProjects.length }} showing
+                        </span>
+                        
+                        <!--begin::Filters Button-->
+                        <button
+                          @click="openFiltersModal"
+                          class="btn btn-light-primary btn-sm d-flex align-items-center"
+                          title="Open filters"
+                        >
+                          <i class="ki-duotone ki-filter fs-6 me-1">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                          </i>
+                          Filters
+                          <span v-if="hasActiveFilters" class="badge badge-danger badge-circle badge-sm ms-1">
+                            {{ getActiveFiltersCount }}
+                          </span>
+                        </button>
+                        <!--end::Filters Button-->
+                      </div>
                     </div>
                   </div>
                   
-                  <!--begin::Filters-->
+                  <!--begin::Quick Actions-->
                   <div class="card-body border-bottom bg-light-primary bg-opacity-25 py-4">
-                    <div class="row g-3">
+                    <div class="row g-3 align-items-center">
                       <!--begin::Search-->
                       <div class="col-md-6">
                         <div class="position-relative">
@@ -90,93 +132,75 @@
                       </div>
                       <!--end::Search-->
                       
-                      <!--begin::Status Filter-->
-                      <div class="col-md-2">
-                        <select
-                          v-model="filters.status"
-                          class="form-select form-select-solid"
-                        >
-                          <option value="">All Status</option>
-                          <option value="PLANNING">Planning</option>
-                          <option value="IN_PROGRESS">In Progress</option>
-                          <option value="ON_HOLD">On Hold</option>
-                          <option value="COMPLETED">Completed</option>
-                          <option value="CANCELLED">Cancelled</option>
-                        </select>
+                      <!--begin::Smart Search-->
+                      <div class="col-md-6">
+                        <div class="smart-search-container">
+                          <div class="d-flex align-items-center gap-2 mb-2">
+                            <button
+                              @click="performSmartSearch"
+                              :disabled="smartSearchLoading"
+                              class="btn btn-light-success btn-sm d-flex align-items-center"
+                              title="Find projects matching employee skills"
+                            >
+                              <span v-if="!smartSearchLoading" class="indicator-label">
+                                <i class="ki-duotone ki-magic-wand fs-6 me-1">
+                                  <span class="path1"></span>
+                                  <span class="path2"></span>
+                                  <span class="path3"></span>
+                                  <span class="path4"></span>
+                                  <span class="path5"></span>
+                                </i>
+                                Smart Search
+                              </span>
+                              <span v-if="smartSearchLoading" class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm align-middle me-1"></span>
+                                Analyzing...
+                              </span>
+                            </button>
+                            
+                            <button
+                              v-if="searchResultsSummary"
+                              @click="clearSmartSearch"
+                              class="btn btn-light-danger btn-sm"
+                              title="Clear smart search results"
+                            >
+                              <i class="ki-duotone ki-cross fs-6">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                              </i>
+                            </button>
+                          </div>
+                          
+                          <div class="form-check form-check-custom form-check-solid">
+                            <input
+                              v-model="includeSoftSkills"
+                              class="form-check-input"
+                              type="checkbox"
+                              id="includeSoftSkills"
+                            />
+                            <label class="form-check-label fs-7 text-muted" for="includeSoftSkills">
+                              <i class="ki-duotone ki-profile-user fs-7 me-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                                <span class="path4"></span>
+                              </i>
+                              Include Soft Skills
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                      <!--end::Status Filter-->
-                      
-                      <!--begin::Priority Filter-->
-                      <div class="col-md-2">
-                        <select
-                          v-model="filters.priority"
-                          class="form-select form-select-solid"
-                        >
-                          <option value="">All Priority</option>
-                          <option value="LOW">Low</option>
-                          <option value="MEDIUM">Medium</option>
-                          <option value="HIGH">High</option>
-                          <option value="CRITICAL">Critical</option>
-                        </select>
-                      </div>
-                      <!--end::Priority Filter-->
-                      
-                      <!--begin::Budget Filter-->
-                      <div class="col-md-2">
-                        <select
-                          v-model="filters.budget"
-                          class="form-select form-select-solid"
-                        >
-                          <option value="">All Budget</option>
-                          <option value="0-10000">€0 - €10k</option>
-                          <option value="10000-50000">€10k - €50k</option>
-                          <option value="50000-100000">€50k - €100k</option>
-                          <option value="100000+">€100k+</option>
-                        </select>
-                      </div>
-                      <!--end::Budget Filter-->
+                      <!--end::Smart Search-->
                     </div>
                     
-                    <!--begin::Active Filters-->
+                    <!--begin::Active Filters Summary-->
                     <div v-if="hasActiveFilters" class="d-flex flex-wrap gap-2 mt-3">
                       <span class="badge badge-light-info me-2">
                         <i class="ki-duotone ki-filter fs-7 me-1">
                           <span class="path1"></span>
                           <span class="path2"></span>
                         </i>
-                        Active Filters:
-                      </span>
-                      
-                      <span v-if="filters.search" class="badge badge-light-primary">
-                        Search: "{{ filters.search }}"
-                        <i @click="filters.search = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                      </span>
-                      
-                      <span v-if="filters.status" class="badge badge-light-success">
-                        Status: {{ filters.status }}
-                        <i @click="filters.status = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                      </span>
-                      
-                      <span v-if="filters.priority" class="badge badge-light-warning">
-                        Priority: {{ filters.priority }}
-                        <i @click="filters.priority = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
-                      </span>
-                      
-                      <span v-if="filters.budget" class="badge badge-light-info">
-                        Budget: {{ getBudgetLabel(filters.budget) }}
-                        <i @click="filters.budget = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
-                          <span class="path1"></span>
-                          <span class="path2"></span>
-                        </i>
+                        {{ getActiveFiltersCount }} filter{{ getActiveFiltersCount !== 1 ? 's' : '' }} active
                       </span>
                       
                       <button @click="clearAllFilters" class="btn btn-sm btn-light-danger">
@@ -190,9 +214,9 @@
                         Clear All
                       </button>
                     </div>
-                    <!--end::Active Filters-->
+                    <!--end::Active Filters Summary-->
                   </div>
-                  <!--end::Filters-->
+                  <!--end::Quick Actions-->
                   
                   <div class="card-body p-4">
                     <!--begin::Loading state-->
@@ -266,6 +290,33 @@
                                     </i>
                                     {{ project.priority }}
                                   </span>
+                                  
+                                  <!--begin::Skill Match Indicator-->
+                                  <span v-if="project.skillMatchScore !== undefined" :class="getMatchScoreBadgeClass(project.skillMatchScore)" class="badge fs-8">
+                                    <i class="ki-duotone ki-magic-wand fs-7 me-1">
+                                      <span class="path1"></span>
+                                      <span class="path2"></span>
+                                      <span class="path3"></span>
+                                      <span class="path4"></span>
+                                      <span class="path5"></span>
+                                    </i>
+                                    {{ Math.round(project.skillMatchScore) }}% Match
+                                  </span>
+                                  <!--end::Skill Match Indicator-->
+                                  
+                                  <!--begin::Skill Details Tooltip-->
+                                  <span v-if="project.skillMatchScore !== undefined" class="badge badge-light-secondary fs-8 cursor-pointer" 
+                                        :title="getSkillMatchTooltip(project)"
+                                        data-bs-toggle="tooltip" 
+                                        data-bs-placement="top">
+                                    <i class="ki-duotone ki-information-5 fs-7 me-1">
+                                      <span class="path1"></span>
+                                      <span class="path2"></span>
+                                      <span class="path3"></span>
+                                    </i>
+                                    Details
+                                  </span>
+                                  <!--end::Skill Details Tooltip-->
                                 </div>
                               </div>
                               <!--end::Project Info-->
@@ -541,11 +592,248 @@
       </div>
     </div>
   </div>
+
+  <!--begin::Filters Modal-->
+  <div
+    class="modal fade"
+    id="kt_modal_project_filters"
+    ref="filtersModalRef"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-3 overflow-hidden">
+        <!--begin::Header-->
+        <div class="modal-header bg-gradient-info text-white position-relative border-0 py-6">
+          <div class="d-flex align-items-center">
+            <div class="symbol symbol-40px me-3">
+              <div class="symbol-label bg-white bg-opacity-20">
+                <i class="ki-duotone ki-filter fs-2x text-white">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+              </div>
+            </div>
+            <div>
+              <h3 class="fw-bold text-white mb-1">Project Filters</h3>
+              <p class="text-white-75 mb-0 fs-6">Customize your project search criteria</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="btn btn-icon btn-sm btn-color-white btn-active-color-primary ms-2"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            <i class="ki-duotone ki-cross fs-1">
+              <span class="path1"></span>
+              <span class="path2"></span>
+            </i>
+          </button>
+        </div>
+        <!--end::Header-->
+
+        <div class="modal-body p-6">
+          <!--begin::Filters Form-->
+          <form @submit.prevent="applyFilters" class="form">
+            <div class="row g-4">
+              <!--begin::Status Filter-->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold fs-6 mb-3">
+                  <i class="ki-duotone ki-status fs-6 text-primary me-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                  Project Status
+                </label>
+                <select
+                  v-model="filters.status"
+                  class="form-select form-select-solid"
+                >
+                  <option value="">All Status</option>
+                  <option value="PLANNING">Planning</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="ON_HOLD">On Hold</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </div>
+              <!--end::Status Filter-->
+              
+              <!--begin::Priority Filter-->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold fs-6 mb-3">
+                  <i class="ki-duotone ki-flag fs-6 text-warning me-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                  Priority Level
+                </label>
+                <select
+                  v-model="filters.priority"
+                  class="form-select form-select-solid"
+                >
+                  <option value="">All Priority</option>
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="CRITICAL">Critical</option>
+                </select>
+              </div>
+              <!--end::Priority Filter-->
+              
+              <!--begin::Budget Filter-->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold fs-6 mb-3">
+                  <i class="ki-duotone ki-dollar fs-6 text-success me-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                    <span class="path3"></span>
+                  </i>
+                  Budget Range
+                </label>
+                <select
+                  v-model="filters.budget"
+                  class="form-select form-select-solid"
+                >
+                  <option value="">All Budget</option>
+                  <option value="0-10000">€0 - €10k</option>
+                  <option value="10000-50000">€10k - €50k</option>
+                  <option value="50000-100000">€50k - €100k</option>
+                  <option value="100000+">€100k+</option>
+                </select>
+              </div>
+              <!--end::Budget Filter-->
+              
+              <!--begin::Match Score Filter-->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold fs-6 mb-3">
+                  <i class="ki-duotone ki-chart-pie-4 fs-6 text-info me-2">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                    <span class="path3"></span>
+                  </i>
+                  Skill Match Score
+                </label>
+                <select
+                  v-model="filters.matchScore"
+                  class="form-select form-select-solid"
+                >
+                  <option value="">All Scores</option>
+                  <option value="90-100">90%+ (Excellent)</option>
+                  <option value="70-89">70-89% (Good)</option>
+                  <option value="50-69">50-69% (Fair)</option>
+                  <option value="30-49">30-49% (Poor)</option>
+                  <option value="0-29">0-29% (Very Poor)</option>
+                </select>
+              </div>
+              <!--end::Match Score Filter-->
+            </div>
+            
+            <!--begin::Active Filters Display-->
+            <div v-if="hasActiveFilters" class="mt-6">
+              <div class="separator separator-dashed my-4"></div>
+              <h5 class="fw-bold text-gray-800 mb-3">
+                <i class="ki-duotone ki-filter fs-6 text-primary me-2">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                </i>
+                Active Filters
+              </h5>
+              <div class="d-flex flex-wrap gap-2">
+                <span v-if="filters.search" class="badge badge-light-primary">
+                  Search: "{{ filters.search }}"
+                  <i @click="filters.search = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </span>
+                
+                <span v-if="filters.status" class="badge badge-light-success">
+                  Status: {{ filters.status }}
+                  <i @click="filters.status = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </span>
+                
+                <span v-if="filters.priority" class="badge badge-light-warning">
+                  Priority: {{ filters.priority }}
+                  <i @click="filters.priority = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </span>
+                
+                <span v-if="filters.budget" class="badge badge-light-info">
+                  Budget: {{ getBudgetLabel(filters.budget) }}
+                  <i @click="filters.budget = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </span>
+                
+                <span v-if="filters.matchScore" class="badge badge-light-success">
+                  Score: {{ filters.matchScore }}
+                  <i @click="filters.matchScore = ''" class="ki-duotone ki-cross fs-7 ms-1 cursor-pointer">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                </span>
+              </div>
+            </div>
+            <!--end::Active Filters Display-->
+            
+            <!--begin::Actions-->
+            <div class="d-flex justify-content-between pt-6 border-top mt-6">
+              <button
+                type="button"
+                class="btn btn-light-danger"
+                @click="clearAllFilters"
+              >
+                <i class="ki-duotone ki-trash fs-6 me-1">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                  <span class="path3"></span>
+                  <span class="path4"></span>
+                  <span class="path5"></span>
+                </i>
+                Clear All Filters
+              </button>
+
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  class="btn btn-light-primary"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                >
+                  <i class="ki-duotone ki-check fs-6 me-1">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                  </i>
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+            <!--end::Actions-->
+          </form>
+          <!--end::Filters Form-->
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--end::Filters Modal-->
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, watch } from "vue";
-import { getProjects, assignProjectToEmployee } from "@/core/services/businessServices/Project";
+import { getProjects, assignProjectToEmployee, smartSearchProjects } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
 import { hideModal } from "@/core/helpers/dom";
 import Swal from "sweetalert2/dist/sweetalert2.js";
@@ -567,9 +855,17 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const addProjectAssignmentModalRef = ref<HTMLElement | null>(null);
+    const filtersModalRef = ref<HTMLElement | null>(null);
     const isLoading = ref(false);
     const projectsLoading = ref(false);
+    const smartSearchLoading = ref(false);
     const availableProjects = ref<Project[]>([]);
+    const includeSoftSkills = ref(true);
+    const searchResultsSummary = ref<{
+      totalMatches: number;
+      averageScore: number;
+      includeSoftSkills: boolean;
+    } | null>(null);
     
     const formData = ref({
       selectedProjects: [] as string[],
@@ -586,6 +882,7 @@ export default defineComponent({
       status: "",
       priority: "",
       budget: "",
+      matchScore: "",
     });
 
     // Computed property per validazione form
@@ -642,6 +939,27 @@ export default defineComponent({
         });
       }
 
+      // Filtro per punteggio di match
+      if (filters.value.matchScore) {
+        projects = projects.filter(project => {
+          const score = project.skillMatchScore || 0;
+          switch (filters.value.matchScore) {
+            case "90-100":
+              return score >= 90;
+            case "70-89":
+              return score >= 70 && score < 90;
+            case "50-69":
+              return score >= 50 && score < 70;
+            case "30-49":
+              return score >= 30 && score < 50;
+            case "0-29":
+              return score >= 0 && score < 30;
+            default:
+              return true;
+          }
+        });
+      }
+
       return projects;
     });
 
@@ -651,8 +969,20 @@ export default defineComponent({
         filters.value.search ||
         filters.value.status ||
         filters.value.priority ||
-        filters.value.budget
+        filters.value.budget ||
+        filters.value.matchScore
       );
+    });
+
+    // Conta il numero di filtri attivi
+    const getActiveFiltersCount = computed(() => {
+      let count = 0;
+      if (filters.value.search) count++;
+      if (filters.value.status) count++;
+      if (filters.value.priority) count++;
+      if (filters.value.budget) count++;
+      if (filters.value.matchScore) count++;
+      return count;
     });
 
     // Status badge classes
@@ -689,7 +1019,80 @@ export default defineComponent({
         status: "",
         priority: "",
         budget: "",
+        matchScore: "",
       };
+    };
+
+    // Badge class per il punteggio di match
+    const getMatchScoreBadgeClass = (score: number) => {
+      if (score >= 90) return "badge-light-success";
+      if (score >= 70) return "badge-light-primary";
+      if (score >= 50) return "badge-light-warning";
+      if (score >= 30) return "badge-light-info";
+      return "badge-light-danger";
+    };
+
+    // Tooltip con dettagli del match delle skills
+    const getSkillMatchTooltip = (project: Project) => {
+      const hardSkills = project.required_hard_skills || [];
+      const softSkills = project.required_soft_skills || [];
+      
+      let tooltip = `Match Score: ${Math.round(project.skillMatchScore || 0)}%\n\n`;
+      
+      if (hardSkills.length > 0) {
+        tooltip += `Hard Skills Required: ${hardSkills.length}\n`;
+        hardSkills.forEach(skill => {
+          tooltip += `• ${skill.name} (Min: ${skill.min_proficiency_level || 1})\n`;
+        });
+      }
+      
+      if (softSkills.length > 0) {
+        tooltip += `\nSoft Skills Required: ${softSkills.length}\n`;
+        softSkills.forEach(skill => {
+          tooltip += `• ${skill}\n`;
+        });
+      }
+      
+      return tooltip;
+    };
+
+    // Pulisce i risultati della smart search
+    const clearSmartSearch = () => {
+      searchResultsSummary.value = null;
+      // Rimuove i punteggi di match dai progetti
+      availableProjects.value = availableProjects.value.map(project => ({
+        ...project,
+        skillMatchScore: undefined
+      }));
+      // Pulisce anche il filtro match score
+      filters.value.matchScore = "";
+    };
+
+    // Apre la modale dei filtri
+    const openFiltersModal = () => {
+      if (filtersModalRef.value) {
+        const modal = new (window as any).bootstrap.Modal(filtersModalRef.value);
+        modal.show();
+      }
+    };
+
+    // Applica i filtri e chiude la modale
+    const applyFilters = () => {
+      if (filtersModalRef.value) {
+        const modal = new (window as any).bootstrap.Modal(filtersModalRef.value);
+        modal.hide();
+      }
+      
+      // Mostra un messaggio di conferma
+      Swal.fire({
+        title: "Filters Applied!",
+        text: `${getActiveFiltersCount.value} filter${getActiveFiltersCount.value !== 1 ? 's' : ''} applied successfully`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      });
     };
 
     // Carica progetti disponibili
@@ -709,6 +1112,72 @@ export default defineComponent({
         projectsLoading.value = false;
       }
     };
+
+    // Smart search per progetti basati sulle skills dell'employee
+    const performSmartSearch = async () => {
+      smartSearchLoading.value = true;
+      try {
+        // Chiama l'API per la smart search
+        const result = await smartSearchProjects(
+          props.employeeId,
+          includeSoftSkills.value
+        );
+
+        if (!result) {
+          Swal.fire({
+            title: "Errore!",
+            text: "Impossibile eseguire la ricerca intelligente",
+            icon: "error",
+            confirmButtonText: "OK"
+          });
+          return;
+        }
+
+        // Aggiorna la lista dei progetti con i punteggi dal server
+        availableProjects.value = result.projects;
+
+        // Calcola il punteggio medio
+        const averageScore = result.projects.length > 0 
+          ? result.projects.reduce((sum, p) => sum + (p.skillMatchScore || 0), 0) / result.projects.length
+          : 0;
+
+        // Aggiorna il summary dei risultati
+        searchResultsSummary.value = {
+          totalMatches: result.totalMatches,
+          averageScore: averageScore,
+          includeSoftSkills: result.includeSoftSkills
+        };
+
+        // Mostra un messaggio di successo più dettagliato
+        Swal.fire({
+          title: "🎯 Ricerca Intelligente Completata!",
+          html: `
+            <div class="text-start">
+              <p><strong>${result.totalMatches}</strong> progetti trovati con skills compatibili</p>
+              <p>Punteggio medio: <strong>${Math.round(averageScore)}%</strong></p>
+              <p>Soft skills: <strong>${result.includeSoftSkills ? 'Incluse' : 'Escluse'}</strong></p>
+            </div>
+          `,
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+
+      } catch (error) {
+        console.error("Error performing smart search:", error);
+        Swal.fire({
+          title: "Errore!",
+          text: "Impossibile eseguire la ricerca intelligente",
+          icon: "error",
+          confirmButtonText: "OK"
+        });
+      } finally {
+        smartSearchLoading.value = false;
+      }
+    };
+
 
     // Formatta budget
     const formatBudget = (budget: number | undefined) => {
@@ -807,17 +1276,28 @@ export default defineComponent({
 
     return {
       addProjectAssignmentModalRef,
+      filtersModalRef,
       isLoading,
       projectsLoading,
+      smartSearchLoading,
       availableProjects,
       filteredProjects,
       formData,
       filters,
+      includeSoftSkills,
+      searchResultsSummary,
       isFormValid,
       hasActiveFilters,
+      getActiveFiltersCount,
       getStatusBadgeClass,
+      getMatchScoreBadgeClass,
+      getSkillMatchTooltip,
       getBudgetLabel,
       clearAllFilters,
+      clearSmartSearch,
+      openFiltersModal,
+      applyFilters,
+      performSmartSearch,
       submit,
       resetForm,
       formatBudget,
@@ -859,6 +1339,7 @@ export default defineComponent({
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -902,5 +1383,152 @@ export default defineComponent({
   .sticky-top {
     position: relative !important;
   }
+}
+
+/* Smart Search Button Styles */
+.btn-light-success {
+  background-color: rgba(50, 205, 50, 0.1);
+  border-color: rgba(50, 205, 50, 0.2);
+  color: #32CD32;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-light-success:hover:not(:disabled) {
+  background-color: rgba(50, 205, 50, 0.2);
+  border-color: rgba(50, 205, 50, 0.3);
+  color: #228B22;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(50, 205, 50, 0.3);
+}
+
+.btn-light-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Smart Search Container */
+.smart-search-container {
+  background: rgba(50, 205, 50, 0.05);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(50, 205, 50, 0.1);
+}
+
+/* Match Score Badge Animations */
+.badge-light-success {
+  animation: pulse-success 2s infinite;
+}
+
+.badge-light-primary {
+  animation: pulse-primary 2s infinite;
+}
+
+.badge-light-warning {
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-success {
+  0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(40, 167, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+@keyframes pulse-primary {
+  0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(0, 123, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+
+@keyframes pulse-warning {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* Skill Match Badge Animation */
+.badge-light-info {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(54, 162, 235, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(54, 162, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(54, 162, 235, 0);
+  }
+}
+
+/* Filters Modal Styles */
+.bg-gradient-info {
+  background: linear-gradient(135deg, #17A2B8 0%, #138496 100%);
+}
+
+/* Filter Button Styles */
+.btn-light-primary {
+  background-color: rgba(0, 123, 255, 0.1);
+  border-color: rgba(0, 123, 255, 0.2);
+  color: #007BFF;
+  transition: all 0.3s ease;
+}
+
+.btn-light-primary:hover:not(:disabled) {
+  background-color: rgba(0, 123, 255, 0.2);
+  border-color: rgba(0, 123, 255, 0.3);
+  color: #0056B3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Filter Badge Counter */
+.badge-circle {
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Modal Form Enhancements */
+.form-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.form-label i {
+  margin-right: 0.5rem;
+}
+
+/* Separator Styles */
+.separator-dashed {
+  border-top: 1px dashed #E4E6EF;
+}
+
+/* Active Filters Badge Styles */
+.badge-light-primary,
+.badge-light-success,
+.badge-light-warning,
+.badge-light-info {
+  transition: all 0.2s ease;
+}
+
+.badge-light-primary:hover,
+.badge-light-success:hover,
+.badge-light-warning:hover,
+.badge-light-info:hover {
+  transform: scale(1.05);
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style> 

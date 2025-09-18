@@ -22,4 +22,5 @@ export class Project extends CosmosEntityBase {
   budget?: number;
   priority?: string;
   company?: string;
+  skillMatchScore?: number; // Punteggio di compatibilità con le skills dell'employee
 } 

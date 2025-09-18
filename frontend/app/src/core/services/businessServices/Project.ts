@@ -138,6 +138,25 @@ const updateProjectAssignment = (assignmentId: string, assignmentData: {
     });
 };
 
+// Smart search per progetti basati sulle skills dell'employee
+const smartSearchProjects = (employeeId: string, includeSoftSkills: boolean = true, companyId?: string): Promise<{
+  projects: Project[];
+  totalMatches: number;
+  includeSoftSkills: boolean;
+} | undefined> => {
+  ApiService.setHeader();
+  return ApiService.post(`projects/smart-search`, {
+    employeeId,
+    includeSoftSkills,
+    companyId
+  })
+    .then(({ data }) => data)
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
 export {
   getProjects,
   getProject,
@@ -148,5 +167,6 @@ export {
   getEmployeeProjects,
   assignProjectToEmployee,
   removeProjectAssignment,
-  updateProjectAssignment
+  updateProjectAssignment,
+  smartSearchProjects
 }; 

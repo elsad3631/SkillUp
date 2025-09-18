@@ -419,4 +419,146 @@ export const projectService = {
       status: assignment.status,
     }));
   },
+
+  // Smart search per progetti basati sulle skills dell'employee
+  async smartSearchByEmployeeSkills(employeeId: string, includeSoftSkills: boolean = true, companyId?: string) {
+    // Prima ottieni i dati dell'employee con le sue skills
+    const employee = await prisma.applicationUser.findUnique({
+      where: { id: employeeId },
+      include: {
+        hardSkills: true,
+        softSkills: true,
+      },
+    });
+
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    // Ottieni tutti i progetti disponibili (escludendo quelli già assegnati)
+    const whereClause = companyId ? { company: companyId } : {};
+    
+    const projects = await prisma.project.findMany({
+      where: whereClause,
+      include: { 
+        requiredHardSkills: true,
+        requiredSoftSkills: true,
+        customer: true,
+        companyUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            company: true,
+          },
+        },
+        assignments: {
+          select: {
+            applicationUserId: true,
+          },
+        },
+      },
+    });
+
+    // Filtra progetti già assegnati all'employee
+    const availableProjects = projects.filter(project => 
+      !project.assignments.some(assignment => assignment.applicationUserId === employeeId)
+    );
+
+    // Calcola il punteggio di match per ogni progetto
+    const projectsWithScores = availableProjects.map(project => {
+      const matchScore = this.calculateSkillMatchScore(
+        project,
+        employee.hardSkills || [],
+        includeSoftSkills ? (employee.softSkills || []) : []
+      );
+      
+      return {
+        ...project,
+        skillMatchScore: matchScore,
+        requiredHardSkills: project.requiredHardSkills?.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          minProficiencyLevel: skill.minProficiencyLevel,
+          certification: skill.certification,
+          isMandatory: skill.isMandatory,
+        })) || [],
+        requiredSoftSkills: project.requiredSoftSkills?.map((skill: any) => ({
+          id: skill.id,
+          name: skill.name,
+          proficiencyLevel: skill.proficiencyLevel,
+          certification: skill.certification,
+        })) || [],
+      };
+    });
+
+    // Ordina per punteggio di match (dal più alto al più basso)
+    projectsWithScores.sort((a, b) => (b.skillMatchScore || 0) - (a.skillMatchScore || 0));
+
+    return projectsWithScores;
+  },
+
+  // Calcola il punteggio di match tra le skills dell'employee e quelle richieste dal progetto
+  calculateSkillMatchScore(project: any, employeeHardSkills: any[], employeeSoftSkills: any[]): number {
+    const projectHardSkills = project.requiredHardSkills || [];
+    const projectSoftSkills = project.requiredSoftSkills || [];
+
+    let totalScore = 0;
+    let totalWeight = 0;
+
+    // Funzione helper per normalizzare i nomi delle skills (rimuove spazi extra e converte in lowercase)
+    const normalizeSkillName = (name: string): string => {
+      if (!name) return '';
+      return name.trim().toLowerCase();
+    };
+
+    // Calcola match per hard skills (peso maggiore) - SOLO MATCH ESATTI
+    projectHardSkills.forEach((projectSkill: any) => {
+      const normalizedProjectSkillName = normalizeSkillName(projectSkill.name);
+      
+      // Trova solo match esatti per le hard skills
+      const employeeSkill = employeeHardSkills.find(es => {
+        const normalizedEmployeeSkillName = normalizeSkillName(es.name);
+        return normalizedEmployeeSkillName === normalizedProjectSkillName && normalizedProjectSkillName !== '';
+      });
+      
+      if (employeeSkill) {
+        const proficiencyMatch = Math.min(
+          (employeeSkill.proficiencyLevel || 1) / (projectSkill.minProficiencyLevel || 1),
+          1
+        );
+        const weight = projectSkill.isMandatory ? 2 : 1; // Skills obbligatorie hanno peso doppio
+        totalScore += proficiencyMatch * weight * 100;
+        totalWeight += weight;
+      } else if (projectSkill.isMandatory) {
+        // Penalizza se manca una skill obbligatoria
+        totalWeight += 2;
+      }
+    });
+
+    // Calcola match per soft skills (peso minore) - SOLO MATCH ESATTI
+    projectSoftSkills.forEach((projectSkill: any) => {
+      const normalizedProjectSkillName = normalizeSkillName(projectSkill.name);
+      
+      // Trova solo match esatti per le soft skills
+      const employeeSkill = employeeSoftSkills.find(es => {
+        const normalizedEmployeeSkillName = normalizeSkillName(es.name);
+        return normalizedEmployeeSkillName === normalizedProjectSkillName && normalizedProjectSkillName !== '';
+      });
+      
+      if (employeeSkill) {
+        const proficiencyMatch = Math.min(
+          (employeeSkill.proficiencyLevel || 1) / (projectSkill.proficiencyLevel || 1),
+          1
+        );
+        const weight = 0.5; // Soft skills hanno peso minore
+        totalScore += proficiencyMatch * weight * 100;
+        totalWeight += weight;
+      }
+    });
+
+    // Calcola la percentuale finale
+    return totalWeight > 0 ? (totalScore / totalWeight) : 0;
+  },
 }; 

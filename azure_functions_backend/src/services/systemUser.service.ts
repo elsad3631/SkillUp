@@ -30,8 +30,6 @@ export const systemUserService = {
             department: 'System'
           }
         });
-
-        console.log('✅ System user created successfully');
       }
 
       return systemUser;

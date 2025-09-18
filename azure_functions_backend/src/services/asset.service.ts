@@ -47,7 +47,6 @@ export const assetService = {
     });
   },
   async getByTypeAndCompany(type: string, company: string) {
-    console.log("------------------------   " + type, company);
     return prisma.asset.findMany({
       where: {
         type,

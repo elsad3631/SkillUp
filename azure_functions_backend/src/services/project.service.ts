@@ -201,8 +201,6 @@ export const projectService = {
         const projectDocuments = await blobStorageService.listFiles(projectDocumentsPrefix);
         
         if (projectDocuments.length > 0) {
-          console.log(`Found ${projectDocuments.length} project documents to delete for project ${id}`);
-          
           // Extract file names from blob items
           const documentFileNames = projectDocuments.map(blob => blob.name);
           
@@ -210,14 +208,12 @@ export const projectService = {
           for (const fileName of documentFileNames) {
             try {
               await blobStorageService.deleteFile(fileName);
-              console.log(`Deleted project document: ${fileName}`);
             } catch (fileError) {
               console.warn(`Failed to delete project document ${fileName}:`, fileError);
               // Continue with other files even if one fails
             }
           }
           
-          console.log(`Deleted ${documentFileNames.length} project documents for project ${id}`);
         }
       } catch (blobError) {
         console.warn('Error accessing blob storage service for project documents:', blobError);

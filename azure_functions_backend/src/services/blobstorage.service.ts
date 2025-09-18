@@ -27,9 +27,7 @@ class BlobStorageService {
     try {
       // Check if container already exists
       const exists = await this.containerClient.exists();
-      console.log("connectionString", connectionString);
       if (exists) {
-        console.log(`✅ Container "${containerName}" already exists with proper access.`);
         return;
       }
 
@@ -38,11 +36,6 @@ class BlobStorageService {
         access: 'blob' // This allows public read access to blobs but not container listing
       });
       
-      if (createContainerResponse.succeeded) {
-        console.log(`✅ Container "${containerName}" created successfully with public blob access.`);
-      } else {
-        console.log(`ℹ️  Container "${containerName}" already existed.`);
-      }
     } catch (error) {
       console.error(`❌ Error initializing container "${containerName}":`, error);
       throw error;

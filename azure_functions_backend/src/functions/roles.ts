@@ -191,10 +191,8 @@ app.http('getUserRoles', {
   handler: async (request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> => {
     try {
       const userId = request.params.userId;
-      console.log('Getting roles for user:', userId);
       
       const userRoles = await roleService.getUserRolesOnly(userId);
-      console.log('User roles found:', userRoles);
       
       return { status: 200, body: JSON.stringify(userRoles) };
     } catch (error) {

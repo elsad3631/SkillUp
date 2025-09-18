@@ -172,7 +172,7 @@ export class PermissionService {
         createdPermissions.push(created);
       } catch (error) {
         // Se il permesso esiste già, lo saltiamo
-        console.log(`Permission ${permission.name} already exists`);
+        console.warn(`Permission ${permission.name} already exists`);
       }
     }
 

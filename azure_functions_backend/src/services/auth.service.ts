@@ -25,10 +25,7 @@ function loadSkillsList() {
 // Funzione per creare le skills per un utente basate sul settore
 async function createSkillsForUser(userId: string, sector: string) {
   try {
-    console.log(`🔍 Iniziando creazione skills per utente ${userId} con settore: ${sector}`);
-    
     const skillsList = loadSkillsList();
-    console.log(`📋 Skills list caricata, settori disponibili:`, Object.keys(skillsList));
     
     const sectorData = skillsList[sector];
     
@@ -36,11 +33,6 @@ async function createSkillsForUser(userId: string, sector: string) {
       console.warn(`⚠️ Settore ${sector} non trovato nella lista delle skills`);
       return;
     }
-
-    console.log(`✅ Settore ${sector} trovato, dati:`, {
-      hardSkillsCount: sectorData.hard_skills?.length || 0,
-      softSkillsCount: sectorData.soft_skills?.length || 0
-    });
 
     // Crea le hard skills nella tabella Asset
     if (sectorData.hard_skills && Array.isArray(sectorData.hard_skills)) {
@@ -51,13 +43,10 @@ async function createSkillsForUser(userId: string, sector: string) {
         applicationUserId: userId
       }));
 
-      console.log(`🔧 Preparando ${hardSkillsData.length} hard skills:`, hardSkillsData.slice(0, 3));
-
       if (hardSkillsData.length > 0) {
         const result = await prisma.asset.createMany({
           data: hardSkillsData
         });
-        console.log(`✅ Create ${result.count} hard skills per l'utente ${userId}`);
       }
     }
 
@@ -70,17 +59,13 @@ async function createSkillsForUser(userId: string, sector: string) {
         applicationUserId: userId
       }));
 
-      console.log(`🔧 Preparando ${softSkillsData.length} soft skills:`, softSkillsData.slice(0, 3));
-
       if (softSkillsData.length > 0) {
         const result = await prisma.asset.createMany({
           data: softSkillsData
         });
-        console.log(`✅ Create ${result.count} soft skills per l'utente ${userId}`);
       }
     }
 
-    console.log(`🎉 Creazione skills completata per utente ${userId}`);
   } catch (error: any) {
     console.error(`❌ Errore nella creazione delle skills per l'utente ${userId}:`, error);
     console.error(`❌ Stack trace:`, error.stack);
@@ -105,14 +90,7 @@ export const authService = {
     phone,
     isAvailable = true
   }: any) {
-    console.log(`🔍 Registrazione utente con dati:`, { 
-      email, 
-      sector, 
-      first_name, 
-      last_name,
-      hasSector: !!sector 
-    });
-    
+   
     const passwordHash = await bcrypt.hash(password, 10);
     
     // Generate username from email if not provided
@@ -153,7 +131,6 @@ export const authService = {
           roleId: superadminRole.id,
           assignedBy: null // Use null for system assignment
         });
-        console.log(`✅ Superadmin role assigned to user ${user.email}`);
       } else {
         console.warn(`⚠️ Superadmin role not found in database for user ${user.email}`);
       }
@@ -164,7 +141,6 @@ export const authService = {
 
     // Crea le skills basate sul settore selezionato
     if (sector) {
-      console.log(`🎯 Creazione skills per settore: ${sector}`);
       await createSkillsForUser(user.id, sector);
     } else {
       console.warn(`⚠️ Nessun settore specificato per l'utente ${user.email}`);

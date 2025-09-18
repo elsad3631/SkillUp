@@ -93,7 +93,6 @@ export const azureSearchService = {
           };
         }
 
-        console.log("Risultati della ricerca: ", searchResults);
         // Step 2: GENERATION - Generate answer using OpenAI with retrieved context
         const response = await this.generateAnswer(openaiClient, query.question, searchResults, modelName || '');
         
@@ -131,7 +130,6 @@ export const azureSearchService = {
     }
 
     try {
-        console.log(`Searching for: "${query.question}"\n`);
         
         const searchResults = await searchClient.search(query.question, {
             top: query.maxResults || 5,

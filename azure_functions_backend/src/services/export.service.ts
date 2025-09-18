@@ -75,8 +75,6 @@ export const exportService = {
 
   async getFilteredEmployees(filters: ExportFilters, companyId?: string): Promise<any[]> {
     try {
-      console.log('🔍 Starting getFilteredEmployees with filters:', filters);
-      console.log('🔍 Company ID:', companyId);
 
       // Build where clause for filtering
       const whereClause: any = {
@@ -116,8 +114,6 @@ export const exportService = {
       //   };
       // }
 
-      console.log('🔍 Where clause:', JSON.stringify(whereClause, null, 2));
-
       // Get employees with includes based on filters
       const includeClause: any = {
         userRoles: {
@@ -144,21 +140,16 @@ export const exportService = {
         };
       }
 
-      console.log('🔍 Include clause:', JSON.stringify(includeClause, null, 2));
-
       const employees = await prisma.applicationUser.findMany({
         where: whereClause,
         include: includeClause
       });
-
-      console.log(`✅ Found ${employees.length} employees`);
 
       // Filter by roles if specified
       if (filters.roles && filters.roles.length > 0) {
         const filteredEmployees = employees.filter(emp => 
           emp.userRoles.some((ur: any) => filters.roles!.includes(ur.role.name))
         );
-        console.log(`✅ After role filtering: ${filteredEmployees.length} employees`);
         return filteredEmployees;
       }
 
@@ -171,8 +162,6 @@ export const exportService = {
 
   async generateExcelReport(employees: any[], filters: ExportFilters): Promise<{ buffer: any; filename: string; contentType: string }> {
     try {
-      console.log('📊 Generating Excel report for', employees.length, 'employees');
-      
       const workbook = new ExcelJS.Workbook();
       // Simplified metadata for better Excel 2016 compatibility
       workbook.creator = 'SkillUp';
@@ -278,8 +267,6 @@ export const exportService = {
         }
       });
 
-      console.log('📊 Excel report generated successfully');
-      
       // Use writeBuffer with options for better Excel 2016 compatibility
       const buffer = await workbook.xlsx.writeBuffer({
         filename: 'employees_export.xlsx',
@@ -302,8 +289,6 @@ export const exportService = {
 
   async generateCSVReport(employees: any[], filters: ExportFilters): Promise<{ buffer: any; filename: string; contentType: string }> {
     try {
-      console.log('📊 Generating CSV report for', employees.length, 'employees');
-      
       // Define headers based on filters
       const headers = [
         { id: 'id', title: 'ID' },
@@ -387,8 +372,6 @@ export const exportService = {
       const csvString = this.convertToCSV(csvData, headers);
       const buffer = Buffer.from(csvString, 'utf-8');
       const filename = `employees_export_${new Date().toISOString().split('T')[0]}.csv`;
-
-      console.log('📊 CSV report generated successfully');
 
       return {
         buffer,
@@ -474,9 +457,6 @@ export const exportService = {
 
   async getFilteredCustomers(filters: CustomerExportFilters, companyId?: string): Promise<any[]> {
     try {
-      console.log('🔍 Starting getFilteredCustomers with filters:', filters);
-      console.log('🔍 Company ID:', companyId);
-
       // Build where clause for filtering
       const whereClause: any = {};
 
@@ -497,8 +477,6 @@ export const exportService = {
         };
       }
 
-      console.log('🔍 Where clause:', JSON.stringify(whereClause, null, 2));
-
       // Get customers with includes based on filters
       const includeClause: any = {};
 
@@ -506,14 +484,10 @@ export const exportService = {
         includeClause.projects = true;
       }
 
-      console.log('🔍 Include clause:', JSON.stringify(includeClause, null, 2));
-
       const customers = await (prisma as any).customer.findMany({
         where: whereClause,
         include: includeClause
       });
-
-      console.log(`✅ Found ${customers.length} customers`);
 
       return customers;
     } catch (error) {
@@ -524,8 +498,6 @@ export const exportService = {
 
   async generateCustomerExcelReport(customers: any[], filters: CustomerExportFilters): Promise<{ buffer: any; filename: string; contentType: string }> {
     try {
-      console.log('📊 Generating Excel report for', customers.length, 'customers');
-      
       const workbook = new ExcelJS.Workbook();
       workbook.creator = 'SkillUp';
       workbook.lastModifiedBy = 'SkillUp';
@@ -636,8 +608,6 @@ export const exportService = {
         }
       });
 
-      console.log('📊 Excel report generated successfully');
-
       const buffer = await workbook.xlsx.writeBuffer();
       const filename = `customers_export_${new Date().toISOString().split('T')[0]}.xlsx`;
 
@@ -654,8 +624,6 @@ export const exportService = {
 
   async generateCustomerCSVReport(customers: any[], filters: CustomerExportFilters): Promise<{ buffer: any; filename: string; contentType: string }> {
     try {
-      console.log('📊 Generating CSV report for', customers.length, 'customers');
-
       // Define headers based on filters
       const headers = [
         { id: 'id', title: 'ID' },
@@ -746,8 +714,6 @@ export const exportService = {
       const buffer = Buffer.from(csvString, 'utf-8');
       const filename = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
 
-      console.log('📊 CSV report generated successfully');
-
       return {
         buffer,
         filename,
@@ -802,9 +768,6 @@ export const exportService = {
 
   async getFilteredProjects(filters: ProjectExportFilters, companyId?: string): Promise<any[]> {
     try {
-      console.log('🔍 Starting getFilteredProjects with filters:', filters);
-      console.log('🔍 Company ID:', companyId);
-
       // Build where clause for filtering
       const whereClause: any = {};
 
@@ -824,8 +787,6 @@ export const exportService = {
           in: filters.priorities
         };
       }
-
-      console.log('🔍 Where clause:', JSON.stringify(whereClause, null, 2));
 
       // Get projects with includes based on filters
       const includeClause: any = {};
@@ -847,14 +808,10 @@ export const exportService = {
         includeClause.customer = true;
       }
 
-      console.log('🔍 Include clause:', JSON.stringify(includeClause, null, 2));
-
       const projects = await prisma.project.findMany({
         where: whereClause,
         include: includeClause
       });
-
-      console.log(`✅ Found ${projects.length} projects`);
 
       return projects;
     } catch (error) {
@@ -865,8 +822,6 @@ export const exportService = {
 
   async generateProjectExcelReport(projects: any[], filters: ProjectExportFilters): Promise<{ buffer: any; filename: string; contentType: string }> {
     try {
-      console.log('📊 Generating Excel report for', projects.length, 'projects');
-      
       const workbook = new ExcelJS.Workbook();
       workbook.creator = 'SkillUp';
       workbook.lastModifiedBy = 'SkillUp';
@@ -979,8 +934,6 @@ export const exportService = {
         }
       });
 
-      console.log('📊 Excel report generated successfully');
-
       const buffer = await workbook.xlsx.writeBuffer();
       const filename = `projects_export_${new Date().toISOString().split('T')[0]}.xlsx`;
 
@@ -997,8 +950,6 @@ export const exportService = {
 
   async generateProjectCSVReport(projects: any[], filters: ProjectExportFilters): Promise<{ buffer: any; filename: string; contentType: string }> {
     try {
-      console.log('📊 Generating CSV report for', projects.length, 'projects');
-
       // Define headers based on filters
       const headers = [
         { id: 'id', title: 'ID' },
@@ -1090,8 +1041,6 @@ export const exportService = {
       const csvString = this.convertToCSV(csvData, headers);
       const buffer = Buffer.from(csvString, 'utf-8');
       const filename = `projects_export_${new Date().toISOString().split('T')[0]}.csv`;
-
-      console.log('📊 CSV report generated successfully');
 
       return {
         buffer,

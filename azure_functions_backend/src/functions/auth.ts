@@ -16,7 +16,7 @@ export async function authRegister(request: HttpRequest, context: InvocationCont
     }
 
     const body = await request.json();
-    console.log(body);
+    
     const user = await authService.register(body);
 
     return {

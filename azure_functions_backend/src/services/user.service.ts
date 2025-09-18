@@ -43,7 +43,6 @@ export const userService = {
       }
       
       userData.username = finalUsername;
-      console.log(`✅ Generated unique username: ${finalUsername}`);
     }
 
     // Create the user first
@@ -63,7 +62,6 @@ export const userService = {
               roleId: role.id,
               assignedBy: requestingUserId || null
             });
-            console.log(`✅ Role ${roleName} assigned to user ${createdUser.email}`);
           } else {
             console.warn(`⚠️ Role ${roleName} not found in database for user ${createdUser.email}`);
           }
@@ -84,7 +82,6 @@ export const userService = {
             roleId: employeeRole.id,
             assignedBy: requestingUserId || null
           });
-          console.log(`✅ Default employee role assigned to user ${createdUser.email}`);
         } else {
           console.warn(`⚠️ Employee role not found in database for user ${createdUser.email}`);
         }

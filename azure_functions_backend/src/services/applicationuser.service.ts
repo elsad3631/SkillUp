@@ -45,7 +45,6 @@ export const applicationUserService = {
   },
 
   async getByRole(role: string, companyId?: string) {
-    console.log(`🔍 getByRole called with role: ${role}, companyId: ${companyId || 'undefined'}`);
     
     // Build the where clause for UserRole
     const whereClause: any = {
@@ -62,8 +61,6 @@ export const applicationUserService = {
       };
     }
 
-    console.log('🔍 Where clause:', JSON.stringify(whereClause, null, 2));
-
     // Get users by role using the UserRole table
     const userRoles = await (prisma as any).userRole.findMany({
       where: whereClause,
@@ -79,8 +76,6 @@ export const applicationUserService = {
       }
     });
     
-    console.log(`📋 Found ${userRoles.length} user roles for role: ${role}`);
-    
     // For each user, get their roles and add them to the user object
     const usersWithRoles = await Promise.all(
       userRoles.map(async (ur: any) => {
@@ -92,12 +87,10 @@ export const applicationUserService = {
       })
     );
     
-    console.log(`✅ Returning ${usersWithRoles.length} users with roles`);
     return usersWithRoles;
   },
 
   async getNonSuperAdminUsers(companyId?: string) {
-    console.log(`🔍 getNonSuperAdminUsers called with companyId: ${companyId || 'undefined'}`);
     
     // Build the where clause to exclude superadmin users
     const whereClause: any = {
@@ -156,7 +149,7 @@ export const applicationUserService = {
     }
     
     const usersWithRoles = Array.from(userMap.values());
-    console.log(`✅ Returning ${usersWithRoles.length} non-superadmin users with roles`);
+
     return usersWithRoles;
   },
 
@@ -197,15 +190,6 @@ export const applicationUserService = {
       }
       
       prismaData.username = finalUsername;
-      console.log(`✅ Generated unique username: ${finalUsername}`);
-    }
-
-    // Il campo company viene ora gestito dal frontend
-    // Se non viene fornito, rimane null
-    if (prismaData.company) {
-      console.log(`🏢 Company field provided from frontend: ${prismaData.company}`);
-    } else {
-      console.log(`⚠️ No company field provided, will be null`);
     }
 
     if (Array.isArray(data.hardSkills) && data.hardSkills.length > 0) {
@@ -238,7 +222,6 @@ export const applicationUserService = {
               roleId: role.id,
               assignedBy: requestingUserId || null
             });
-            console.log(`✅ Role ${roleName} assigned to user ${createdUser.email}`);
           } else {
             console.warn(`⚠️ Role ${roleName} not found in database for user ${createdUser.email}`);
           }
@@ -259,7 +242,6 @@ export const applicationUserService = {
             roleId: employeeRole.id,
             assignedBy: requestingUserId || null
           });
-          console.log(`✅ Default employee role assigned to user ${createdUser.email}`);
         } else {
           console.warn(`⚠️ Employee role not found in database for user ${createdUser.email}`);
         }

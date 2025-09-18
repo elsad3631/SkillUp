@@ -30,7 +30,6 @@ export async function applicationUserGetAll(request: HttpRequest, context: Invoc
     }
 
     const users = await applicationUserService.getAll();
-    console.log("APPLICATION USERS:", users); // DEBUG
 
     return {
       status: 200,
@@ -99,7 +98,6 @@ export async function applicationUserCreate(request: HttpRequest, context: Invoc
     // Estrai l'ID dell'utente dal token JWT se presente
     let requestingUserId: string | undefined;
     const authHeader = request.headers.get('authorization');
-    console.log(`🔍 Authorization header: ${authHeader ? 'Present' : 'Missing'}`);
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
@@ -107,8 +105,6 @@ export async function applicationUserCreate(request: HttpRequest, context: Invoc
         const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'changeme');
         requestingUserId = decoded.userId;
-        console.log(`✅ Extracted requestingUserId from JWT: ${requestingUserId}`);
-        console.log(`📋 Full JWT payload:`, decoded);
       } catch (error) {
         console.warn('Invalid JWT token in applicationUserCreate request:', error);
       }
@@ -251,8 +247,6 @@ export async function applicationUserGetByRole(request: HttpRequest, context: In
     const url = new URL(request.url);
     const companyId = url.searchParams.get('company');
     
-    console.log(`🔍 Getting users by role: ${role}, company: ${companyId || 'all'}`);
-    
     const users = await applicationUserService.getByRole(role, companyId || undefined);
 
     return {
@@ -284,8 +278,6 @@ export async function applicationUserGetNonSuperAdmin(request: HttpRequest, cont
     // Extract company parameter from query string
     const url = new URL(request.url);
     const companyId = url.searchParams.get('company');
-    
-    console.log(`🔍 Getting non-superadmin users, company: ${companyId || 'all'}`);
     
     const users = await applicationUserService.getNonSuperAdminUsers(companyId || undefined);
 

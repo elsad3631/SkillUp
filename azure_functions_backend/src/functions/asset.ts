@@ -85,6 +85,69 @@ export async function assetGetById(request: HttpRequest, context: InvocationCont
   }
 }
 
+// GET /api/asset/type/{type}/company/{company} - Get assets by type and company
+export async function assetGetByTypeAndCompany(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  context.log('HTTP trigger function processed a request.');
+
+  try {
+    if (request.method !== 'GET') {
+      return {
+        status: 405,
+        jsonBody: { error: 'Method not allowed' }
+      };
+    }
+
+    // Get user from token
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token di autenticazione richiesto' }
+      };
+    }
+
+    const token = authHeader.substring(7);
+    const user = authService.verifyToken(token);
+    
+    if (!user) {
+      return {
+        status: 401,
+        jsonBody: { error: 'Token non valido' }
+      };
+    }
+
+    // Extract type and company from URL
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/').filter(Boolean);
+    const typeIndex = pathSegments.indexOf('type');
+    const companyIndex = pathSegments.indexOf('company');
+    
+    if (typeIndex === -1 || companyIndex === -1 || typeIndex + 1 >= pathSegments.length || companyIndex + 1 >= pathSegments.length) {
+      return {
+        status: 400,
+        jsonBody: { error: 'Type and company parameters are required' }
+      };
+    }
+
+    const type = decodeURIComponent(pathSegments[typeIndex + 1]);
+    const company = decodeURIComponent(pathSegments[companyIndex + 1]);
+
+    const assets = await assetService.getByTypeAndCompany(type, company);
+
+    return {
+      status: 200,
+      jsonBody: assets
+    };
+
+  } catch (error: any) {
+    context.log('Get assets by type and company error:', error);
+    return {
+      status: 500,
+      jsonBody: { error: 'Errore nel recupero degli asset' }
+    };
+  }
+}
+
 // POST /api/asset - Create new asset for logged user
 export async function assetCreate(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('HTTP trigger function processed a request.');
@@ -312,4 +375,11 @@ app.http('assetRemove', {
   authLevel: 'anonymous',
   route: 'asset/{id}',
   handler: assetRemove
+});
+
+app.http('assetGetByTypeAndCompany', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'asset/type/{type}/company/{company}',
+  handler: assetGetByTypeAndCompany
 }); 

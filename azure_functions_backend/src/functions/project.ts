@@ -43,7 +43,7 @@ app.http('getUserProjects', {
           jsonBody: { message: 'User not authenticated' }
         };
       }
-      console.log('----------------------------------------authHeader', authHeader);
+      
       const token = authHeader.substring(7);
       const user = authService.verifyToken(token);
       

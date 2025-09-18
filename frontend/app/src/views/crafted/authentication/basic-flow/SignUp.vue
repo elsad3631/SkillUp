@@ -282,7 +282,7 @@ export default defineComponent({
 
     const onSubmitRegister = async (values: any) => {
       values = values as User;
-
+      
       // Clear existing errors
       store.logout();
       isLoading.value = true;

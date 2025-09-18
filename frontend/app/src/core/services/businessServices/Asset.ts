@@ -44,4 +44,14 @@ const deleteAsset = (id: number): Promise<boolean> => {
     });
 };
 
-export { getAssets, createAsset, updateAsset, deleteAsset }; 
+const getAssetsByTypeAndCompany = (type: string, company: string): Promise<any[] | undefined> => {
+  ApiService.setHeader();
+  return ApiService.get(`asset/type/${type}/company/${company}`)
+    .then(({ data }) => data as any[])
+    .catch(({ response }) => {
+      store.setError(response.data.message || response.data.error, response.status);
+      return undefined;
+    });
+};
+
+export { getAssets, createAsset, updateAsset, deleteAsset, getAssetsByTypeAndCompany }; 

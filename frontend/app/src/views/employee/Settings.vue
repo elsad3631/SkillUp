@@ -369,7 +369,12 @@
           <div class="row align-items-center">
             <template v-if="editingHardSkillIndex === index">
               <div class="col-md-4">
-                <input v-model="skill.name" placeholder="Skill name" class="form-control" />
+                <select v-model="skill.name" class="form-select" required>
+                  <option value="" class="text-dark">Select Hard Skill</option>
+                  <option v-for="hardSkill in hardSkills" :key="hardSkill.id" :value="hardSkill.name" class="text-dark">
+                    {{ hardSkill.name }}
+                  </option>
+                </select>
               </div>
               <div class="col-md-3">
                 <select v-model="skill.proficiencyLevel" class="form-select">
@@ -421,7 +426,12 @@
           <div class="row align-items-center">
             <template v-if="editingSoftSkillIndex === index">
               <div class="col-md-4">
-                <input v-model="skill.name" placeholder="Skill name" class="form-control" />
+                <select v-model="skill.name" class="form-select" required>
+                  <option value="" class="text-dark">Select Soft Skill</option>
+                  <option v-for="softSkill in softSkills" :key="softSkill.id" :value="softSkill.name" class="text-dark">
+                    {{ softSkill.name }}
+                  </option>
+                </select>
               </div>
               <div class="col-md-3">
                 <select v-model="skill.proficiencyLevel" class="form-select">
@@ -876,6 +886,7 @@ import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessS
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
 import { getAvailableRolesForUser, getUserRoles, assignRoleToUser, removeRoleFromUser, type Role } from "@/core/services/businessServices/Role";
+import { getAssetsByTypeAndCompany } from "@/core/services/businessServices/Asset";
 import type { Employee } from "@/core/models/Employee";
 
 interface CvData {
@@ -917,6 +928,8 @@ export default defineComponent({
     const editingHardSkillIndex = ref<number | null>(null);
     const editingSoftSkillIndex = ref<number | null>(null);
     const editingExperienceIndex = ref<number | null>(null);
+    const hardSkills = ref<any[]>([]);
+    const softSkills = ref<any[]>([]);
 
     // Role management
     const userRoles = ref<Role[]>([]);
@@ -1092,6 +1105,22 @@ export default defineComponent({
       }
     };
 
+    const loadSkills = async () => {
+      if (!userData.value?.company) return;
+      
+      try {
+        const [hardSkillsData, softSkillsData] = await Promise.all([
+          getAssetsByTypeAndCompany("hard skill", userData.value.company),
+          getAssetsByTypeAndCompany("soft skill", userData.value.company)
+        ]);
+        
+        hardSkills.value = hardSkillsData || [];
+        softSkills.value = softSkillsData || [];
+      } catch (error) {
+        console.error("Error loading skills:", error);
+      }
+    };
+
     // Watch for user data changes and update profile details
     watch(userData, async (val) => {
       if (val) {
@@ -1119,8 +1148,9 @@ export default defineComponent({
           }
         };
         
-        // Reload roles when user changes
+        // Reload roles and skills when user changes
         await loadUserRoles();
+        await loadSkills();
       }
     }, { immediate: true });
 
@@ -1900,11 +1930,12 @@ export default defineComponent({
       }
     };
 
-    // Load roles on mount
+    // Load roles and skills on mount
     onMounted(async () => {
-      // Load roles on mount
+      // Load roles and skills on mount
       await loadUserRoles();
       await loadAvailableRoles();
+      await loadSkills();
     });
 
     return {
@@ -1925,6 +1956,8 @@ export default defineComponent({
       editingSoftSkillIndex,
       editHardSkill,
       editSoftSkill,
+      hardSkills,
+      softSkills,
       // Experience management
       addExperience,
       saveExperience,
@@ -2042,5 +2075,22 @@ export default defineComponent({
 .bg-light:hover {
   background-color: #e9ecef !important;
   border-color: #dee2e6 !important;
+}
+
+/* Select options styling */
+.form-select option {
+  background-color: white !important;
+  color: #181c32 !important;
+  padding: 8px 12px;
+}
+
+[data-bs-theme="dark"] .form-select option {
+  background-color: #1e1e2d !important;
+  color: #ffffff !important;
+}
+
+.form-select:focus {
+  border-color: #009ef7;
+  box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
 }
 </style>

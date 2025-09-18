@@ -119,7 +119,12 @@
                   <div v-for="(skill, index) in form.requiredHardSkills" :key="`hard-${index}`" class="mb-3 p-3 border rounded">
                     <div class="row">
                       <div class="col-md-3">
-                        <input v-model="skill.name" placeholder="Skill name" class="form-control" />
+                        <select v-model="skill.name" class="form-select" required>
+                          <option value="" class="text-dark">Select Hard Skill</option>
+                          <option v-for="hardSkill in hardSkills" :key="hardSkill.id" :value="hardSkill.name" class="text-dark">
+                            {{ hardSkill.name }}
+                          </option>
+                        </select>
                       </div>
                       <div class="col-md-3">
                         <select v-model="skill.minProficiencyLevel" class="form-select">
@@ -159,7 +164,12 @@
                   <div v-for="(skill, index) in form.requiredSoftSkills" :key="`soft-${index}`" class="mb-3 p-3 border rounded">
                     <div class="row">
                       <div class="col-md-3">
-                        <input v-model="skill.name" placeholder="Skill name" class="form-control" />
+                        <select v-model="skill.name" class="form-select" required>
+                          <option value="" class="text-dark">Select Soft Skill</option>
+                          <option v-for="softSkill in softSkills" :key="softSkill.id" :value="softSkill.name" class="text-dark">
+                            {{ softSkill.name }}
+                          </option>
+                        </select>
                       </div>
                       <div class="col-md-3">
                         <select v-model="skill.proficiencyLevel" class="form-select">
@@ -219,11 +229,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive, onMounted } from "vue";
 import { createProject } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
 import Swal from "sweetalert2/dist/sweetalert2.js";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
+import { getAssetsByTypeAndCompany } from "@/core/services/businessServices/Asset";
 
 export default defineComponent({
   name: "AddProjectModal",
@@ -238,6 +249,8 @@ export default defineComponent({
   setup(props, { emit }) {
     const { currentUser } = useCurrentUser();
     const loading = ref(false);
+    const hardSkills = ref<any[]>([]);
+    const softSkills = ref<any[]>([]);
 
     const form = reactive({
       name: "",
@@ -276,6 +289,26 @@ export default defineComponent({
     const removeSoftSkillRequirement = (index: number) => {
       form.requiredSoftSkills.splice(index, 1);
     };
+
+    const loadSkills = async () => {
+      if (!currentUser.value?.company) return;
+      
+      try {
+        const [hardSkillsData, softSkillsData] = await Promise.all([
+          getAssetsByTypeAndCompany("hard skill", currentUser.value.company),
+          getAssetsByTypeAndCompany("soft skill", currentUser.value.company)
+        ]);
+        
+        hardSkills.value = hardSkillsData || [];
+        softSkills.value = softSkillsData || [];
+      } catch (error) {
+        console.error("Error loading skills:", error);
+      }
+    };
+
+    onMounted(() => {
+      loadSkills();
+    });
 
     const onSubmit = async () => {
       loading.value = true;
@@ -341,6 +374,8 @@ export default defineComponent({
     return {
       form,
       loading,
+      hardSkills,
+      softSkills,
       onSubmit,
       addSkillRequirement,
       removeHardSkillRequirement,
@@ -349,4 +384,22 @@ export default defineComponent({
     };
   },
 });
-</script> 
+</script>
+
+<style scoped>
+.form-select option {
+  background-color: white !important;
+  color: #181c32 !important;
+  padding: 8px 12px;
+}
+
+[data-bs-theme="dark"] .form-select option {
+  background-color: #1e1e2d !important;
+  color: #ffffff !important;
+}
+
+.form-select:focus {
+  border-color: #009ef7;
+  box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
+}
+</style> 

@@ -45,5 +45,19 @@ export const assetService = {
       where,
       include: { applicationUser: true }
     });
+  },
+  async getByTypeAndCompany(type: string, company: string) {
+    console.log("------------------------   " + type, company);
+    return prisma.asset.findMany({
+      where: {
+        type,
+        applicationUser: {
+          company: company
+        },
+        enable: true
+      },
+      include: { applicationUser: true },
+      orderBy: { name: 'asc' }
+    });
   }
 }; 

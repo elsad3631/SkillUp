@@ -126,6 +126,29 @@ npx prisma db push
 azurite --silent --location c:\azurite --debug c:\azurite\debug.log
 ```
 
+## Scripts di Inizializzazione
+
+### Inizializzazione Ruoli Personalizzati
+Per creare i ruoli personalizzati del sistema:
+
+```bash
+npx ts-node src/scripts/initialize-custom-roles.ts
+```
+
+### Inizializzazione Ruoli e Permessi
+Per inizializzare ruoli e permessi completi del sistema:
+
+```bash
+npx ts-node src/scripts/initialize-roles-permissions.ts
+```
+
+### Verifica Migrazione Ruoli
+Per verificare lo stato della migrazione dei ruoli:
+
+```bash
+npx ts-node src/scripts/migrate-roles-to-userrole.ts
+```
+
 ## Testing
 
 Use tools like Postman or curl to test the CV extraction:

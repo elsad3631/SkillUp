@@ -413,7 +413,7 @@
                         </label>
                         <select
                           v-model="formData.roleOnProject"
-                          class="form-select form-select-solid"
+                          class="form-select"
                           :disabled="formData.selectedProjects.length === 0"
                         >
                           <option value="">Select role...</option>
@@ -530,7 +530,7 @@
                         </label>
                         <select
                           v-model="formData.status"
-                          class="form-select form-select-solid"
+                          class="form-select"
                           :disabled="formData.selectedProjects.length === 0"
                         >
                           <option value="Active">
@@ -648,7 +648,7 @@
                 </label>
                 <select
                   v-model="filters.status"
-                  class="form-select form-select-solid"
+                  class="form-select"
                 >
                   <option value="">All Status</option>
                   <option value="PLANNING">Planning</option>
@@ -671,7 +671,7 @@
                 </label>
                 <select
                   v-model="filters.priority"
-                  class="form-select form-select-solid"
+                  class="form-select"
                 >
                   <option value="">All Priority</option>
                   <option value="LOW">Low</option>
@@ -694,7 +694,7 @@
                 </label>
                 <select
                   v-model="filters.budget"
-                  class="form-select form-select-solid"
+                  class="form-select"
                 >
                   <option value="">All Budget</option>
                   <option value="0-10000">€0 - €10k</option>
@@ -717,7 +717,7 @@
                 </label>
                 <select
                   v-model="filters.matchScore"
-                  class="form-select form-select-solid"
+                  class="form-select"
                 >
                   <option value="">All Scores</option>
                   <option value="90-100">90%+ (Excellent)</option>
@@ -1530,5 +1530,16 @@ export default defineComponent({
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Fix minimo per la visibilità delle opzioni delle select */
+.modal .form-select option {
+  background-color: #ffffff !important;
+  color: #181c32 !important;
+}
+
+[data-bs-theme="dark"] .modal .form-select option {
+  background-color: #1e1e2d !important;
+  color: #ffffff !important;
 }
 </style> 

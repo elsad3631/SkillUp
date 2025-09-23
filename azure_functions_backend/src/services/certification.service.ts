@@ -215,6 +215,7 @@ export const certificationService = {
     // Convert date strings to Date objects if they exist
     const processedData: any = {};
     
+    if (data.userId !== undefined) processedData.userId = data.userId;
     if (data.name !== undefined) processedData.name = data.name;
     if (data.issuingAuthority !== undefined) processedData.issuingAuthority = data.issuingAuthority;
     if (data.certificateNumber !== undefined) processedData.certificateNumber = data.certificateNumber;

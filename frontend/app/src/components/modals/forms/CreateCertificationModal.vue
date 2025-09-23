@@ -5,6 +5,8 @@
     ref="certificationModalRef"
     tabindex="-1"
     aria-hidden="true"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
   >
     <div class="modal-dialog modal-dialog-centered mw-650px">
       <div class="modal-content">
@@ -14,7 +16,6 @@
             id="kt_modal_create_certification_close"
             data-bs-dismiss="modal"
             class="btn btn-icon btn-sm btn-active-icon-primary"
-            @click="handleClose"
           >
             <KTIcon icon-name="cross" icon-class="fs-1" />
           </div>
@@ -136,7 +137,7 @@
             <button
               type="button"
               class="btn btn-light me-3"
-              @click="handleClose"
+              data-bs-dismiss="modal"
             >
               Cancel
             </button>
@@ -164,7 +165,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, ref, watch, onMounted, onUnmounted } from "vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import { CertificationStatus } from "@/core/models/enums";
 import type { Certification } from "@/core/services/businessServices/Training";
@@ -227,22 +228,22 @@ export default defineComponent({
       tags: [],
     });
 
-    // Reset form when certification prop changes
-    watch(() => props.certification, (newCertification) => {
-      if (newCertification) {
+    // Function to populate form data
+    const populateFormData = (certification: Certification | null) => {
+      if (certification) {
         formData.value = {
-          userId: newCertification.userId || "",
-          name: newCertification.name || "",
-          issuingAuthority: newCertification.issuingAuthority || "",
-          certificateNumber: newCertification.certificateNumber || "",
-          issueDate: newCertification.issueDate ? new Date(newCertification.issueDate).toISOString().split('T')[0] : "",
-          expiryDate: newCertification.expiryDate ? new Date(newCertification.expiryDate).toISOString().split('T')[0] : "",
-          status: newCertification.status || CertificationStatus.ACTIVE,
-          credentialUrl: newCertification.credentialUrl || "",
-          description: newCertification.description || "",
-          tags: newCertification.tags || [],
+          userId: certification.userId || "",
+          name: certification.name || "",
+          issuingAuthority: certification.issuingAuthority || "",
+          certificateNumber: certification.certificateNumber || "",
+          issueDate: certification.issueDate ? new Date(certification.issueDate).toISOString().split('T')[0] : "",
+          expiryDate: certification.expiryDate ? new Date(certification.expiryDate).toISOString().split('T')[0] : "",
+          status: certification.status || CertificationStatus.ACTIVE,
+          credentialUrl: certification.credentialUrl || "",
+          description: certification.description || "",
+          tags: certification.tags || [],
         };
-        tagsInput.value = newCertification.tags ? newCertification.tags.join(', ') : '';
+        tagsInput.value = certification.tags ? certification.tags.join(', ') : '';
       } else {
         // Reset form for new certification
         formData.value = {
@@ -259,6 +260,11 @@ export default defineComponent({
         };
         tagsInput.value = '';
       }
+    };
+
+    // Reset form when certification prop changes
+    watch(() => props.certification, (newCertification) => {
+      populateFormData(newCertification);
     }, { immediate: true });
 
     const getStatusLabel = (status: string) => {
@@ -303,6 +309,32 @@ export default defineComponent({
       props.closeModal();
     };
 
+    // Bootstrap modal event handlers
+    const handleModalHidden = () => {
+      handleClose();
+    };
+
+    const handleModalShow = () => {
+      // Ensure form data is populated when modal is shown
+      populateFormData(props.certification);
+    };
+
+    onMounted(() => {
+      const modalElement = certificationModalRef.value;
+      if (modalElement) {
+        modalElement.addEventListener('hidden.bs.modal', handleModalHidden);
+        modalElement.addEventListener('show.bs.modal', handleModalShow);
+      }
+    });
+
+    onUnmounted(() => {
+      const modalElement = certificationModalRef.value;
+      if (modalElement) {
+        modalElement.removeEventListener('hidden.bs.modal', handleModalHidden);
+        modalElement.removeEventListener('show.bs.modal', handleModalShow);
+      }
+    });
+
     const handleSubmit = () => {
       if (!formData.value.userId || !formData.value.name || !formData.value.issuingAuthority || !formData.value.issueDate) {
         alert('Please fill in all required fields.');
@@ -320,6 +352,7 @@ export default defineComponent({
       updateTags,
       handleClose,
       handleSubmit,
+      populateFormData,
     };
   },
 });

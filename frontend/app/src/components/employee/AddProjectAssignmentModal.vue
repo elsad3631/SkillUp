@@ -1531,15 +1531,4 @@ export default defineComponent({
 .cursor-pointer {
   cursor: pointer;
 }
-
-/* Fix minimo per la visibilità delle opzioni delle select */
-.modal .form-select option {
-  background-color: #ffffff !important;
-  color: #181c32 !important;
-}
-
-[data-bs-theme="dark"] .modal .form-select option {
-  background-color: #1e1e2d !important;
-  color: #ffffff !important;
-}
 </style> 

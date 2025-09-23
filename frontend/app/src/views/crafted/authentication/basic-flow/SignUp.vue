@@ -401,11 +401,6 @@ export default defineComponent({
   font-size: 1rem;
 }
 
-.form-select option {
-  background: #1f2937;
-  color: white;
-}
-
 .form-select option[disabled] {
   color: rgba(255, 255, 255, 0.7);
   font-style: italic;

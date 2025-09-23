@@ -179,19 +179,22 @@ export const certificationService = {
   },
 
   async create(data: any) {
+    // Convert date strings to Date objects if they exist
+    const processedData = {
+      userId: data.userId,
+      name: data.name,
+      issuingAuthority: data.issuingAuthority,
+      certificateNumber: data.certificateNumber,
+      issueDate: data.issueDate ? new Date(data.issueDate) : new Date(),
+      expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
+      status: data.status || 'ACTIVE',
+      credentialUrl: data.credentialUrl,
+      description: data.description,
+      tags: data.tags || [],
+    };
+
     return prisma.certification.create({
-      data: {
-        userId: data.userId,
-        name: data.name,
-        issuingAuthority: data.issuingAuthority,
-        certificateNumber: data.certificateNumber,
-        issueDate: data.issueDate,
-        expiryDate: data.expiryDate,
-        status: data.status || 'ACTIVE',
-        credentialUrl: data.credentialUrl,
-        description: data.description,
-        tags: data.tags || [],
-      },
+      data: processedData,
       include: {
         user: {
           select: {
@@ -209,19 +212,22 @@ export const certificationService = {
   },
 
   async update(id: string, data: any) {
+    // Convert date strings to Date objects if they exist
+    const processedData: any = {};
+    
+    if (data.name !== undefined) processedData.name = data.name;
+    if (data.issuingAuthority !== undefined) processedData.issuingAuthority = data.issuingAuthority;
+    if (data.certificateNumber !== undefined) processedData.certificateNumber = data.certificateNumber;
+    if (data.issueDate !== undefined) processedData.issueDate = data.issueDate ? new Date(data.issueDate) : null;
+    if (data.expiryDate !== undefined) processedData.expiryDate = data.expiryDate ? new Date(data.expiryDate) : null;
+    if (data.status !== undefined) processedData.status = data.status;
+    if (data.credentialUrl !== undefined) processedData.credentialUrl = data.credentialUrl;
+    if (data.description !== undefined) processedData.description = data.description;
+    if (data.tags !== undefined) processedData.tags = data.tags;
+
     return prisma.certification.update({
       where: { id },
-      data: {
-        name: data.name,
-        issuingAuthority: data.issuingAuthority,
-        certificateNumber: data.certificateNumber,
-        issueDate: data.issueDate,
-        expiryDate: data.expiryDate,
-        status: data.status,
-        credentialUrl: data.credentialUrl,
-        description: data.description,
-        tags: data.tags,
-      },
+      data: processedData,
       include: {
         user: {
           select: {
@@ -266,12 +272,12 @@ export const certificationService = {
     });
   },
 
-  async renew(id: string, newExpiryDate: Date) {
+  async renew(id: string, newExpiryDate: Date | string) {
     return prisma.certification.update({
       where: { id },
       data: {
         status: 'ACTIVE',
-        expiryDate: newExpiryDate
+        expiryDate: newExpiryDate ? new Date(newExpiryDate) : null
       },
       include: {
         user: {

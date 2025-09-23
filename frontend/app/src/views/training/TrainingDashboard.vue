@@ -84,7 +84,11 @@
         <h3 class="fw-bold m-0">Training Enrollments</h3>
       </div>
       <div class="card-toolbar">
-        <router-link to="/training/enrollments" class="btn btn-sm btn-light-primary me-2 modern-btn">
+        <button @click="openCreateEnrollmentModal()" class="btn btn-sm btn-primary me-2 modern-btn">
+          <KTIcon icon-name="plus" icon-class="fs-2 me-1" />
+          New Enrollment
+        </button>
+        <router-link to="/training/enrollments" class="btn btn-sm btn-light-primary modern-btn">
           <KTIcon icon-name="eye" icon-class="fs-2 me-1" />
           View Enrollments
         </router-link>
@@ -145,9 +149,14 @@
               </td>
               <td>{{ formatDate(enrollment.enrollmentDate) }}</td>
               <td class="text-end">
-                <router-link :to="`/training/enrollments/${enrollment.id}`" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm modern-btn">
-                  <KTIcon icon-name="eye" icon-class="fs-3" />
-                </router-link>
+                <div class="d-flex justify-content-end flex-shrink-0">
+                  <button @click="openEditEnrollmentModal(enrollment)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 modern-btn">
+                    <KTIcon icon-name="pencil" icon-class="fs-3" />
+                  </button>
+                  <button @click="deleteEnrollment(enrollment.id)" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm modern-btn">
+                    <KTIcon icon-name="trash" icon-class="fs-3" />
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -255,6 +264,10 @@
         <h3 class="fw-bold m-0">Recent Certifications</h3>
       </div>
       <div class="card-toolbar">
+        <button @click="openCreateCertificationModal()" class="btn btn-sm btn-primary me-2 modern-btn">
+          <KTIcon icon-name="plus" icon-class="fs-2 me-1" />
+          New Certification
+        </button>
         <router-link to="/training/certifications" class="btn btn-sm btn-light-primary modern-btn">
           <KTIcon icon-name="eye" icon-class="fs-2 me-1" />
           View All
@@ -318,9 +331,14 @@
                 <span v-else class="text-muted fs-7">-</span>
               </td>
               <td class="text-end">
-                <router-link :to="`/training/certifications/${certification.id}`" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm modern-btn">
-                  <KTIcon icon-name="eye" icon-class="fs-3" />
-                </router-link>
+                <div class="d-flex justify-content-end flex-shrink-0">
+                  <button @click="openEditCertificationModal(certification)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 modern-btn">
+                    <KTIcon icon-name="pencil" icon-class="fs-3" />
+                  </button>
+                  <button @click="deleteCertificationRecord(certification.id)" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm modern-btn">
+                    <KTIcon icon-name="trash" icon-class="fs-3" />
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -347,6 +365,29 @@
     @close="closeEditTrainingModal"
     @submit="handleEditTrainingSubmit"
   />
+
+  <!-- Enrollment Modal -->
+  <EnrollmentModal
+    :is-editing="showEditEnrollmentModal"
+    :enrollment="selectedEnrollment"
+    :loading="getEnrollmentModalLoading()"
+    :users="users"
+    :trainings="trainings"
+    :close-modal="getEnrollmentCloseModal()"
+    @close="handleEnrollmentModalClose"
+    @submit="handleEnrollmentModalSubmit"
+  />
+
+  <!-- Certification Modal -->
+  <CreateCertificationModal
+    :is-editing="showEditCertificationModal"
+    :certification="selectedCertification"
+    :loading="getCertificationModalLoading()"
+    :users="users"
+    :close-modal="getCertificationCloseModal()"
+    @close="handleCertificationModalClose"
+    @submit="handleCertificationModalSubmit"
+  />
 </template>
 
 <script lang="ts">
@@ -354,6 +395,8 @@ import { defineComponent, ref, computed, onMounted } from "vue";
 import KTIcon from "@/core/helpers/kt-icon/KTIcon.vue";
 import CreateTrainingModal from "@/components/modals/forms/CreateTrainingModal.vue";
 import EditTrainingModal from "@/components/modals/forms/EditTrainingModal.vue";
+import EnrollmentModal from "@/components/modals/forms/EnrollmentModal.vue";
+import CreateCertificationModal from "@/components/modals/forms/CreateCertificationModal.vue";
 import { 
   getTrainingEnrollments, 
   getCertifications,
@@ -361,9 +404,17 @@ import {
   createTraining,
   updateTraining,
   deleteTraining,
+  createTrainingEnrollment,
+  updateTrainingEnrollment,
+  deleteTrainingEnrollment,
+  createCertification,
+  updateCertification,
+  deleteCertification,
+  getUsers,
   type TrainingEnrollment,
   type Certification,
-  type Training 
+  type Training,
+  type User
 } from "@/core/services/businessServices/Training";
 import { TrainingEnrollmentStatus, CertificationStatus, TrainingDifficulty } from "@/core/models/enums";
 import { Modal } from "bootstrap";
@@ -375,11 +426,14 @@ export default defineComponent({
     KTIcon,
     CreateTrainingModal,
     EditTrainingModal,
+    EnrollmentModal,
+    CreateCertificationModal,
   },
   setup() {
     const enrollments = ref<TrainingEnrollment[]>([]);
     const certifications = ref<Certification[]>([]);
     const trainings = ref<Training[]>([]);
+    const users = ref<User[]>([]);
     
     // Training modal state
     const showCreateModal = ref(false);
@@ -389,6 +443,22 @@ export default defineComponent({
     const editModalLoading = ref(false);
     let createModal: Modal;
     let editModal: Modal;
+
+    // Enrollment modal state
+    const createEnrollmentModalLoading = ref(false);
+    const showEditEnrollmentModal = ref(false);
+    const selectedEnrollment = ref<TrainingEnrollment | null>(null);
+    const editEnrollmentModalLoading = ref(false);
+    let createEnrollmentModal: Modal;
+    let editEnrollmentModal: Modal;
+
+    // Certification modal state
+    const createCertificationModalLoading = ref(false);
+    const showEditCertificationModal = ref(false);
+    const selectedCertification = ref<Certification | null>(null);
+    const editCertificationModalLoading = ref(false);
+    let createCertificationModal: Modal;
+    let editCertificationModal: Modal;
 
     const inProgressCount = computed(() => 
       enrollments.value.filter(e => e.status === TrainingEnrollmentStatus.IN_PROGRESS).length
@@ -426,6 +496,59 @@ export default defineComponent({
       trainings.value.slice(0, 5)
     );
 
+    // Helper functions for modal state management
+    const getEnrollmentModalLoading = () => {
+      return showEditEnrollmentModal.value ? editEnrollmentModalLoading.value : createEnrollmentModalLoading.value;
+    };
+
+    const getEnrollmentCloseModal = () => {
+      return showEditEnrollmentModal.value ? closeEditEnrollmentModal : closeCreateEnrollmentModal;
+    };
+
+    const getCertificationModalLoading = () => {
+      return showEditCertificationModal.value ? editCertificationModalLoading.value : createCertificationModalLoading.value;
+    };
+
+    const getCertificationCloseModal = () => {
+      return showEditCertificationModal.value ? closeEditCertificationModal : closeCreateCertificationModal;
+    };
+
+    const handleEnrollmentModalClose = () => {
+      if (showEditEnrollmentModal.value) {
+        closeEditEnrollmentModal();
+      } else {
+        closeCreateEnrollmentModal();
+      }
+    };
+
+    const handleEnrollmentModalSubmit = (formData: any) => {
+      console.log('handleEnrollmentModalSubmit called', { 
+        isEditing: showEditEnrollmentModal.value, 
+        formData 
+      });
+      if (showEditEnrollmentModal.value) {
+        handleEditEnrollmentSubmit(formData);
+      } else {
+        handleCreateEnrollmentSubmit(formData);
+      }
+    };
+
+    const handleCertificationModalClose = () => {
+      if (showEditCertificationModal.value) {
+        closeEditCertificationModal();
+      } else {
+        closeCreateCertificationModal();
+      }
+    };
+
+    const handleCertificationModalSubmit = (formData: any) => {
+      if (showEditCertificationModal.value) {
+        handleEditCertificationSubmit(formData);
+      } else {
+        handleCreateCertificationSubmit(formData);
+      }
+    };
+
     const fetchEnrollments = async () => {
       try {
         const result = await getTrainingEnrollments();
@@ -456,6 +579,17 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Failed to fetch trainings:', error);
+      }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        const result = await getUsers();
+        if (result) {
+          users.value = result;
+        }
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
       }
     };
 
@@ -645,16 +779,287 @@ export default defineComponent({
       }
     };
 
+    // Enrollment Modal Functions
+    const openCreateEnrollmentModal = () => {
+      showEditEnrollmentModal.value = false; // Ensure we're in create mode
+      if (!createEnrollmentModal) {
+        const modalElement = document.getElementById('kt_modal_enrollment');
+        if (modalElement) {
+          createEnrollmentModal = new Modal(modalElement);
+        }
+      }
+      createEnrollmentModal?.show();
+    };
+
+    const closeCreateEnrollmentModal = () => {
+      createEnrollmentModal?.hide();
+      showEditEnrollmentModal.value = false;
+      createEnrollmentModalLoading.value = false;
+    };
+
+    const handleCreateEnrollmentSubmit = async (formData: any) => {
+      createEnrollmentModalLoading.value = true;
+      
+      try {
+        const result = await createTrainingEnrollment(formData);
+        if (result) {
+          await fetchEnrollments();
+          closeCreateEnrollmentModal();
+          await Swal.fire({
+            title: "Success!",
+            text: "Enrollment created successfully",
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+        }
+      } catch (error) {
+        console.error('Error creating enrollment:', error);
+        await Swal.fire({
+          title: "Error!",
+          text: "Failed to create enrollment",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      } finally {
+        createEnrollmentModalLoading.value = false;
+      }
+    };
+
+    const openEditEnrollmentModal = (enrollment: TrainingEnrollment) => {
+      selectedEnrollment.value = enrollment;
+      showEditEnrollmentModal.value = true;
+      
+      if (!editEnrollmentModal) {
+        const modalElement = document.getElementById('kt_modal_enrollment');
+        if (modalElement) {
+          editEnrollmentModal = new Modal(modalElement);
+        }
+      }
+      editEnrollmentModal?.show();
+    };
+
+    const closeEditEnrollmentModal = () => {
+      editEnrollmentModal?.hide();
+      showEditEnrollmentModal.value = false;
+      selectedEnrollment.value = null;
+      editEnrollmentModalLoading.value = false;
+    };
+
+    const handleEditEnrollmentSubmit = async (formData: any) => {
+      console.log('handleEditEnrollmentSubmit called', { 
+        enrollmentId: selectedEnrollment.value?.id, 
+        formData 
+      });
+      editEnrollmentModalLoading.value = true;
+      
+      try {
+        if (selectedEnrollment.value) {
+          const result = await updateTrainingEnrollment(selectedEnrollment.value.id, formData);
+          console.log('updateTrainingEnrollment result', result);
+          if (result) {
+            await fetchEnrollments();
+            closeEditEnrollmentModal();
+            await Swal.fire({
+              title: "Success!",
+              text: "Enrollment updated successfully",
+              icon: "success",
+              confirmButtonText: "OK",
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error updating enrollment:', error);
+        await Swal.fire({
+          title: "Error!",
+          text: "Failed to update enrollment",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      } finally {
+        editEnrollmentModalLoading.value = false;
+      }
+    };
+
+    const deleteEnrollment = async (enrollmentId: string) => {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const deleteResult = await deleteTrainingEnrollment(enrollmentId);
+          if (deleteResult) {
+            await fetchEnrollments();
+            await Swal.fire({
+              title: "Deleted!",
+              text: "Enrollment has been deleted.",
+              icon: "success",
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting enrollment:', error);
+          await Swal.fire({
+            title: "Error!",
+            text: "Failed to delete enrollment",
+            icon: "error",
+          });
+        }
+      }
+    };
+
+    // Certification Modal Functions
+    const openCreateCertificationModal = () => {
+      showEditCertificationModal.value = false; // Ensure we're in create mode
+      if (!createCertificationModal) {
+        const modalElement = document.getElementById('kt_modal_create_certification');
+        if (modalElement) {
+          createCertificationModal = new Modal(modalElement);
+        }
+      }
+      createCertificationModal?.show();
+    };
+
+    const closeCreateCertificationModal = () => {
+      createCertificationModal?.hide();
+      showEditCertificationModal.value = false;
+      createCertificationModalLoading.value = false;
+    };
+
+    const handleCreateCertificationSubmit = async (formData: any) => {
+      createCertificationModalLoading.value = true;
+      
+      try {
+        const result = await createCertification(formData);
+        if (result) {
+          await fetchCertifications();
+          closeCreateCertificationModal();
+          await Swal.fire({
+            title: "Success!",
+            text: "Certification created successfully",
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+        }
+      } catch (error) {
+        console.error('Error creating certification:', error);
+        await Swal.fire({
+          title: "Error!",
+          text: "Failed to create certification",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      } finally {
+        createCertificationModalLoading.value = false;
+      }
+    };
+
+    const openEditCertificationModal = (certification: Certification) => {
+      console.log('openEditCertificationModal called', certification);
+      selectedCertification.value = certification;
+      showEditCertificationModal.value = true;
+      
+      if (!editCertificationModal) {
+        const modalElement = document.getElementById('kt_modal_create_certification');
+        if (modalElement) {
+          editCertificationModal = new Modal(modalElement);
+        }
+      }
+      editCertificationModal?.show();
+    };
+
+    const closeEditCertificationModal = () => {
+      editCertificationModal?.hide();
+      showEditCertificationModal.value = false;
+      selectedCertification.value = null;
+      editCertificationModalLoading.value = false;
+    };
+
+    const handleEditCertificationSubmit = async (formData: any) => {
+      console.log('handleEditCertificationSubmit called', { 
+        certificationId: selectedCertification.value?.id, 
+        formData 
+      });
+      editCertificationModalLoading.value = true;
+      
+      try {
+        if (selectedCertification.value) {
+          const result = await updateCertification(selectedCertification.value.id, formData);
+          console.log('updateCertification result', result);
+          if (result) {
+            await fetchCertifications();
+            closeEditCertificationModal();
+            await Swal.fire({
+              title: "Success!",
+              text: "Certification updated successfully",
+              icon: "success",
+              confirmButtonText: "OK",
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error updating certification:', error);
+        await Swal.fire({
+          title: "Error!",
+          text: "Failed to update certification",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      } finally {
+        editCertificationModalLoading.value = false;
+      }
+    };
+
+    const deleteCertificationRecord = async (certificationId: string) => {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const deleteResult = await deleteCertification(certificationId);
+          if (deleteResult) {
+            await fetchCertifications();
+            await Swal.fire({
+              title: "Deleted!",
+              text: "Certification has been deleted.",
+              icon: "success",
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting certification:', error);
+          await Swal.fire({
+            title: "Error!",
+            text: "Failed to delete certification",
+            icon: "error",
+          });
+        }
+      }
+    };
+
     onMounted(() => {
       fetchEnrollments();
       fetchCertifications();
       fetchTrainings();
+      fetchUsers();
     });
 
     return {
       enrollments,
       certifications,
       trainings,
+      users,
       inProgressCount,
       completedCount,
       plannedCount,
@@ -664,6 +1069,14 @@ export default defineComponent({
       recentEnrollments,
       recentCertifications,
       recentTrainings,
+      getEnrollmentModalLoading,
+      getEnrollmentCloseModal,
+      getCertificationModalLoading,
+      getCertificationCloseModal,
+      handleEnrollmentModalClose,
+      handleEnrollmentModalSubmit,
+      handleCertificationModalClose,
+      handleCertificationModalSubmit,
       getStatusBadgeClass,
       getExpiryDateClass,
       formatDate,
@@ -683,6 +1096,30 @@ export default defineComponent({
       handleCreateTrainingSubmit,
       handleEditTrainingSubmit,
       deleteTrainingProgram,
+      // Enrollment modals
+      createEnrollmentModalLoading,
+      showEditEnrollmentModal,
+      selectedEnrollment,
+      editEnrollmentModalLoading,
+      openCreateEnrollmentModal,
+      openEditEnrollmentModal,
+      closeCreateEnrollmentModal,
+      closeEditEnrollmentModal,
+      handleCreateEnrollmentSubmit,
+      handleEditEnrollmentSubmit,
+      deleteEnrollment,
+      // Certification modals
+      createCertificationModalLoading,
+      showEditCertificationModal,
+      selectedCertification,
+      editCertificationModalLoading,
+      openCreateCertificationModal,
+      openEditCertificationModal,
+      closeCreateCertificationModal,
+      closeEditCertificationModal,
+      handleCreateCertificationSubmit,
+      handleEditCertificationSubmit,
+      deleteCertificationRecord,
       TrainingEnrollmentStatus,
       CertificationStatus,
     };

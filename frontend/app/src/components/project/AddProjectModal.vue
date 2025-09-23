@@ -387,22 +387,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.form-select option {
-  background-color: white !important;
-  color: #181c32 !important;
-  padding: 8px 12px;
-}
-
-[data-bs-theme="dark"] .form-select option {
-  background-color: #1e1e2d !important;
-  color: #ffffff !important;
-}
-
-.form-select:focus {
-  border-color: #009ef7;
-  box-shadow: 0 0 0 0.2rem rgba(0, 158, 247, 0.25);
-}
-
 /* Skill cards styling */
 .skill-card {
   background-color: rgba(54, 153, 255, 0.05) !important;

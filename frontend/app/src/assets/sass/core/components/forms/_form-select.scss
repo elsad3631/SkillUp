@@ -66,3 +66,25 @@
 		}
 	}
 }
+
+// Fix for select options visibility in modals and forms
+.form-select {
+	// Ensure select text is visible
+	color: $form-select-color !important;
+	
+	// Fix for select options visibility
+	option {
+		color: $form-select-color !important;
+		background-color: $form-select-bg !important;
+		
+		&:hover {
+			background-color: $gray-100 !important;
+		}
+		
+		&:checked,
+		&:focus {
+			background-color: $primary !important;
+			color: $white !important;
+		}
+	}
+}

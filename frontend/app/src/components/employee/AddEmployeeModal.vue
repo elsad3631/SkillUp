@@ -394,7 +394,7 @@ import { defineComponent, ref, reactive, onMounted } from "vue";
 import { createEmployee, extractCVData } from "@/core/services/businessServices/Employee";
 import { getAvailableRolesForUser, type Role } from "@/core/services/businessServices/Role";
 import type { Employee } from "@/core/models/Employee";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
 export default defineComponent({
@@ -408,6 +408,7 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
+    const toast = useToast();
     const loading = ref(false);
     const activeTab = ref<'manual'|'cv'>('manual');
     const cvFile = ref<File|null>(null);
@@ -568,27 +569,7 @@ export default defineComponent({
       
       try {
         // Mostra messaggio di operazione in corso
-        const loadingAlert = Swal.fire({
-          icon: 'info',
-          title: 'Elaborazione CV in corso...',
-          html: `
-            <div class="text-center">
-              <div class="spinner-border text-primary mb-3" role="status">
-                <span class="visually-hidden">Caricamento...</span>
-              </div>
-              <p><strong>Stiamo elaborando il tuo CV...</strong></p>
-              <p class="text-muted">Questa operazione può richiedere alcuni minuti.</p>
-              <p class="text-info">
-                <i class="fas fa-info-circle"></i>
-                L'utente verrà creato in background. Riceverai una notifica quando l'operazione sarà completata.
-              </p>
-            </div>
-          `,
-          showConfirmButton: true,
-          confirmButtonText: 'Ho capito',
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-        });
+        toast.info('Elaborazione CV in corso... L\'utente verrà creato in background. Riceverai una notifica quando l\'operazione sarà completata.');
 
         // Invia la richiesta in background senza attendere la risposta
         extractCVData(cvFile.value, currentUser.value?.id, cvForm.roles, currentUser.value?.company)
@@ -613,12 +594,7 @@ export default defineComponent({
         console.error('Errore preparazione CV:', err);
         
         // Mostra messaggio di errore solo per errori di preparazione
-        await Swal.fire({
-          icon: 'error',
-          title: 'Errore durante la preparazione',
-          text: err.message || 'Si è verificato un errore durante la preparazione del CV.',
-          confirmButtonText: 'OK',
-        });
+        toast.error(err.message || 'Si è verificato un errore durante la preparazione del CV.');
       } finally {
         cvLoading.value = false;
       }
@@ -732,11 +708,7 @@ export default defineComponent({
         // Call ApplicationUser API using the service
         const result = await createEmployee(applicationUserData);
         emit("employee-created", result); // Keep same event name for compatibility
-        Swal.fire({
-          icon: 'success',
-          title: 'User created!',
-          text: 'The user has been added successfully.'
-        });
+        toast.success('User created! The user has been added successfully.');
         if (props.closeModal) props.closeModal();
         // Reset form
         Object.assign(form, {
@@ -760,11 +732,7 @@ export default defineComponent({
         });
       } catch (error) {
         console.error("Error creating employee:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'There was an error creating the employee.'
-        });
+        toast.error('There was an error creating the employee.');
       } finally {
         loading.value = false;
       }

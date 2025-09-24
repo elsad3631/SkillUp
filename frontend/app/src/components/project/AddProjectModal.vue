@@ -232,7 +232,7 @@
 import { defineComponent, ref, reactive, onMounted } from "vue";
 import { createProject } from "@/core/services/businessServices/Project";
 import type { Project } from "@/core/models/Project";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
 import { getAssetsByTypeAndCompany } from "@/core/services/businessServices/Asset";
 
@@ -248,6 +248,7 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const { currentUser } = useCurrentUser();
+    const toast = useToast();
     const loading = ref(false);
     const hardSkills = ref<any[]>([]);
     const softSkills = ref<any[]>([]);
@@ -345,7 +346,7 @@ export default defineComponent({
         const result = await createProject(projectData as Project);
         if (result) {
           emit("project-created", result);
-          Swal.fire('Success', 'Project has been created.', 'success');
+          toast.success('Project has been created.');
           if (props.closeModal) props.closeModal();
           // Reset form
           Object.assign(form, {
@@ -361,11 +362,11 @@ export default defineComponent({
             requiredSoftSkills: [],
           });
         } else {
-          Swal.fire('Error', 'Failed to create project.', 'error');
+          toast.error('Failed to create project.');
         }
       } catch (error) {
         console.error("Error creating project:", error);
-        Swal.fire('Error', 'An error occurred while creating the project.', 'error');
+        toast.error('An error occurred while creating the project.');
       } finally {
         loading.value = false;
       }

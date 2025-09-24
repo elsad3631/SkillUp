@@ -880,7 +880,7 @@
 <script lang="ts">
 import { getAssetPath } from "@/core/helpers/assets";
 import { defineComponent, ref, inject, watch, onMounted, computed } from "vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import { useRoute } from "vue-router";
 import { createSkill, updateSkill, deleteSkill } from "@/core/services/businessServices/Skill";
 import { createExperience, updateExperience, deleteExperience } from "@/core/services/businessServices/Experience";
@@ -917,6 +917,7 @@ export default defineComponent({
   },
   setup() {
     const route = useRoute();
+    const toast = useToast();
     const submitButton1 = ref<HTMLElement | null>(null);
 
     // Form validation
@@ -1225,13 +1226,7 @@ export default defineComponent({
           }
           
           // Show success message
-          Swal.fire({
-            icon: 'success',
-            title: 'Profile updated successfully!',
-            text: 'Your profile settings have been saved.',
-            confirmButtonText: 'Great!',
-            confirmButtonColor: '#3699FF'
-          });
+          toast.success('Profile updated successfully! Your profile settings have been saved.');
         } catch (error) {
           console.error("Error updating profile:", error);
           Swal.fire({

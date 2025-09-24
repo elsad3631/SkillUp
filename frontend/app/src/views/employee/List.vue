@@ -170,7 +170,7 @@ import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal.vue";
 import ExportEmployeeModal from "@/components/employee/ExportEmployeeModal.vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
 import { 
@@ -193,6 +193,7 @@ export default defineComponent({
         Loading,
     },
     setup() {
+        const toast = useToast();
         const tableHeader = ref([
             {
                 columnName: "Employee",
@@ -317,16 +318,7 @@ export default defineComponent({
 
         const deleteFewEmployees = async () => {
             if (selectedIds.value.length === 0) return;
-            const confirm = await Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.value.length} employees and all their associated files (CVs, avatars, documents, etc.). This action cannot be undone!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete them!'
-            });
-            if (confirm.isConfirmed) {
+            if (confirm(`Are you sure you want to delete ${selectedIds.value.length} employees and all their associated files (CVs, avatars, documents, etc.)? This action cannot be undone!`)) {
                 try {
                     const result = await bulkDeleteApplicationUsers(selectedIds.value);
                     if (result) {
@@ -334,47 +326,31 @@ export default defineComponent({
                         initEmployees.value = initEmployees.value.filter(e => !selectedIds.value.includes(e.id));
                         selectedIds.value = [];
                         
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            html: `
-                                <p><strong>${result.deletedUsers} employees</strong> have been deleted successfully.</p>
-                                <p class="text-muted">Also deleted <strong>${result.deletedFiles} associated files</strong> (CVs, avatars, documents, etc.).</p>
-                            `
-                        });
+                        toast.success(`${result.deletedUsers} employees have been deleted successfully. Also deleted ${result.deletedFiles} associated files.`);
                     } else {
-                        Swal.fire('Error', 'Failed to delete employees.', 'error');
+                        toast.error('Failed to delete employees.');
                     }
                 } catch (error) {
                     console.error('Failed to delete employees:', error);
-                    Swal.fire('Error', 'Failed to delete employees.', 'error');
+                    toast.error('Failed to delete employees.');
                 }
             }
         };
 
         const deleteSingleEmployee = async (id: string) => {
-            const confirm = await Swal.fire({
-                title: 'Are you sure?',
-                text: "This will delete the employee and all their associated files (CV, avatar, documents, etc.). This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            });
-            if (confirm.isConfirmed) {
+            if (confirm("Are you sure you want to delete this employee and all their associated files (CV, avatar, documents, etc.)? This action cannot be undone!")) {
                 try {
                     const success = await deleteApplicationUser(id);
                     if (success) {
                         tableData.value = tableData.value.filter(e => e.id !== id);
                         initEmployees.value = initEmployees.value.filter(e => e.id !== id);
-                        Swal.fire('Deleted!', 'Employee and all associated files (CV, avatar, documents, etc.) have been deleted.', 'success');
+                        toast.success('Employee and all associated files (CV, avatar, documents, etc.) have been deleted.');
                     } else {
-                        Swal.fire('Error', 'Failed to delete employee.', 'error');
+                        toast.error('Failed to delete employee.');
                     }
                 } catch (error) {
                     console.error('Failed to delete employee:', error);
-                    Swal.fire('Error', 'Failed to delete employee.', 'error');
+                    toast.error('Failed to delete employee.');
                 }
             }
         };

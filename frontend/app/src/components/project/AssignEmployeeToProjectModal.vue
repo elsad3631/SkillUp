@@ -604,7 +604,7 @@ import { getNonSuperAdminUsers } from "@/core/services/businessServices/Applicat
 import { assignProjectToEmployee, smartSearchEmployees } from "@/core/services/businessServices/Project";
 import { getAssetPath } from "@/core/helpers/assets";
 import { hideModal } from "@/core/helpers/dom";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "AssignEmployeeToProjectModal",
@@ -622,6 +622,7 @@ export default defineComponent({
     assignmentCreated: () => true,
   },
   setup(props, { emit }) {
+    const toast = useToast();
     const assignEmployeeToProjectModalRef = ref<HTMLElement | null>(null);
     const isLoading = ref(false);
     const employeesLoading = ref(false);
@@ -776,12 +777,7 @@ export default defineComponent({
         );
 
         if (!result) {
-          Swal.fire({
-            title: "Errore!",
-            text: "Impossibile eseguire la ricerca intelligente",
-            icon: "error",
-            confirmButtonText: "OK"
-          });
+          toast.error("Impossibile eseguire la ricerca intelligente");
           return;
         }
 
@@ -801,30 +797,11 @@ export default defineComponent({
         };
 
         // Mostra un messaggio di successo più dettagliato
-        Swal.fire({
-          title: "🎯 Ricerca Intelligente Completata!",
-          html: `
-            <div class="text-start">
-              <p><strong>${result.totalMatches}</strong> employee trovati con skills compatibili</p>
-              <p>Punteggio medio: <strong>${Math.round(averageScore)}%</strong></p>
-              <p>Soft skills: <strong>${result.includeSoftSkills ? 'Incluse' : 'Escluse'}</strong></p>
-            </div>
-          `,
-          icon: "success",
-          timer: 3000,
-          showConfirmButton: false,
-          toast: true,
-          position: 'top-end'
-        });
+        toast.success(`🎯 Ricerca Intelligente Completata! ${result.totalMatches} employee trovati con skills compatibili. Punteggio medio: ${Math.round(averageScore)}%`);
 
       } catch (error) {
         console.error("Error performing smart search:", error);
-        Swal.fire({
-          title: "Errore!",
-          text: "Impossibile eseguire la ricerca intelligente",
-          icon: "error",
-          confirmButtonText: "OK"
-        });
+        toast.error("Impossibile eseguire la ricerca intelligente");
       } finally {
         smartSearchLoading.value = false;
       }
@@ -908,15 +885,7 @@ export default defineComponent({
           hideModal(assignEmployeeToProjectModalRef.value);
           
           // Mostra messaggio di successo
-          Swal.fire({
-            title: "Assegnazione Completata!",
-            text: `${successCount} employee assegnato/i con successo`,
-            icon: "success",
-            timer: 3000,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-          });
+          toast.success(`Assegnazione Completata! ${successCount} employee assegnato/i con successo`);
 
           // Emetti evento per aggiornare la lista
           emit("assignmentCreated");
@@ -928,12 +897,7 @@ export default defineComponent({
         }
       } catch (error) {
         console.error("Error creating assignments:", error);
-        Swal.fire({
-          title: "Errore!",
-          text: "Impossibile assegnare gli employee. Riprova.",
-          icon: "error",
-          confirmButtonText: "OK"
-        });
+        toast.error("Impossibile assegnare gli employee. Riprova.");
       } finally {
         isLoading.value = false;
       }

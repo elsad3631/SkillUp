@@ -132,7 +132,7 @@
 import { defineComponent, reactive, ref, onMounted, watch } from "vue";
 import { updateTask, type Task } from "@/core/services/businessServices/Task";
 import { type ApplicationUser } from "@/core/services/businessServices/ApplicationUser";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "assign-task-modal",
@@ -152,6 +152,7 @@ export default defineComponent({
   },
   emits: ['task-assigned'],
   setup(props, { emit }) {
+    const toast = useToast();
     const loading = ref(false);
 
     const form = reactive({
@@ -182,7 +183,7 @@ export default defineComponent({
 
     const handleSubmit = async () => {
       if (!form.assignedTo) {
-        Swal.fire('Error', 'Please select an assignee.', 'error');
+        toast.error('Please select an assignee.');
         return;
       }
 
@@ -205,13 +206,13 @@ export default defineComponent({
         if (updatedTask) {
           emit('task-assigned', updatedTask);
           props.closeModal();
-          Swal.fire('Success', 'Task assigned successfully!', 'success');
+          toast.success('Task assigned successfully!');
         } else {
-          Swal.fire('Error', 'Failed to assign task.', 'error');
+          toast.error('Failed to assign task.');
         }
       } catch (error) {
         console.error('Failed to assign task:', error);
-        Swal.fire('Error', 'Failed to assign task.', 'error');
+        toast.error('Failed to assign task.');
       } finally {
         loading.value = false;
       }

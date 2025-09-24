@@ -581,7 +581,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, inject, watch, onMounted, computed } from "vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import { useRoute } from "vue-router";
 import { 
   createSoftSkill, updateSoftSkill, deleteSoftSkill, getSoftSkillsByProjectId,
@@ -611,6 +611,7 @@ export default defineComponent({
   name: "project-settings",
   setup() {
     const route = useRoute();
+    const toast = useToast();
     const submitButton = ref<HTMLElement | null>(null);
     const editingHardSkillIndex = ref<number | null>(null);
     const editingSoftSkillIndex = ref<number | null>(null);
@@ -721,13 +722,7 @@ export default defineComponent({
             }
             
             // Show success message
-            Swal.fire({
-              icon: 'success',
-              title: 'Project updated successfully!',
-              text: 'Your project settings have been saved.',
-              confirmButtonText: 'Great!',
-              confirmButtonColor: '#3699FF'
-            });
+            toast.success('Project updated successfully! Your project settings have been saved.');
           }
         } catch (error) {
           console.error("Error updating project:", error);

@@ -150,7 +150,7 @@ import { getProjects, deleteProject, getProject, getUserProjects } from "@/core/
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddProjectModal from "@/components/project/AddProjectModal.vue";
 import ExportProjectModal from "@/components/project/ExportProjectModal.vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { useCurrentUser } from "@/core/composables/useCurrentUser";
 
@@ -164,6 +164,7 @@ export default defineComponent({
     },
     setup() {
         const { currentUser } = useCurrentUser();
+        const toast = useToast();
         
         const tableHeader = ref([
             {
@@ -236,13 +237,13 @@ export default defineComponent({
                 if (isSuperAdmin || project.company === currentUser.value.company) {
                     tableData.value.push(project);
                     initProjects.value.push(project);
-                    Swal.fire('Success', 'Project has been created.', 'success');
+                    toast.success('Project has been created.');
                 }
             } else {
                 // Se non c'è un utente corrente, aggiungi comunque il progetto
                 tableData.value.push(project);
                 initProjects.value.push(project);
-                Swal.fire('Success', 'Project has been created.', 'success');
+                toast.success('Project has been created.');
             }
         };
 
@@ -253,16 +254,7 @@ export default defineComponent({
 
         const deleteFewProjects = async () => {
             if (selectedIds.value.length === 0) return;
-            const confirm = await Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.value.length} projects and all their associated documents. This action cannot be undone!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete them!'
-            });
-            if (confirm.isConfirmed) {
+            if (confirm(`Are you sure you want to delete ${selectedIds.value.length} projects and all their associated documents? This action cannot be undone!`)) {
                 let allSuccess = true;
                 for (const id of selectedIds.value) {
                     const success = await deleteProject(id);
@@ -272,31 +264,22 @@ export default defineComponent({
                 initProjects.value = initProjects.value.filter(p => !selectedIds.value.includes(p.id));
                 selectedIds.value = [];
                 if (allSuccess) {
-                    Swal.fire('Deleted!', 'Selected projects and all their associated documents have been deleted.', 'success');
+                    toast.success('Selected projects and all their associated documents have been deleted.');
                 } else {
-                    Swal.fire('Error', 'Some projects could not be deleted.', 'error');
+                    toast.error('Some projects could not be deleted.');
                 }
             }
         };
 
         const deleteSingleProject = async (id: string) => {
-            const confirm = await Swal.fire({
-                title: 'Are you sure?',
-                text: "This will delete the project and all its associated documents. This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            });
-            if (confirm.isConfirmed) {
+            if (confirm("Are you sure you want to delete this project and all its associated documents? This action cannot be undone!")) {
                 const success = await deleteProject(id);
                 if (success) {
                     tableData.value = tableData.value.filter(p => p.id !== id);
                     initProjects.value = initProjects.value.filter(p => p.id !== id);
-                    Swal.fire('Deleted!', 'Project and all associated documents have been deleted.', 'success');
+                    toast.success('Project and all associated documents have been deleted.');
                 } else {
-                    Swal.fire('Error', 'Failed to delete project.', 'error');
+                    toast.error('Failed to delete project.');
                 }
             }
         };

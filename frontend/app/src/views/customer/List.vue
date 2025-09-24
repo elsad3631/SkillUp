@@ -178,7 +178,7 @@ import arraySort from "array-sort";
 import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddCustomerModal from "@/components/customer/AddCustomerModal.vue";
 import ExportCustomerModal from "@/components/customer/ExportCustomerModal.vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { 
     getAllCustomers, 
@@ -195,6 +195,7 @@ export default defineComponent({
         Loading,
     },
     setup() {
+        const toast = useToast();
         const tableHeader = ref([
             {
                 columnName: "Customer",
@@ -270,16 +271,7 @@ export default defineComponent({
 
         const deleteFewCustomers = async () => {
             if (selectedIds.value.length === 0) return;
-            const confirm = await Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.value.length} customers. This action cannot be undone!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete them!'
-            });
-            if (confirm.isConfirmed) {
+            if (confirm(`Are you sure you want to delete ${selectedIds.value.length} customers? This action cannot be undone!`)) {
                 try {
                     let deletedCount = 0;
                     for (const id of selectedIds.value) {
@@ -294,44 +286,31 @@ export default defineComponent({
                         initCustomers.value = initCustomers.value.filter(c => !selectedIds.value.includes(c.id));
                         selectedIds.value = [];
                         
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Deleted!',
-                            text: `${deletedCount} customers have been deleted successfully.`
-                        });
+                        toast.success(`${deletedCount} customers have been deleted successfully.`);
                     } else {
-                        Swal.fire('Error', 'Failed to delete customers.', 'error');
+                        toast.error('Failed to delete customers.');
                     }
                 } catch (error) {
                     console.error('Failed to delete customers:', error);
-                    Swal.fire('Error', 'Failed to delete customers.', 'error');
+                    toast.error('Failed to delete customers.');
                 }
             }
         };
 
         const deleteSingleCustomer = async (id: string) => {
-            const confirm = await Swal.fire({
-                title: 'Are you sure?',
-                text: "This will delete the customer. This action cannot be undone!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            });
-            if (confirm.isConfirmed) {
+            if (confirm("Are you sure you want to delete this customer? This action cannot be undone!")) {
                 try {
                     const success = await deleteCustomer(id);
                     if (success) {
                         tableData.value = tableData.value.filter(c => c.id !== id);
                         initCustomers.value = initCustomers.value.filter(c => c.id !== id);
-                        Swal.fire('Deleted!', 'Customer has been deleted.', 'success');
+                        toast.success('Customer has been deleted.');
                     } else {
-                        Swal.fire('Error', 'Failed to delete customer.', 'error');
+                        toast.error('Failed to delete customer.');
                     }
                 } catch (error) {
                     console.error('Failed to delete customer:', error);
-                    Swal.fire('Error', 'Failed to delete customer.', 'error');
+                    toast.error('Failed to delete customer.');
                 }
             }
         };

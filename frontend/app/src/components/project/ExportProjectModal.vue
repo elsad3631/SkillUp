@@ -163,7 +163,7 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref, onMounted } from "vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import { Modal } from "bootstrap";
 import { exportProjects, getProjectExportFilters } from "@/core/services/businessServices/Export";
 
@@ -171,6 +171,7 @@ export default defineComponent({
   name: "export-projects-modal",
   components: {},
   setup() {
+    const toast = useToast();
     const formRef = ref<null | HTMLFormElement>(null);
     const loading = ref<boolean>(false);
 
@@ -244,50 +245,22 @@ export default defineComponent({
               window.URL.revokeObjectURL(url);
 
               // Show success message
-              Swal.fire({
-                text: "Export completed successfully!",
-                icon: "success",
-                buttonsStyling: false,
-                confirmButtonText: "Ok, got it!",
-                heightAuto: false,
-                customClass: {
-                  confirmButton: "btn btn-primary",
-                },
-              }).then(() => {
-                // Close modal
-                const modal = document.getElementById('kt_projects_export_modal');
-                if (modal) {
-                  const bootstrapModal = Modal.getInstance(modal);
-                  bootstrapModal?.hide();
-                }
-              });
+              toast.success("Export completed successfully!");
+              // Close modal
+              const modal = document.getElementById('kt_projects_export_modal');
+              if (modal) {
+                const bootstrapModal = Modal.getInstance(modal);
+                bootstrapModal?.hide();
+              }
             }
           } catch (error) {
             console.error('Export error:', error);
-            Swal.fire({
-              text: "Failed to export projects. Please try again.",
-              icon: "error",
-              buttonsStyling: false,
-              confirmButtonText: "Ok, got it!",
-              heightAuto: false,
-              customClass: {
-                confirmButton: "btn btn-primary",
-              },
-            });
+            toast.error("Failed to export projects. Please try again.");
           } finally {
             loading.value = false;
           }
         } else {
-          Swal.fire({
-            text: "Please fill in all required fields.",
-            icon: "error",
-            buttonsStyling: false,
-            confirmButtonText: "Ok, got it!",
-            heightAuto: false,
-            customClass: {
-              confirmButton: "btn btn-primary",
-            },
-          });
+          toast.error("Please fill in all required fields.");
           return false;
         }
       });

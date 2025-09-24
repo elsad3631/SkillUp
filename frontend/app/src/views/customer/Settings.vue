@@ -517,11 +517,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { getCustomerById, updateCustomer } from '@/core/services/businessServices/Customer';
 import type { Customer } from '@/core/models/Customer';
 import { useAuthStore } from '@/stores/auth';
-import Swal from 'sweetalert2';
+import { useToast } from 'vue-toastification';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 
 const customer = ref<Customer | null>(null);
 const isSaving = ref(false);
@@ -589,12 +590,7 @@ const loadCustomer = async () => {
 
 const saveChanges = async () => {
   if (!profileDetails.name) {
-    Swal.fire({
-      title: 'Validation Error',
-      text: 'Customer name is required',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
+    toast.error('Customer name is required');
     return;
   }
 
@@ -603,21 +599,11 @@ const saveChanges = async () => {
     const updatedCustomer = await updateCustomer(customerId.value, profileDetails);
     if (updatedCustomer) {
       customer.value = updatedCustomer;
-      Swal.fire({
-        title: 'Success!',
-        text: 'Customer updated successfully',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      });
+      toast.success('Customer updated successfully');
     }
   } catch (error) {
     console.error('Error updating customer:', error);
-    Swal.fire({
-      title: 'Error',
-      text: 'Failed to update customer',
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
+    toast.error('Failed to update customer');
   } finally {
     isSaving.value = false;
   }

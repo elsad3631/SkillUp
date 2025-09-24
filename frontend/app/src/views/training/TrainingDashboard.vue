@@ -418,7 +418,7 @@ import {
 } from "@/core/services/businessServices/Training";
 import { TrainingEnrollmentStatus, CertificationStatus, TrainingDifficulty } from "@/core/models/enums";
 import { Modal } from "bootstrap";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "training-dashboard",
@@ -430,6 +430,7 @@ export default defineComponent({
     CreateCertificationModal,
   },
   setup() {
+    const toast = useToast();
     const enrollments = ref<TrainingEnrollment[]>([]);
     const certifications = ref<Certification[]>([]);
     const trainings = ref<Training[]>([]);
@@ -696,21 +697,11 @@ export default defineComponent({
         if (result) {
           await fetchTrainings();
           closeCreateTrainingModal();
-          await Swal.fire({
-            title: "Success!",
-            text: "Training created successfully",
-            icon: "success",
-            confirmButtonText: "OK",
-          });
+          toast.success("Training created successfully");
         }
       } catch (error) {
         console.error('Error creating training:', error);
-        await Swal.fire({
-          title: "Error!",
-          text: "Failed to create training",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        toast.error("Failed to create training");
       } finally {
         createModalLoading.value = false;
       }
@@ -725,56 +716,28 @@ export default defineComponent({
           if (result) {
             await fetchTrainings();
             closeEditTrainingModal();
-            await Swal.fire({
-              title: "Success!",
-              text: "Training updated successfully",
-              icon: "success",
-              confirmButtonText: "OK",
-            });
+            toast.success("Training updated successfully");
           }
         }
       } catch (error) {
         console.error('Error updating training:', error);
-        await Swal.fire({
-          title: "Error!",
-          text: "Failed to update training",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        toast.error("Failed to update training");
       } finally {
         editModalLoading.value = false;
       }
     };
 
     const deleteTrainingProgram = async (trainingId: string) => {
-      const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      });
-
-      if (result.isConfirmed) {
+      if (confirm("Are you sure you want to delete this training? This action cannot be undone.")) {
         try {
           const deleteResult = await deleteTraining(trainingId);
           if (deleteResult) {
             await fetchTrainings();
-            await Swal.fire({
-              title: "Deleted!",
-              text: "Training has been deleted.",
-              icon: "success",
-            });
+            toast.success("Training has been deleted successfully");
           }
         } catch (error) {
           console.error('Error deleting training:', error);
-          await Swal.fire({
-            title: "Error!",
-            text: "Failed to delete training",
-            icon: "error",
-          });
+          toast.error("Failed to delete training");
         }
       }
     };
@@ -805,21 +768,11 @@ export default defineComponent({
         if (result) {
           await fetchEnrollments();
           closeCreateEnrollmentModal();
-          await Swal.fire({
-            title: "Success!",
-            text: "Enrollment created successfully",
-            icon: "success",
-            confirmButtonText: "OK",
-          });
+          toast.success("Enrollment created successfully");
         }
       } catch (error) {
         console.error('Error creating enrollment:', error);
-        await Swal.fire({
-          title: "Error!",
-          text: "Failed to create enrollment",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        toast.error("Failed to create enrollment");
       } finally {
         createEnrollmentModalLoading.value = false;
       }
@@ -859,56 +812,28 @@ export default defineComponent({
           if (result) {
             await fetchEnrollments();
             closeEditEnrollmentModal();
-            await Swal.fire({
-              title: "Success!",
-              text: "Enrollment updated successfully",
-              icon: "success",
-              confirmButtonText: "OK",
-            });
+            toast.success("Enrollment updated successfully");
           }
         }
       } catch (error) {
         console.error('Error updating enrollment:', error);
-        await Swal.fire({
-          title: "Error!",
-          text: "Failed to update enrollment",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        toast.error("Failed to update enrollment");
       } finally {
         editEnrollmentModalLoading.value = false;
       }
     };
 
     const deleteEnrollment = async (enrollmentId: string) => {
-      const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      });
-
-      if (result.isConfirmed) {
+      if (confirm("Are you sure you want to delete this enrollment? This action cannot be undone.")) {
         try {
           const deleteResult = await deleteTrainingEnrollment(enrollmentId);
           if (deleteResult) {
             await fetchEnrollments();
-            await Swal.fire({
-              title: "Deleted!",
-              text: "Enrollment has been deleted.",
-              icon: "success",
-            });
+            toast.success("Enrollment has been deleted successfully");
           }
         } catch (error) {
           console.error('Error deleting enrollment:', error);
-          await Swal.fire({
-            title: "Error!",
-            text: "Failed to delete enrollment",
-            icon: "error",
-          });
+          toast.error("Failed to delete enrollment");
         }
       }
     };
@@ -939,21 +864,11 @@ export default defineComponent({
         if (result) {
           await fetchCertifications();
           closeCreateCertificationModal();
-          await Swal.fire({
-            title: "Success!",
-            text: "Certification created successfully",
-            icon: "success",
-            confirmButtonText: "OK",
-          });
+          toast.success("Certification created successfully");
         }
       } catch (error) {
         console.error('Error creating certification:', error);
-        await Swal.fire({
-          title: "Error!",
-          text: "Failed to create certification",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        toast.error("Failed to create certification");
       } finally {
         createCertificationModalLoading.value = false;
       }
@@ -994,56 +909,28 @@ export default defineComponent({
           if (result) {
             await fetchCertifications();
             closeEditCertificationModal();
-            await Swal.fire({
-              title: "Success!",
-              text: "Certification updated successfully",
-              icon: "success",
-              confirmButtonText: "OK",
-            });
+            toast.success("Certification updated successfully");
           }
         }
       } catch (error) {
         console.error('Error updating certification:', error);
-        await Swal.fire({
-          title: "Error!",
-          text: "Failed to update certification",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        toast.error("Failed to update certification");
       } finally {
         editCertificationModalLoading.value = false;
       }
     };
 
     const deleteCertificationRecord = async (certificationId: string) => {
-      const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      });
-
-      if (result.isConfirmed) {
+      if (confirm("Are you sure you want to delete this certification? This action cannot be undone.")) {
         try {
           const deleteResult = await deleteCertification(certificationId);
           if (deleteResult) {
             await fetchCertifications();
-            await Swal.fire({
-              title: "Deleted!",
-              text: "Certification has been deleted.",
-              icon: "success",
-            });
+            toast.success("Certification has been deleted successfully");
           }
         } catch (error) {
           console.error('Error deleting certification:', error);
-          await Swal.fire({
-            title: "Error!",
-            text: "Failed to delete certification",
-            icon: "error",
-          });
+          toast.error("Failed to delete certification");
         }
       }
     };

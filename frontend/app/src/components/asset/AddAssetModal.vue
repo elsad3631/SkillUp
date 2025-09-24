@@ -57,10 +57,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import Swal from 'sweetalert2/dist/sweetalert2.js';
+import { useToast } from "vue-toastification";
 import { createAsset } from '@/core/services/businessServices/Asset';
 
 const emit = defineEmits(['created', 'close']);
+const toast = useToast();
 
 const name = ref('');
 const selectedType = ref('');
@@ -78,7 +79,7 @@ async function onSubmit() {
     const finalType = selectedType.value === 'other' ? customType.value : selectedType.value;
     
     if (!finalType) {
-      Swal.fire('Errore', 'Seleziona un tipo valido', 'error');
+      toast.error('Seleziona un tipo valido');
       return;
     }
     
@@ -89,9 +90,9 @@ async function onSubmit() {
     });
     emit('created', asset);
     emit('close');
-    Swal.fire('Successo', 'Asset aggiunto con successo!', 'success');
+    toast.success('Asset aggiunto con successo!');
   } catch {
-    Swal.fire('Errore', 'Impossibile aggiungere l\'asset', 'error');
+    toast.error('Impossibile aggiungere l\'asset');
   }
 }
 </script> 

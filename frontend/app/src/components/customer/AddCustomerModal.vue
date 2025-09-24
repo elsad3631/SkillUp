@@ -229,7 +229,7 @@
 import { defineComponent, ref, reactive } from "vue";
 import { createCustomer } from "@/core/services/businessServices/Customer";
 import type { Customer } from "@/core/models/Customer";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "add-customer-modal",
@@ -241,6 +241,7 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
+    const toast = useToast();
     const loading = ref(false);
 
     const form = reactive({
@@ -285,7 +286,7 @@ export default defineComponent({
 
     const onSubmit = async () => {
       if (!form.name.trim()) {
-        Swal.fire("Error", "Customer name is required", "error");
+        toast.error("Customer name is required");
         return;
       }
 
@@ -314,21 +315,17 @@ export default defineComponent({
         const newCustomer = await createCustomer(customerData);
 
         if (newCustomer) {
-          Swal.fire({
-            icon: "success",
-            title: "Success!",
-            text: "Customer created successfully",
-          });
+          toast.success("Customer created successfully");
 
           emit("customer-created", newCustomer);
           resetForm();
           props.closeModal();
         } else {
-          Swal.fire("Error", "Failed to create customer", "error");
+          toast.error("Failed to create customer");
         }
       } catch (error: any) {
         console.error("Failed to create customer:", error);
-        Swal.fire("Error", error.message || "Failed to create customer", "error");
+        toast.error(error.message || "Failed to create customer");
       } finally {
         loading.value = false;
       }

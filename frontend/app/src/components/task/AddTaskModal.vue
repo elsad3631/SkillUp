@@ -147,7 +147,7 @@
 import { defineComponent, ref, reactive, onMounted } from "vue";
 import { createTask, type Task } from "@/core/services/businessServices/Task";
 import type { ApplicationUser } from "@/core/services/businessServices/ApplicationUser";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "add-task-modal",
@@ -167,6 +167,7 @@ export default defineComponent({
   },
   emits: ['task-created'],
   setup(props, { emit }) {
+    const toast = useToast();
     const loading = ref(false);
 
     const form = reactive({
@@ -196,7 +197,7 @@ export default defineComponent({
 
     const handleSubmit = async () => {
       if (!form.title || !form.priority || !form.status) {
-        Swal.fire('Error', 'Please fill in all required fields.', 'error');
+        toast.error('Please fill in all required fields.');
         return;
       }
 
@@ -241,13 +242,13 @@ export default defineComponent({
             tags: []
           });
 
-          Swal.fire('Success', 'Task created successfully!', 'success');
+          toast.success('Task created successfully!');
         } else {
-          Swal.fire('Error', 'Failed to create task.', 'error');
+          toast.error('Failed to create task.');
         }
       } catch (error) {
         console.error('Failed to create task:', error);
-        Swal.fire('Error', 'Failed to create task.', 'error');
+        toast.error('Failed to create task.');
       } finally {
         loading.value = false;
       }

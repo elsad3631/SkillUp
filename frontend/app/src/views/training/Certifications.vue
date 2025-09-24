@@ -153,7 +153,7 @@ import {
 } from "@/core/services/businessServices/Training";
 import { CertificationStatus } from "@/core/models/enums";
 import { Modal } from "bootstrap";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "certifications",
@@ -162,6 +162,7 @@ export default defineComponent({
     CreateCertificationModal,
   },
   setup() {
+    const toast = useToast();
     const certifications = ref<Certification[]>([]);
     const users = ref<any[]>([]);
     const selectedCertifications = ref<string[]>([]);
@@ -280,48 +281,38 @@ export default defineComponent({
             if (index !== -1) {
               certifications.value[index] = result;
             }
-            Swal.fire('Success', 'Certification updated successfully!', 'success');
+            toast.success('Certification updated successfully!');
             closeCertificationModal();
           }
         } else {
           const result = await createCertification(submitData);
           if (result) {
             certifications.value.unshift(result);
-            Swal.fire('Success', 'Certification created successfully!', 'success');
+            toast.success('Certification created successfully!');
             closeCertificationModal();
           }
         }
       } catch (error) {
         console.error('Failed to save certification:', error);
-        Swal.fire('Error', 'Failed to save certification.', 'error');
+        toast.error('Failed to save certification.');
       } finally {
         saving.value = false;
       }
     };
 
     const handleDeleteCertification = async (id: string) => {
-      const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
-      });
-
-      if (result.isConfirmed) {
+      if (confirm("Are you sure you want to delete this certification? This action cannot be undone!")) {
         try {
           const success = await deleteCertification(id);
           if (success) {
             certifications.value = certifications.value.filter(c => c.id !== id);
-            Swal.fire('Deleted!', 'Certification has been deleted.', 'success');
+            toast.success('Certification has been deleted.');
           } else {
-            Swal.fire('Error', 'Failed to delete certification.', 'error');
+            toast.error('Failed to delete certification.');
           }
         } catch (error) {
           console.error('Failed to delete certification:', error);
-          Swal.fire('Error', 'Failed to delete certification.', 'error');
+          toast.error('Failed to delete certification.');
         }
       }
     };

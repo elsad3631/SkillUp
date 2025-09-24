@@ -291,7 +291,7 @@ import {
   getScoreLabel
 } from '@/core/utils/performanceReviewOptions';
 import { PerformanceReviewStatus } from '@/core/models/enums';
-import Swal from 'sweetalert2';
+import { useToast } from "vue-toastification";
 
 export default defineComponent({
   name: "PerformanceReviewModal",
@@ -312,6 +312,7 @@ export default defineComponent({
   emits: ['review-created', 'review-updated'],
   setup(props, { emit }) {
     const { currentUser } = useCurrentUser();
+    const toast = useToast();
     
     const loading = ref(false);
     const newStrength = ref('');
@@ -414,11 +415,7 @@ export default defineComponent({
 
     const onSubmit = async () => {
       if (!form.value.reviewPeriod || !form.value.reviewDate || !form.value.status) {
-        Swal.fire({
-          title: 'Validation Error',
-          text: 'Please fill in all required fields (Review Period, Review Date, and Status).',
-          icon: 'warning'
-        });
+        toast.warning('Please fill in all required fields (Review Period, Review Date, and Status).');
         return;
       }
 
@@ -447,26 +444,14 @@ export default defineComponent({
           // Update existing review
           result = await updatePerformanceReview(props.review.id, reviewData);
           if (result) {
-            Swal.fire({
-              title: 'Success!',
-              text: 'Performance review has been updated successfully.',
-              icon: 'success',
-              timer: 1500,
-              showConfirmButton: false
-            });
+            toast.success('Performance review has been updated successfully.');
             emit('review-updated', result);
           }
         } else {
           // Create new review
           result = await createPerformanceReview(reviewData);
           if (result) {
-            Swal.fire({
-              title: 'Success!',
-              text: 'Performance review has been created successfully.',
-              icon: 'success',
-              timer: 1500,
-              showConfirmButton: false
-            });
+            toast.success('Performance review has been created successfully.');
             emit('review-created', result);
           }
         }
@@ -478,11 +463,7 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Failed to save review:', error);
-        Swal.fire({
-          title: 'Error!',
-          text: `Failed to ${isEditing.value ? 'update' : 'create'} performance review. Please try again.`,
-          icon: 'error'
-        });
+        toast.error(`Failed to ${isEditing.value ? 'update' : 'create'} performance review. Please try again.`);
       } finally {
         loading.value = false;
       }

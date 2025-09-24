@@ -214,7 +214,7 @@ import AddTaskModal from "@/components/task/AddTaskModal.vue";
 import EditTaskModal from "@/components/task/EditTaskModal.vue";
 import AssignTaskModal from "@/components/task/AssignTaskModal.vue";
 import CommentSection from "@/components/comment/CommentSection.vue";
-import Swal from "sweetalert2/dist/sweetalert2.js";
+import { useToast } from "vue-toastification";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
 import { 
@@ -238,8 +238,9 @@ export default defineComponent({
     CommentSection,
     Loading,
   },
-  setup() {
-    const tableHeader = ref([
+    setup() {
+        const toast = useToast();
+        const tableHeader = ref([
       {
         columnName: "Task",
         columnLabel: "task",
@@ -379,17 +380,7 @@ export default defineComponent({
     const deleteFewTasks = async () => {
       if (selectedIds.value.length === 0) return;
       
-      const confirm = await Swal.fire({
-        title: 'Are you sure?',
-        text: `You are about to delete ${selectedIds.value.length} tasks. This action cannot be undone!`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete them!'
-      });
-      
-      if (confirm.isConfirmed) {
+      if (confirm(`Are you sure you want to delete ${selectedIds.value.length} tasks? This action cannot be undone!`)) {
         try {
           const deletePromises = selectedIds.value.map(id => deleteTask(id));
           await Promise.all(deletePromises);
@@ -398,38 +389,28 @@ export default defineComponent({
           initTasks.value = initTasks.value.filter(t => !selectedIds.value.includes(t.id));
           selectedIds.value = [];
           
-          Swal.fire('Deleted!', `${selectedIds.value.length} tasks have been deleted.`, 'success');
+          toast.success(`${selectedIds.value.length} tasks have been deleted.`);
         } catch (error) {
           console.error('Failed to delete tasks:', error);
-          Swal.fire('Error', 'Failed to delete tasks.', 'error');
+          toast.error('Failed to delete tasks.');
         }
       }
     };
 
     const deleteSingleTask = async (id: string) => {
-      const confirm = await Swal.fire({
-        title: 'Are you sure?',
-        text: "This will delete the task. This action cannot be undone!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
-      });
-      
-      if (confirm.isConfirmed) {
+      if (confirm("Are you sure you want to delete this task? This action cannot be undone!")) {
         try {
           const success = await deleteTask(id);
           if (success) {
             tableData.value = tableData.value.filter(t => t.id !== id);
             initTasks.value = initTasks.value.filter(t => t.id !== id);
-            Swal.fire('Deleted!', 'Task has been deleted.', 'success');
+            toast.success('Task has been deleted.');
           } else {
-            Swal.fire('Error', 'Failed to delete task.', 'error');
+            toast.error('Failed to delete task.');
           }
         } catch (error) {
           console.error('Failed to delete task:', error);
-          Swal.fire('Error', 'Failed to delete task.', 'error');
+          toast.error('Failed to delete task.');
         }
       }
     };

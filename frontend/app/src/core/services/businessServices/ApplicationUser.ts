@@ -12,6 +12,7 @@ export interface ApplicationUser {
   lastName?: string | null;
   dateOfBirth?: Date | null;
   placeOfBirth?: string | null;
+  fiscalCode?: string | null;
   address?: string | null;
   phone?: string | null;
   currentRole?: string | null;

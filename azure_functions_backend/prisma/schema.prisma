@@ -21,6 +21,7 @@ model ApplicationUser {
   phone                 String?
   currentRole           String?
   department            String?
+  fiscalCode            String?              @unique
   isAvailable           Boolean              @default(true)
   company               String?
   assets                Asset[]

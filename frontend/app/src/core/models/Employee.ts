@@ -33,6 +33,7 @@ export class Employee extends CosmosEntityBase {
   last_name?: string;
   date_of_birth?: Date;
   place_of_birth?: string;
+  fiscal_code?: string;
   address?: string;
   phone?: string;
   email?: string;

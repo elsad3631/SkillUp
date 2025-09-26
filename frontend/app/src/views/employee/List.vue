@@ -24,6 +24,13 @@
                         Export
                     </button>
                     <!--end::Export-->
+                    <!--begin::Upload Payslips-->
+                    <button type="button" class="btn btn-light-success me-3" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_upload_payslips">
+                        <KTIcon icon-name="document" icon-class="fs-2" />
+                        Carica Buste Paga
+                    </button>
+                    <!--end::Upload Payslips-->
                     <!--begin::Add employee-->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                         data-bs-target="#kt_modal_add_employee">
@@ -77,6 +84,10 @@
                         <div v-if="employee.phone" class="d-flex align-items-center">
                             <KTIcon icon-name="phone" icon-class="fs-7 me-1 text-success" />
                             <span class="text-muted fs-8">{{ employee.phone }}</span>
+                        </div>
+                        <div v-if="employee.fiscalCode" class="d-flex align-items-center mt-1">
+                            <KTIcon icon-name="profile-user" icon-class="fs-7 me-1 text-info" />
+                            <span class="text-muted fs-8">{{ employee.fiscalCode }}</span>
                         </div>
                         <div v-if="employee.address" class="d-flex align-items-center mt-1">
                             <KTIcon icon-name="location" icon-class="fs-7 me-1 text-warning" />
@@ -158,6 +169,7 @@
       </template>
     </EditEmployeeModal>
     <ExportEmployeeModal />
+    <UploadPayslipsModal @payslips-processed="onPayslipsProcessed" />
 </template>
 
 <script lang="ts">
@@ -170,6 +182,7 @@ import type { Sort } from "@/components/kt-datatable/table-partials/models";
 import AddEmployeeModal from "@/components/employee/AddEmployeeModal.vue";
 import EditEmployeeModal from "@/components/employee/EditEmployeeModal.vue";
 import ExportEmployeeModal from "@/components/employee/ExportEmployeeModal.vue";
+import UploadPayslipsModal from "@/components/employee/UploadPayslipsModal.vue";
 import { useToast } from "vue-toastification";
 import Loading from "@/components/kt-datatable/table-partials/Loading.vue";
 import { Modal } from "bootstrap";
@@ -190,6 +203,7 @@ export default defineComponent({
         AddEmployeeModal,
         EditEmployeeModal,
         ExportEmployeeModal,
+        UploadPayslipsModal,
         Loading,
     },
     setup() {
@@ -460,6 +474,14 @@ export default defineComponent({
             }
         };
 
+        const onPayslipsProcessed = (result: any) => {
+            console.log('Payslips processed:', result);
+            toast.success(`Elaborate ${result.extractedCount} buste paga con successo!`);
+            
+            // Optionally refresh the employee list if needed
+            // fetchEmployees();
+        };
+
         onMounted(async () => {
             // Assicurati che l'utente corrente sia caricato prima di fetchare gli employee
             if (!currentUser.value) {
@@ -492,6 +514,7 @@ export default defineComponent({
             getInitials,
             convertApplicationUserToEmployee,
             convertEmployeeToApplicationUser,
+            onPayslipsProcessed,
         };
     },
 });

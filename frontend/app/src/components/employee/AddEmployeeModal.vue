@@ -154,6 +154,25 @@
                   </div>
                 </div>
 
+                <div class="row mb-6">
+                  <div class="col-md-6">
+                    <label class="form-label">Codice Fiscale</label>
+                    <input
+                      v-model="form.fiscalCode"
+                      type="text"
+                      class="form-control"
+                      placeholder="RSSMRA80A01H501Z"
+                      maxlength="16"
+                      @input="validateFiscalCode"
+                      :class="{ 'is-invalid': fiscalCodeError }"
+                    />
+                    <div v-if="fiscalCodeError" class="invalid-feedback">
+                      {{ fiscalCodeError }}
+                    </div>
+                    <div class="form-text">Formato: 16 caratteri alfanumerici (es. RSSMRA80A01H501Z)</div>
+                  </div>
+                </div>
+
                 <div class="mb-6">
                   <label class="form-label">Address</label>
                   <textarea
@@ -415,6 +434,7 @@ export default defineComponent({
     const cvLoading = ref(false);
     const cvPrompt = ref('');
     const skillsList = ref('');
+    const fiscalCodeError = ref('');
     const roles = ref<Role[]>([]);
     const { currentUser } = useCurrentUser();
 
@@ -474,6 +494,7 @@ export default defineComponent({
       phone: "+391234567890",
       dateOfBirth: "1990-01-01",
       placeOfBirth: "Roma",
+      fiscalCode: "RSSMRA90A01H501Z",
       address: "Via Roma 1, 00100 Roma",
       currentRole: "Frontend Developer",
       department: "IT",
@@ -604,6 +625,7 @@ export default defineComponent({
       // Reset del form e ritorna al tab manuale per eventuali future operazioni
       activeTab.value = 'manual';
       cvFile.value = null;
+      fiscalCodeError.value = '';
       
       // Reset cvForm - use first available role or empty array
       cvForm.roles = roles.value.length > 0 ? [roles.value[0].name] : [];
@@ -620,6 +642,7 @@ export default defineComponent({
         phone: "",
         dateOfBirth: "",
         placeOfBirth: "",
+        fiscalCode: "",
         address: "",
         currentRole: "",
         department: "",
@@ -629,6 +652,31 @@ export default defineComponent({
         experiences: [],
         cvData: { fileName: "", storageUrl: "" },
       });
+    };
+
+    const validateFiscalCode = () => {
+      const fiscalCode = form.fiscalCode?.trim().toUpperCase();
+      fiscalCodeError.value = '';
+      
+      if (!fiscalCode) {
+        return; // Campo opzionale
+      }
+      
+      // Regex per codice fiscale italiano
+      const fiscalCodeRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
+      
+      if (fiscalCode.length !== 16) {
+        fiscalCodeError.value = 'Il codice fiscale deve essere di 16 caratteri';
+        return;
+      }
+      
+      if (!fiscalCodeRegex.test(fiscalCode)) {
+        fiscalCodeError.value = 'Formato codice fiscale non valido';
+        return;
+      }
+      
+      // Aggiorna il valore nel form con il formato corretto
+      form.fiscalCode = fiscalCode;
     };
 
     const onSubmit = async () => {
@@ -696,6 +744,7 @@ export default defineComponent({
         if (form.phone) applicationUserData.phone = form.phone.trim();
         if (form.dateOfBirth) applicationUserData.dateOfBirth = new Date(form.dateOfBirth);
         if (form.placeOfBirth) applicationUserData.placeOfBirth = form.placeOfBirth.trim();
+        if (form.fiscalCode) applicationUserData.fiscalCode = form.fiscalCode.trim().toUpperCase();
         if (form.address) applicationUserData.address = form.address.trim();
         if (form.currentRole) applicationUserData.currentRole = form.currentRole.trim();
         if (form.department) applicationUserData.department = form.department.trim();
@@ -721,6 +770,7 @@ export default defineComponent({
           phone: "",
           dateOfBirth: "",
           placeOfBirth: "",
+          fiscalCode: "",
           address: "",
           currentRole: "",
           department: "",
@@ -759,6 +809,8 @@ export default defineComponent({
       onFileChange,
       extractFromCV,
       resetForm,
+      fiscalCodeError,
+      validateFiscalCode,
     };
   },
 });

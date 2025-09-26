@@ -129,6 +129,25 @@
                   </div>
                 </div>
 
+                <div class="row mb-6">
+                  <div class="col-md-6">
+                    <label class="form-label">Codice Fiscale</label>
+                    <input
+                      v-model="form.fiscalCode"
+                      type="text"
+                      class="form-control"
+                      placeholder="RSSMRA80A01H501Z"
+                      maxlength="16"
+                      @input="validateFiscalCode"
+                      :class="{ 'is-invalid': fiscalCodeError }"
+                    />
+                    <div v-if="fiscalCodeError" class="invalid-feedback">
+                      {{ fiscalCodeError }}
+                    </div>
+                    <div class="form-text">Formato: 16 caratteri alfanumerici (es. RSSMRA80A01H501Z)</div>
+                  </div>
+                </div>
+
                 <div class="mb-6">
                   <label class="form-label">Address</label>
                   <textarea
@@ -454,6 +473,7 @@ export default defineComponent({
   emits: ["employee-updated"],
   setup(props, { emit }) {
     const loading = ref(false);
+    const fiscalCodeError = ref('');
 
     const form = reactive({
       username: "",
@@ -465,6 +485,7 @@ export default defineComponent({
       phone: "",
       dateOfBirth: "",
       placeOfBirth: "",
+      fiscalCode: "",
       address: "",
       currentRole: "",
       department: "",
@@ -499,6 +520,7 @@ export default defineComponent({
           ? new Date(newEmployee.date_of_birth).toISOString().split('T')[0]
           : (newEmployee['dateOfBirth'] ? new Date(newEmployee['dateOfBirth']).toISOString().split('T')[0] : "");
         form.placeOfBirth = newEmployee.place_of_birth || newEmployee['placeOfBirth'] || "";
+        form.fiscalCode = (newEmployee as any).fiscal_code || (newEmployee as any)['fiscalCode'] || "";
         form.address = newEmployee.address || "";
         form.currentRole = newEmployee.current_role || newEmployee['currentRole'] || "";
         form.department = newEmployee.department || "";
@@ -563,6 +585,31 @@ export default defineComponent({
 
     const removeSoftSkill = (index: number) => {
       form.softSkills.splice(index, 1);
+    };
+
+    const validateFiscalCode = () => {
+      const fiscalCode = form.fiscalCode?.trim().toUpperCase();
+      fiscalCodeError.value = '';
+      
+      if (!fiscalCode) {
+        return; // Campo opzionale
+      }
+      
+      // Regex per codice fiscale italiano
+      const fiscalCodeRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
+      
+      if (fiscalCode.length !== 16) {
+        fiscalCodeError.value = 'Il codice fiscale deve essere di 16 caratteri';
+        return;
+      }
+      
+      if (!fiscalCodeRegex.test(fiscalCode)) {
+        fiscalCodeError.value = 'Formato codice fiscale non valido';
+        return;
+      }
+      
+      // Aggiorna il valore nel form con il formato corretto
+      form.fiscalCode = fiscalCode;
     };
 
     const addExperience = () => {
@@ -777,6 +824,7 @@ export default defineComponent({
           phone: form.phone,
           dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth) : undefined,
           placeOfBirth: form.placeOfBirth,
+          fiscalCode: form.fiscalCode ? form.fiscalCode.trim().toUpperCase() : undefined,
           address: form.address,
           currentRole: form.currentRole,
           department: form.department,
@@ -847,6 +895,8 @@ export default defineComponent({
       cancelEditExperience,
       saveExperience,
       deleteExperience,
+      fiscalCodeError,
+      validateFiscalCode,
     };
   },
 });

@@ -24,4 +24,7 @@ Thumbs.db
 *.suo
 
 # TypeScript
-*.tsbuildinfo 
+*.tsbuildinfo
+
+# Processed payslips
+processed_payslips/ 

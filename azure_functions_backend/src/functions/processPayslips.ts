@@ -145,7 +145,8 @@ export async function processPayslips(request: HttpRequest, context: InvocationC
       pdfBuffer,
       payslipsPdf.name,
       targetCompanyId,
-      options
+      options,
+      currentUser.id
     );
 
     // Log the activity

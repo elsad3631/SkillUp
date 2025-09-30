@@ -1,9 +1,9 @@
 import { PDFDocument, PDFPage } from 'pdf-lib';
 import pdfParse from 'pdf-parse';
-import fs from 'fs';
 import path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { blobStorageService } from './blobstorage.service';
+import { documentService } from './document.service';
 
 const prisma = new PrismaClient();
 
@@ -45,7 +45,8 @@ export const payslipService = {
     pdfBuffer: Buffer,
     originalFileName: string,
     companyId: string,
-    options: PayslipProcessingOptions
+    options: PayslipProcessingOptions,
+    uploadedBy: string
   ): Promise<PayslipProcessingResult> {
     try {
       console.log(`Processing payslips PDF: ${originalFileName} for company: ${companyId}`);
@@ -61,7 +62,7 @@ export const payslipService = {
       const matchingResults = await this.matchPayslipsWithEmployees(payslipsWithFiscalCodes, companyId);
 
       // Step 4: Save processed files
-      const savedFiles = await this.saveProcessedPayslips(matchingResults.matched, companyId, options);
+      const savedFiles = await this.saveProcessedPayslips(matchingResults.matched, companyId, options, uploadedBy);
 
       // Step 5: Prepare results
       const result: PayslipProcessingResult = {
@@ -214,12 +215,13 @@ export const payslipService = {
   },
 
   /**
-   * Save processed payslips to storage and local folders
+   * Save processed payslips to blob storage only
    */
   async saveProcessedPayslips(
     matchedPayslips: Array<ExtractedPayslip & { employeeId: string; employee: any }>,
     companyId: string,
-    options: PayslipProcessingOptions
+    options: PayslipProcessingOptions,
+    uploadedBy: string
   ): Promise<Array<{
     fileName: string;
     employeeId: string;
@@ -233,61 +235,52 @@ export const payslipService = {
       filePath: string;
     }> = [];
 
-    // Create base directory for payslips
-    const baseDir = path.join(process.cwd(), 'processed_payslips', companyId);
-    if (!fs.existsSync(baseDir)) {
-      fs.mkdirSync(baseDir, { recursive: true });
-    }
-
     for (const payslip of matchedPayslips) {
       try {
-        let filePath: string;
-        let fileName: string;
+        // Generate filename with date and fiscal code
+        const dateStr = new Date().toISOString().split('T')[0];
+        const fileName = `busta_paga_${dateStr}_${payslip.fiscalCode}.pdf`;
+        
+        // Create blob path: employees/{employeeId}/documents/bustepaga
+        const blobName = `employees/${payslip.employeeId}/documents/bustepaga/${fileName}`;
+        
+        // Upload to blob storage
+        const blobUrl = await blobStorageService.uploadFile(blobName, payslip.pdfBuffer, 'application/pdf', {
+          employee_id: payslip.employeeId,
+          fiscal_code: payslip.fiscalCode || '',
+          company_id: companyId,
+          upload_date: new Date().toISOString(),
+          document_type: 'payslip',
+          uploaded_by: uploadedBy
+        });
 
-        if (options.createFolders) {
-          // Create folder for each employee
-          const employeeFolder = path.join(baseDir, `${payslip.employee.firstName}_${payslip.employee.lastName}_${payslip.employeeId}`);
-          if (!fs.existsSync(employeeFolder)) {
-            fs.mkdirSync(employeeFolder, { recursive: true });
-          }
-          
-          fileName = `busta_paga_${new Date().toISOString().split('T')[0]}_${payslip.fiscalCode}.pdf`;
-          filePath = path.join(employeeFolder, fileName);
-        } else {
-          // Save all in the same folder with employee info in filename
-          fileName = `${payslip.employee.firstName}_${payslip.employee.lastName}_${payslip.fiscalCode}_${new Date().toISOString().split('T')[0]}.pdf`;
-          filePath = path.join(baseDir, fileName);
-        }
+        // Create document record in database
+        const documentRecord = await documentService.create({
+          fileName: fileName,
+          originalFileName: payslip.fileName,
+          fileUrl: blobUrl,
+          fileSize: payslip.pdfBuffer.length,
+          mimeType: 'application/pdf',
+          uploadedBy: uploadedBy,
+          userId: payslip.employeeId,
+          category: 'bustepaga',
+          tags: ['payslip', 'employee', 'document'],
+          isPublic: false,
+          description: `Busta paga per ${payslip.employee.firstName} ${payslip.employee.lastName} - ${dateStr}`
+        });
 
-        // Save PDF file locally
-        fs.writeFileSync(filePath, payslip.pdfBuffer);
-
-        // Optionally upload to blob storage
-        try {
-          const blobName = `payslips/${companyId}/${payslip.employeeId}/${fileName}`;
-          await blobStorageService.uploadFile(blobName, payslip.pdfBuffer, 'application/pdf', {
-            employee_id: payslip.employeeId,
-            fiscal_code: payslip.fiscalCode || '',
-            company_id: companyId,
-            upload_date: new Date().toISOString(),
-            document_type: 'payslip'
-          });
-          console.log(`Uploaded payslip to blob storage: ${blobName}`);
-        } catch (blobError) {
-          console.error('Error uploading to blob storage:', blobError);
-          // Continue processing even if blob upload fails
-        }
+        console.log(`Saved payslip for ${payslip.employee.firstName} ${payslip.employee.lastName} to blob storage: ${blobName}`);
 
         savedFiles.push({
           fileName,
           employeeId: payslip.employeeId,
           fiscalCode: payslip.fiscalCode,
-          filePath
+          filePath: blobUrl // Use blob URL as file path
         });
 
-        console.log(`Saved payslip for ${payslip.employee.firstName} ${payslip.employee.lastName} to ${filePath}`);
       } catch (error) {
         console.error(`Error saving payslip for employee ${payslip.employeeId}:`, error);
+        // Continue processing other payslips even if one fails
       }
     }
 

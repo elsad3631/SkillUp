@@ -78,18 +78,6 @@
                 </label>
               </div>
               
-              <div class="form-check form-check-custom form-check-solid mb-3">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
-                  v-model="options.createFolders" 
-                  id="createFolders"
-                />
-                <label class="form-check-label fw-semibold text-gray-700" for="createFolders">
-                  Crea cartelle separate per ogni dipendente
-                </label>
-              </div>
-              
               <div class="form-check form-check-custom form-check-solid">
                 <input 
                   class="form-check-input" 
@@ -136,6 +124,7 @@
               <div class="d-flex flex-column">
                 <h4 class="mb-1 text-success">Elaborazione completata!</h4>
                 <span>{{ processingResults.summary }}</span>
+                <small class="text-muted mt-2">Le buste paga sono state salvate nel cloud storage</small>
               </div>
             </div>
 

@@ -5,6 +5,52 @@ import { RoleService } from './role.service';
 const prisma = new PrismaClient();
 const roleService = new RoleService();
 
+/**
+ * Creates the standard folder structure for a new employee in blob storage
+ * @param employeeId - The ID of the employee
+ */
+async function createEmployeeFolders(employeeId: string): Promise<void> {
+  try {
+    const { blobStorageService } = await import('./blobstorage.service');
+    
+    const folders = [
+      `employees/${employeeId}/documents/bustepaga/`,
+      `employees/${employeeId}/documents/contratti/`,
+      `employees/${employeeId}/documents/certificazioni/`,
+      `employees/${employeeId}/documents/formazione/`,
+      `employees/${employeeId}/documents/identita/`,
+      `employees/${employeeId}/documents/altri/`,
+      `employees/${employeeId}/temp/`
+    ];
+
+    // Create placeholder files for each folder to ensure they exist
+    // In Azure Blob Storage, folders are created implicitly when files are uploaded
+    for (const folder of folders) {
+      try {
+        const placeholderName = `${folder}.gitkeep`;
+        await blobStorageService.uploadFile(
+          placeholderName,
+          Buffer.from(''), // Empty file
+          'text/plain',
+          {
+            folder_type: 'employee_folder',
+            employee_id: employeeId,
+            created_at: new Date().toISOString(),
+            purpose: 'folder_placeholder'
+          }
+        );
+        console.log(`✅ Created folder: ${folder}`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to create folder ${folder}:`, error);
+        // Continue with other folders even if one fails
+      }
+    }
+  } catch (error) {
+    console.error(`❌ Error creating employee folders for ${employeeId}:`, error);
+    // Don't throw error to avoid breaking user creation
+  }
+}
+
 export const applicationUserService = {
   async getAll() {
     return prisma.applicationUser.findMany({
@@ -250,6 +296,9 @@ export const applicationUserService = {
         // Don't fail user creation if role assignment fails
       }
     }
+    
+    // Create employee folders in blob storage
+    await createEmployeeFolders(createdUser.id);
     
     return createdUser;
   },

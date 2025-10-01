@@ -112,6 +112,23 @@ class DocumentManagerService {
   }
   
   /**
+   * Check if a file is a placeholder file that should be hidden
+   */
+  private isPlaceholderFile(fileName: string): boolean {
+    // List of files that should be hidden from the UI
+    const placeholderFiles = [
+      '.gitkeep',
+      '.folder',
+      '.placeholder',
+      '.gitignore',
+      'Thumbs.db',
+      '.DS_Store'
+    ];
+    
+    return placeholderFiles.some(placeholder => fileName === placeholder);
+  }
+
+  /**
    * Organize files into folder structure with database metadata
    */
   private organizeFilesAndFolders(files: any[], basePath: string, dbDocuments: Document[]): FolderStructure {
@@ -135,8 +152,10 @@ class DocumentManagerService {
       const relativePath = file.name.replace(basePath, '');
       const pathParts = relativePath.split('/').filter(part => part.length > 0);
       
-      // Find corresponding database record
+      // Get the file name for database lookup
       const fileName = pathParts[pathParts.length - 1];
+      
+      // Find corresponding database record
       const dbDoc = dbDocumentMap.get(fileName);
       
       const fileItem: FileItem = {
@@ -159,13 +178,16 @@ class DocumentManagerService {
       };
       
       if (pathParts.length === 1) {
-        // It's a file in the current directory
-        rootFiles.push(fileItem);
+        // It's a file in the current directory (skip placeholder files)
+        if (!this.isPlaceholderFile(fileItem.name)) {
+          rootFiles.push(fileItem);
+        }
       } else if (pathParts.length > 1) {
         // It's a file in a subdirectory
         const folderName = pathParts[0];
         const folderPath = basePath + folderName + '/';
         
+        // Always create the folder (even if it only contains placeholder files)
         if (!folderMap.has(folderName)) {
           folderMap.set(folderName, {
             name: folderName,
@@ -175,9 +197,11 @@ class DocumentManagerService {
           });
         }
         
-        // Add file to folder
+        // Add file to folder (skip placeholder files)
         const folder = folderMap.get(folderName)!;
-        folder.files.push(fileItem);
+        if (!this.isPlaceholderFile(fileItem.name)) {
+          folder.files.push(fileItem);
+        }
       }
     });
     

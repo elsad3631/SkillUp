@@ -7,6 +7,115 @@
   <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
   <link rel="stylesheet" href="/splash-screen.css">
+  <style>
+    .splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+
+    .splash-content {
+      text-align: center;
+      color: #334155;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    .logo-container {
+      margin-bottom: 2rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .splash-logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .splash-logo:hover {
+      transform: scale(1.05);
+    }
+
+    .app-name {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0 0 1.5rem 0;
+      color: #1e293b;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      letter-spacing: 0.05em;
+    }
+
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin: 1rem 0;
+    }
+
+    .spinner-dot {
+      width: 12px;
+      height: 12px;
+      background: #64748b;
+      border-radius: 50%;
+      animation: bounce 1.4s ease-in-out infinite both;
+    }
+
+    .spinner-dot:nth-child(1) { animation-delay: -0.32s; }
+    .spinner-dot:nth-child(2) { animation-delay: -0.16s; }
+    .spinner-dot:nth-child(3) { animation-delay: 0s; }
+
+    .loading-message {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin: 0;
+      font-weight: 300;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    .splash-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synapsis</title>
 </head>
@@ -32,13 +141,78 @@
 
     <!--begin::Loading markup-->
     <div id="splash-screen" class="splash-screen">
-        <img src="/media/logos/logohome.jpg" class="dark-logo" alt="Synapsis dark logo" />
-        <img src="/media/logos/logohome.jpg" class="light-logo" alt="Synapsis light logo" />
-        <span>Loading ...</span>
+        <div class="splash-content">
+            <div class="logo-container">
+                <img src="/media/logos/logohome.jpg" class="splash-logo" alt="Synapsis logo" />
+            </div>
+            <div class="loading-text">
+                <h2 class="app-name">Synapsis</h2>
+                <div class="loading-spinner">
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                    <div class="spinner-dot"></div>
+                </div>
+            </div>
+        </div>
     </div>
     <!--end::Loading markup-->
 
     <script type="module" src="/src/main.ts"></script>
+    
+    <script>
+      // Applica il tema corretto allo splash screen
+      function applyThemeToSplash() {
+        const splashScreen = document.getElementById('splash-screen');
+        const splashContent = splashScreen.querySelector('.splash-content');
+        
+        // Controlla il tema attuale
+        const themeMode = localStorage.getItem("kt_theme_mode_value") || "system";
+        let isDark = false;
+        
+        if (themeMode === "dark") {
+          isDark = true;
+        } else if (themeMode === "light") {
+          isDark = false;
+        } else if (themeMode === "system") {
+          isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+        
+        // Applica gli stili in base al tema
+        if (isDark) {
+          splashScreen.style.background = 'linear-gradient(135deg, #1e293b 0%, #334155 100%)';
+          splashContent.style.color = '#f1f5f9';
+          splashContent.querySelector('.app-name').style.color = '#f1f5f9';
+          splashContent.querySelector('.app-name').style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+          splashContent.querySelectorAll('.spinner-dot').forEach(dot => {
+            dot.style.background = '#cbd5e1';
+          });
+        } else {
+          splashScreen.style.background = 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)';
+          splashContent.style.color = '#334155';
+          splashContent.querySelector('.app-name').style.color = '#1e293b';
+          splashContent.querySelector('.app-name').style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+          splashContent.querySelectorAll('.spinner-dot').forEach(dot => {
+            dot.style.background = '#64748b';
+          });
+        }
+      }
+      
+      // Applica il tema quando la pagina si carica
+      document.addEventListener('DOMContentLoaded', applyThemeToSplash);
+      
+      // Rimuove lo splash screen quando l'app è caricata
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const splashScreen = document.getElementById('splash-screen');
+          if (splashScreen) {
+            splashScreen.classList.add('fade-out');
+            setTimeout(function() {
+              splashScreen.style.display = 'none';
+            }, 500);
+          }
+        }, 1000); // Mostra lo splash per almeno 1 secondo
+      });
+    </script>
 </body>
 
 </html>

@@ -133,7 +133,7 @@
                   >{{ " " }}
                   <a
                     class="fw-semibold"
-                    href="https://preview.keenthemes.com/html/metronic/docs/icons/keenicons"
+                    href="https://preview.keenthemes.com/html/synapsis/docs/icons/keenicons"
                     target="_blank"
                     >Learn more</a
                   >
@@ -626,7 +626,7 @@
       <div class="py-5">
         This config is used as a <b>{{ themeName }}</b> layout config, you can
         update default values inside file
-        <code>metronic/vue/theme/src/core/config/DefaultLayoutConfig.ts</code>
+        <code>synapsis/vue/theme/src/core/config/DefaultLayoutConfig.ts</code>
       </div>
       <CodeHighlighter lang="json">{{ config }}</CodeHighlighter>
     </div>

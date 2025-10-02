@@ -70,7 +70,7 @@
     ></KTFile>
 
     <KTFile
-      file-title="Metronic Logo"
+      file-title="Synapsis Logo"
       file-type="ai"
       created-at="5 days ago"
     ></KTFile>

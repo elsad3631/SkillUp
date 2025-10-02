@@ -131,7 +131,7 @@ export default defineComponent({
         color: "info",
         title: "New Users",
         description: "Communication/Group.svg",
-        technologies: "Laravel, Metronic",
+        technologies: "Laravel, Synapsis",
         users: "890 Users",
         size: "1.5MB",
       },

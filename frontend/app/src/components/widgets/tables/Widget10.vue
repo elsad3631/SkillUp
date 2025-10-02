@@ -171,7 +171,7 @@ export default defineComponent({
           email: "e.smith@kpmg.com.au",
         },
         price: "$560,000",
-        technologies: "Laravel, Metronic",
+        technologies: "Laravel, Synapsis",
         status: {
           label: "Approved",
           color: "success",
